@@ -7,14 +7,14 @@ import (
 )
 
 type Vehicle struct {
-	ID         string    `db:"id"`
-	CustomerID string    `db:"customer_id"`
-	Plate      string    `db:"plate"`
-	Brand      string    `db:"brand"`
-	Model      string    `db:"model"`
-	Year       int       `db:"year"`
-	CreatedAt  time.Time `db:"created_at"`
-	UpdatedAt  time.Time `db:"updated_at"`
+	ID         string    `gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
+	CustomerID string    `gorm:"type:uuid;not null;index"`
+	Plate      string    `gorm:"uniqueIndex;not null"`
+	Brand      string    `gorm:"not null"`
+	Model      string    `gorm:"not null"`
+	Year       int       `gorm:"not null"`
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
 }
 
 func FromVehicle(v *vehicle.Vehicle) *Vehicle {

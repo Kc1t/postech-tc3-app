@@ -1,16 +1,17 @@
 package bootstrap
 
 import (
-	"context"
 	"log"
 	"sync"
 
 	"github.com/fiap/postech-tc1/config"
 	handler "github.com/fiap/postech-tc1/internal/adapters/inbound/http"
 	"github.com/fiap/postech-tc1/internal/adapters/outbound/postgresql"
+	pgmodel "github.com/fiap/postech-tc1/internal/adapters/outbound/postgresql/model"
 	"github.com/fiap/postech-tc1/internal/application/usecase"
 	"github.com/fiap/postech-tc1/internal/ports"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 //TODO: Arrumar estrutura de injecao de dependencia
@@ -19,7 +20,7 @@ import (
 // A tag `container` documenta a camada de cada dependencia.
 type Container struct {
 	Config *config.Config
-	db     *pgxpool.Pool
+	db     *gorm.DB
 
 	// Repositories — outbound adapters (persistencia)
 	CustomerRepo     ports.CustomerRepository     `container:"repository"`
@@ -66,16 +67,23 @@ func (c *Container) initialize() {
 }
 
 func (c *Container) setupDatabase() {
-	ctx := context.Background()
-	pool, err := pgxpool.New(ctx, c.Config.PostgresDSN)
+	db, err := gorm.Open(postgres.Open(c.Config.PostgresDSN), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("bootstrap: failed to connect to postgresql: %v", err)
 	}
-	if err := pool.Ping(ctx); err != nil {
-		log.Fatalf("bootstrap: failed to ping postgresql: %v", err)
+
+	if err := db.AutoMigrate(
+		&pgmodel.Customer{},
+		&pgmodel.Vehicle{},
+		&pgmodel.Service{},
+		&pgmodel.Part{},
+		&pgmodel.ServiceOrder{},
+	); err != nil {
+		log.Fatalf("bootstrap: failed to run migrations: %v", err)
 	}
-	c.db = pool
-	log.Printf("bootstrap: connected to postgresql dsn=%s", c.Config.PostgresDSN)
+
+	c.db = db
+	log.Printf("bootstrap: connected to postgresql and migrations applied")
 }
 
 func (c *Container) setupRepositories() {

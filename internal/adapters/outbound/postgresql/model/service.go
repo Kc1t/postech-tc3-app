@@ -7,13 +7,13 @@ import (
 )
 
 type Service struct {
-	ID          string    `db:"id"`
-	Name        string    `db:"name"`
-	Description string    `db:"description"`
-	Price       float64   `db:"price"`
-	DurationMin int       `db:"duration_min"`
-	CreatedAt   time.Time `db:"created_at"`
-	UpdatedAt   time.Time `db:"updated_at"`
+	ID          string    `gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
+	Name        string    `gorm:"not null"`
+	Description string
+	Price       float64   `gorm:"not null"`
+	DurationMin int       `gorm:"not null"`
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 func FromService(s *service.Service) *Service {

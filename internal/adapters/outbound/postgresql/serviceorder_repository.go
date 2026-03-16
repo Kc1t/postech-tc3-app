@@ -6,99 +6,67 @@ import (
 	pgmodel "github.com/fiap/postech-tc1/internal/adapters/outbound/postgresql/model"
 	"github.com/fiap/postech-tc1/internal/domain/serviceorder"
 	"github.com/fiap/postech-tc1/internal/ports"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"gorm.io/gorm"
 )
 
 type serviceOrderRepository struct {
-	db *pgxpool.Pool
+	db *gorm.DB
 }
 
-func NewServiceOrderRepository(db *pgxpool.Pool) ports.ServiceOrderRepository {
+func NewServiceOrderRepository(db *gorm.DB) ports.ServiceOrderRepository {
 	return &serviceOrderRepository{db: db}
 }
 
 func (r *serviceOrderRepository) Create(ctx context.Context, so *serviceorder.ServiceOrder) error {
-	doc := pgmodel.FromServiceOrder(so)
-	query := `
-		INSERT INTO service_orders (customer_id, vehicle_id, status, services, parts, total_amount, notes, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-		RETURNING id`
-	var id string
-	err := r.db.QueryRow(ctx, query,
-		doc.CustomerID, doc.VehicleID, doc.Status, doc.ServicesRaw, doc.PartsRaw,
-		doc.TotalAmount, doc.Notes, doc.CreatedAt, doc.UpdatedAt,
-	).Scan(&id)
-	if err != nil {
+	m := pgmodel.FromServiceOrder(so)
+	if err := r.db.WithContext(ctx).Create(m).Error; err != nil {
 		return err
 	}
-	so.SetID(id)
+	so.SetID(m.ID)
 	return nil
 }
 
 func (r *serviceOrderRepository) FindByID(ctx context.Context, id string) (*serviceorder.ServiceOrder, error) {
-	query := `SELECT id, customer_id, vehicle_id, status, services, parts, total_amount, notes, created_at, updated_at FROM service_orders WHERE id=$1`
 	var m pgmodel.ServiceOrder
-	err := r.db.QueryRow(ctx, query, id).Scan(
-		&m.ID, &m.CustomerID, &m.VehicleID, &m.Status, &m.ServicesRaw, &m.PartsRaw,
-		&m.TotalAmount, &m.Notes, &m.CreatedAt, &m.UpdatedAt,
-	)
-	if err != nil {
+	if err := r.db.WithContext(ctx).First(&m, "id = ?", id).Error; err != nil {
 		return nil, err
 	}
 	return m.ToDomain(), nil
 }
 
 func (r *serviceOrderRepository) FindAll(ctx context.Context) ([]*serviceorder.ServiceOrder, error) {
-	query := `SELECT id, customer_id, vehicle_id, status, services, parts, total_amount, notes, created_at, updated_at FROM service_orders`
-	rows, err := r.db.Query(ctx, query)
-	if err != nil {
+	var docs []pgmodel.ServiceOrder
+	if err := r.db.WithContext(ctx).Find(&docs).Error; err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-
-	var orders []*serviceorder.ServiceOrder
-	for rows.Next() {
-		var m pgmodel.ServiceOrder
-		if err := rows.Scan(&m.ID, &m.CustomerID, &m.VehicleID, &m.Status, &m.ServicesRaw, &m.PartsRaw, &m.TotalAmount, &m.Notes, &m.CreatedAt, &m.UpdatedAt); err != nil {
-			return nil, err
-		}
-		orders = append(orders, m.ToDomain())
+	orders := make([]*serviceorder.ServiceOrder, 0, len(docs))
+	for i := range docs {
+		orders = append(orders, docs[i].ToDomain())
 	}
-	return orders, rows.Err()
+	return orders, nil
 }
 
 func (r *serviceOrderRepository) FindByCustomerID(ctx context.Context, customerID string) ([]*serviceorder.ServiceOrder, error) {
-	query := `SELECT id, customer_id, vehicle_id, status, services, parts, total_amount, notes, created_at, updated_at FROM service_orders WHERE customer_id=$1`
-	rows, err := r.db.Query(ctx, query, customerID)
-	if err != nil {
+	var docs []pgmodel.ServiceOrder
+	if err := r.db.WithContext(ctx).Find(&docs, "customer_id = ?", customerID).Error; err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-
-	var orders []*serviceorder.ServiceOrder
-	for rows.Next() {
-		var m pgmodel.ServiceOrder
-		if err := rows.Scan(&m.ID, &m.CustomerID, &m.VehicleID, &m.Status, &m.ServicesRaw, &m.PartsRaw, &m.TotalAmount, &m.Notes, &m.CreatedAt, &m.UpdatedAt); err != nil {
-			return nil, err
-		}
-		orders = append(orders, m.ToDomain())
+	orders := make([]*serviceorder.ServiceOrder, 0, len(docs))
+	for i := range docs {
+		orders = append(orders, docs[i].ToDomain())
 	}
-	return orders, rows.Err()
+	return orders, nil
 }
 
 func (r *serviceOrderRepository) UpdateStatus(ctx context.Context, id string, status serviceorder.Status) error {
-	_, err := r.db.Exec(ctx, `UPDATE service_orders SET status=$1 WHERE id=$2`, status, id)
-	return err
+	return r.db.WithContext(ctx).Model(&pgmodel.ServiceOrder{}).Where("id = ?", id).Update("status", status).Error
 }
 
 func (r *serviceOrderRepository) Update(ctx context.Context, so *serviceorder.ServiceOrder) error {
-	doc := pgmodel.FromServiceOrder(so)
-	query := `UPDATE service_orders SET status=$1, services=$2, parts=$3, total_amount=$4, notes=$5, updated_at=$6 WHERE id=$7`
-	_, err := r.db.Exec(ctx, query, doc.Status, doc.ServicesRaw, doc.PartsRaw, doc.TotalAmount, doc.Notes, doc.UpdatedAt, doc.ID)
-	return err
+	m := pgmodel.FromServiceOrder(so)
+	return r.db.WithContext(ctx).Save(m).Error
 }
 
 func (r *serviceOrderRepository) Delete(ctx context.Context, id string) error {
-	_, err := r.db.Exec(ctx, `DELETE FROM service_orders WHERE id=$1`, id)
-	return err
+	return r.db.WithContext(ctx).Delete(&pgmodel.ServiceOrder{}, "id = ?", id).Error
 }

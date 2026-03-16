@@ -1,7 +1,6 @@
 package pgmodel
 
 import (
-	"encoding/json"
 	"time"
 
 	"github.com/fiap/postech-tc1/internal/domain/serviceorder"
@@ -21,42 +20,28 @@ type PartItem struct {
 }
 
 type ServiceOrder struct {
-	ID          string                `db:"id"`
-	CustomerID  string                `db:"customer_id"`
-	VehicleID   string                `db:"vehicle_id"`
-	Status      serviceorder.Status   `db:"status"`
-	Services    []ServiceItem         `db:"-"`
-	ServicesRaw []byte                `db:"services"`
-	Parts       []PartItem            `db:"-"`
-	PartsRaw    []byte                `db:"parts"`
-	TotalAmount float64               `db:"total_amount"`
-	Notes       string                `db:"notes"`
-	CreatedAt   time.Time             `db:"created_at"`
-	UpdatedAt   time.Time             `db:"updated_at"`
+	ID          string              `gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
+	CustomerID  string              `gorm:"type:uuid;not null;index"`
+	VehicleID   string              `gorm:"type:uuid;not null"`
+	Status      serviceorder.Status `gorm:"not null"`
+	Services    []ServiceItem       `gorm:"serializer:json"`
+	Parts       []PartItem          `gorm:"serializer:json"`
+	TotalAmount float64             `gorm:"not null"`
+	Notes       string
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 func FromServiceOrder(so *serviceorder.ServiceOrder) *ServiceOrder {
 	services := make([]ServiceItem, 0, len(so.Services()))
 	for _, s := range so.Services() {
-		services = append(services, ServiceItem{
-			ServiceID:   s.ServiceID,
-			Description: s.Description,
-			Price:       s.Price,
-		})
+		services = append(services, ServiceItem{ServiceID: s.ServiceID, Description: s.Description, Price: s.Price})
 	}
 
 	parts := make([]PartItem, 0, len(so.Parts()))
 	for _, p := range so.Parts() {
-		parts = append(parts, PartItem{
-			PartID:      p.PartID,
-			Description: p.Description,
-			Quantity:    p.Quantity,
-			UnitPrice:   p.UnitPrice,
-		})
+		parts = append(parts, PartItem{PartID: p.PartID, Description: p.Description, Quantity: p.Quantity, UnitPrice: p.UnitPrice})
 	}
-
-	servicesRaw, _ := json.Marshal(services)
-	partsRaw, _ := json.Marshal(parts)
 
 	return &ServiceOrder{
 		ID:          so.ID(),
@@ -64,9 +49,7 @@ func FromServiceOrder(so *serviceorder.ServiceOrder) *ServiceOrder {
 		VehicleID:   so.VehicleID(),
 		Status:      so.Status(),
 		Services:    services,
-		ServicesRaw: servicesRaw,
 		Parts:       parts,
-		PartsRaw:    partsRaw,
 		TotalAmount: so.TotalAmount(),
 		Notes:       so.Notes(),
 		CreatedAt:   so.CreatedAt(),
@@ -75,26 +58,14 @@ func FromServiceOrder(so *serviceorder.ServiceOrder) *ServiceOrder {
 }
 
 func (m *ServiceOrder) ToDomain() *serviceorder.ServiceOrder {
-	_ = json.Unmarshal(m.ServicesRaw, &m.Services)
-	_ = json.Unmarshal(m.PartsRaw, &m.Parts)
-
 	services := make([]serviceorder.ServiceItem, 0, len(m.Services))
 	for _, s := range m.Services {
-		services = append(services, serviceorder.ServiceItem{
-			ServiceID:   s.ServiceID,
-			Description: s.Description,
-			Price:       s.Price,
-		})
+		services = append(services, serviceorder.ServiceItem{ServiceID: s.ServiceID, Description: s.Description, Price: s.Price})
 	}
 
 	parts := make([]serviceorder.PartItem, 0, len(m.Parts))
 	for _, p := range m.Parts {
-		parts = append(parts, serviceorder.PartItem{
-			PartID:      p.PartID,
-			Description: p.Description,
-			Quantity:    p.Quantity,
-			UnitPrice:   p.UnitPrice,
-		})
+		parts = append(parts, serviceorder.PartItem{PartID: p.PartID, Description: p.Description, Quantity: p.Quantity, UnitPrice: p.UnitPrice})
 	}
 
 	return serviceorder.Reconstitute(

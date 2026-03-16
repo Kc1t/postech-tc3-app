@@ -7,13 +7,13 @@ import (
 )
 
 type Customer struct {
-	ID        string    `db:"id"`
-	Name      string    `db:"name"`
-	Document  string    `db:"document"`
-	Email     string    `db:"email"`
-	Phone     string    `db:"phone"`
-	CreatedAt time.Time `db:"created_at"`
-	UpdatedAt time.Time `db:"updated_at"`
+	ID        string    `gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
+	Name      string    `gorm:"not null"`
+	Document  string    `gorm:"uniqueIndex;not null"`
+	Email     string    `gorm:"not null"`
+	Phone     string    `gorm:"not null"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 func FromCustomer(c *customer.Customer) *Customer {
