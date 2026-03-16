@@ -7,11 +7,10 @@ import (
 
 	"github.com/fiap/postech-tc1/config"
 	handler "github.com/fiap/postech-tc1/internal/adapters/inbound/http"
-	"github.com/fiap/postech-tc1/internal/adapters/outbound/mongodb"
+	"github.com/fiap/postech-tc1/internal/adapters/outbound/postgresql"
 	"github.com/fiap/postech-tc1/internal/application/usecase"
 	"github.com/fiap/postech-tc1/internal/ports"
-	mongodriver "go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 //TODO: Arrumar estrutura de injecao de dependencia
@@ -20,7 +19,7 @@ import (
 // A tag `container` documenta a camada de cada dependencia.
 type Container struct {
 	Config *config.Config
-	db     *mongodriver.Database
+	db     *pgxpool.Pool
 
 	// Repositories — outbound adapters (persistencia)
 	CustomerRepo     ports.CustomerRepository     `container:"repository"`
@@ -68,23 +67,23 @@ func (c *Container) initialize() {
 
 func (c *Container) setupDatabase() {
 	ctx := context.Background()
-	client, err := mongodriver.Connect(ctx, options.Client().ApplyURI(c.Config.MongoURI))
+	pool, err := pgxpool.New(ctx, c.Config.PostgresDSN)
 	if err != nil {
-		log.Fatalf("bootstrap: failed to connect to mongodb: %v", err)
+		log.Fatalf("bootstrap: failed to connect to postgresql: %v", err)
 	}
-	if err := client.Ping(ctx, nil); err != nil {
-		log.Fatalf("bootstrap: failed to ping mongodb: %v", err)
+	if err := pool.Ping(ctx); err != nil {
+		log.Fatalf("bootstrap: failed to ping postgresql: %v", err)
 	}
-	c.db = client.Database(c.Config.MongoDB)
-	log.Printf("bootstrap: connected to mongodb database=%s", c.Config.MongoDB)
+	c.db = pool
+	log.Printf("bootstrap: connected to postgresql dsn=%s", c.Config.PostgresDSN)
 }
 
 func (c *Container) setupRepositories() {
-	c.CustomerRepo = mongodb.NewCustomerRepository(c.db)
-	c.VehicleRepo = mongodb.NewVehicleRepository(c.db)
-	c.ServiceOrderRepo = mongodb.NewServiceOrderRepository(c.db)
-	c.ServiceRepo = mongodb.NewServiceRepository(c.db)
-	c.PartRepo = mongodb.NewPartRepository(c.db)
+	c.CustomerRepo = postgresql.NewCustomerRepository(c.db)
+	c.VehicleRepo = postgresql.NewVehicleRepository(c.db)
+	c.ServiceOrderRepo = postgresql.NewServiceOrderRepository(c.db)
+	c.ServiceRepo = postgresql.NewServiceRepository(c.db)
+	c.PartRepo = postgresql.NewPartRepository(c.db)
 }
 
 func (c *Container) setupUseCases() {
