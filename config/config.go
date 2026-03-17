@@ -7,12 +7,11 @@ import (
 )
 
 type Config struct {
-	AppPort             string
-	AppEnv              string
-	MongoURI            string
-	MongoDB             string
-	JWTSecret           string
-	JWTExpirationHours  int
+	AppPort            string
+	AppEnv             string
+	PostgresDSN        string
+	JWTSecret          string
+	JWTExpirationHours int
 }
 
 func Load() *Config {
@@ -21,8 +20,7 @@ func Load() *Config {
 	return &Config{
 		AppPort:            getEnv("APP_PORT", "8080"),
 		AppEnv:             getEnv("APP_ENV", "development"),
-		MongoURI:           getEnv("MONGO_URI", "mongodb://localhost:27017"),
-		MongoDB:            getEnv("MONGO_DB", "workshop"),
+		PostgresDSN:        getEnv("POSTGRES_DSN", "postgres://postgres:postgres@localhost:5432/workshop?sslmode=disable"),
 		JWTSecret:          getEnv("JWT_SECRET", "secret"),
 		JWTExpirationHours: 24,
 	}

@@ -1,0 +1,35 @@
+package pgmodel
+
+import (
+	"time"
+
+	"github.com/fiap/postech-tc1/internal/domain/part"
+)
+
+type Part struct {
+	ID          string    `gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
+	Name        string    `gorm:"not null"`
+	Description string
+	Unit        string    `gorm:"not null"`
+	Price       float64   `gorm:"not null"`
+	Stock       int       `gorm:"not null;default:0"`
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+}
+
+func FromPart(p *part.Part) *Part {
+	return &Part{
+		ID:          p.ID(),
+		Name:        p.Name(),
+		Description: p.Description(),
+		Unit:        p.Unit(),
+		Price:       p.Price(),
+		Stock:       p.Stock(),
+		CreatedAt:   p.CreatedAt(),
+		UpdatedAt:   p.UpdatedAt(),
+	}
+}
+
+func (m *Part) ToDomain() *part.Part {
+	return part.Reconstitute(m.ID, m.Name, m.Description, m.Unit, m.Price, m.Stock, m.CreatedAt, m.UpdatedAt)
+}
