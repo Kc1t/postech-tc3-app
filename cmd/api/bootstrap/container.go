@@ -5,14 +5,11 @@ import (
 	"sync"
 
 	"github.com/fiap/postech-tc1/config"
-	handler "github.com/fiap/postech-tc1/internal/adapters/inbound/http"
 	"github.com/fiap/postech-tc1/internal/adapters/outbound/postgresql"
 	pgmodel "github.com/fiap/postech-tc1/internal/adapters/outbound/postgresql/model"
-	"github.com/fiap/postech-tc1/internal/application/usecase"
 	"github.com/fiap/postech-tc1/internal/ports"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-)
 
 	customerhandler "github.com/fiap/postech-tc1/internal/adapters/inbound/http/customer"
 	parthandler "github.com/fiap/postech-tc1/internal/adapters/inbound/http/part"
