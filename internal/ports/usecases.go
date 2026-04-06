@@ -10,52 +10,131 @@ import (
 	"github.com/fiap/postech-tc1/internal/domain/vehicle"
 )
 
-// CustomerUseCase define os casos de uso para clientes.
-type CustomerUseCase interface {
-	Create(ctx context.Context, c *customer.Customer) error
-	GetByID(ctx context.Context, id string) (*customer.Customer, error)
-	GetByDocument(ctx context.Context, document string) (*customer.Customer, error)
-	GetAll(ctx context.Context) ([]*customer.Customer, error)
-	Update(ctx context.Context, c *customer.Customer) error
-	Delete(ctx context.Context, id string) error
+// go:generate mockgen -source=./usecases.go -destination=./mocks/usecases.go -package=mocks
+type CreateCustomerUseCase interface {
+	Execute(ctx context.Context, c *customer.Customer) error
 }
 
-// VehicleUseCase define os casos de uso para veiculos.
-type VehicleUseCase interface {
-	Create(ctx context.Context, v *vehicle.Vehicle) error
-	GetByID(ctx context.Context, id string) (*vehicle.Vehicle, error)
-	GetByCustomerID(ctx context.Context, customerID string) ([]*vehicle.Vehicle, error)
-	GetAll(ctx context.Context) ([]*vehicle.Vehicle, error)
-	Update(ctx context.Context, v *vehicle.Vehicle) error
-	Delete(ctx context.Context, id string) error
+type GetCustomerUseCase interface {
+	Execute(ctx context.Context, id string) (*customer.Customer, error)
 }
 
-// ServiceOrderUseCase define os casos de uso para ordens de servico.
-type ServiceOrderUseCase interface {
-	Create(ctx context.Context, so *serviceorder.ServiceOrder) error
-	GetByID(ctx context.Context, id string) (*serviceorder.ServiceOrder, error)
-	GetAll(ctx context.Context) ([]*serviceorder.ServiceOrder, error)
-	GetByCustomerID(ctx context.Context, customerID string) ([]*serviceorder.ServiceOrder, error)
-	UpdateStatus(ctx context.Context, id string, status serviceorder.Status) error
-	Update(ctx context.Context, so *serviceorder.ServiceOrder) error
-	Delete(ctx context.Context, id string) error
+type GetCustomerByDocumentUseCase interface {
+	Execute(ctx context.Context, document string) (*customer.Customer, error)
 }
 
-// ServiceUseCase define os casos de uso para servicos.
-type ServiceUseCase interface {
-	Create(ctx context.Context, s *service.Service) error
-	GetByID(ctx context.Context, id string) (*service.Service, error)
-	GetAll(ctx context.Context) ([]*service.Service, error)
-	Update(ctx context.Context, s *service.Service) error
-	Delete(ctx context.Context, id string) error
+type ListCustomersUseCase interface {
+	Execute(ctx context.Context) ([]*customer.Customer, error)
 }
 
-// PartUseCase define os casos de uso para pecas e insumos.
-type PartUseCase interface {
-	Create(ctx context.Context, p *part.Part) error
-	GetByID(ctx context.Context, id string) (*part.Part, error)
-	GetAll(ctx context.Context) ([]*part.Part, error)
-	Update(ctx context.Context, p *part.Part) error
-	Delete(ctx context.Context, id string) error
-	AdjustStock(ctx context.Context, id string, delta int) error
+type UpdateCustomerUseCase interface {
+	Execute(ctx context.Context, c *customer.Customer) error
+}
+
+type DeleteCustomerUseCase interface {
+	Execute(ctx context.Context, id string) error
+}
+
+// --- Vehicle ---
+
+type CreateVehicleUseCase interface {
+	Execute(ctx context.Context, v *vehicle.Vehicle) error
+}
+
+type GetVehicleUseCase interface {
+	Execute(ctx context.Context, id string) (*vehicle.Vehicle, error)
+}
+
+type ListVehiclesUseCase interface {
+	Execute(ctx context.Context) ([]*vehicle.Vehicle, error)
+}
+
+type ListVehiclesByCustomerUseCase interface {
+	Execute(ctx context.Context, customerID string) ([]*vehicle.Vehicle, error)
+}
+
+type UpdateVehicleUseCase interface {
+	Execute(ctx context.Context, v *vehicle.Vehicle) error
+}
+
+type DeleteVehicleUseCase interface {
+	Execute(ctx context.Context, id string) error
+}
+
+// --- ServiceOrder ---
+
+type CreateServiceOrderUseCase interface {
+	Execute(ctx context.Context, so *serviceorder.ServiceOrder) error
+}
+
+type GetServiceOrderUseCase interface {
+	Execute(ctx context.Context, id string) (*serviceorder.ServiceOrder, error)
+}
+
+type ListServiceOrdersUseCase interface {
+	Execute(ctx context.Context) ([]*serviceorder.ServiceOrder, error)
+}
+
+type ListServiceOrdersByCustomerUseCase interface {
+	Execute(ctx context.Context, customerID string) ([]*serviceorder.ServiceOrder, error)
+}
+
+type UpdateServiceOrderStatusUseCase interface {
+	Execute(ctx context.Context, id string, status serviceorder.Status) error
+}
+
+type UpdateServiceOrderUseCase interface {
+	Execute(ctx context.Context, so *serviceorder.ServiceOrder) error
+}
+
+type DeleteServiceOrderUseCase interface {
+	Execute(ctx context.Context, id string) error
+}
+
+// --- Service ---
+
+type CreateServiceUseCase interface {
+	Execute(ctx context.Context, s *service.Service) error
+}
+
+type GetServiceUseCase interface {
+	Execute(ctx context.Context, id string) (*service.Service, error)
+}
+
+type ListServicesUseCase interface {
+	Execute(ctx context.Context) ([]*service.Service, error)
+}
+
+type UpdateServiceUseCase interface {
+	Execute(ctx context.Context, s *service.Service) error
+}
+
+type DeleteServiceUseCase interface {
+	Execute(ctx context.Context, id string) error
+}
+
+// --- Part ---
+
+type CreatePartUseCase interface {
+	Execute(ctx context.Context, p *part.Part) error
+}
+
+type GetPartUseCase interface {
+	Execute(ctx context.Context, id string) (*part.Part, error)
+}
+
+type ListPartsUseCase interface {
+	Execute(ctx context.Context) ([]*part.Part, error)
+}
+
+type UpdatePartUseCase interface {
+	Execute(ctx context.Context, p *part.Part) error
+}
+
+type DeletePartUseCase interface {
+	Execute(ctx context.Context, id string) error
+}
+
+type AdjustPartStockUseCase interface {
+	Execute(ctx context.Context, id string, delta int) error
 }
