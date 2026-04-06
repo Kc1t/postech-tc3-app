@@ -3,32 +3,31 @@ package ports
 import (
 	"context"
 
-	"github.com/fiap/postech-tc1/internal/domain/customer"
-	"github.com/fiap/postech-tc1/internal/domain/part"
-	"github.com/fiap/postech-tc1/internal/domain/service"
-	"github.com/fiap/postech-tc1/internal/domain/serviceorder"
-	"github.com/fiap/postech-tc1/internal/domain/vehicle"
+	"github.com/fiap/postech-tc1/internal/domain/entities"
 )
 
 // go:generate mockgen -source=./usecases.go -destination=./mocks/usecases.go -package=mocks
+
+// --- Customer ---
+
 type CreateCustomerUseCase interface {
-	Execute(ctx context.Context, c *customer.Customer) error
+	Execute(ctx context.Context, c *entities.Customer) error
 }
 
 type GetCustomerUseCase interface {
-	Execute(ctx context.Context, id string) (*customer.Customer, error)
+	Execute(ctx context.Context, id string) (*entities.Customer, error)
 }
 
 type GetCustomerByDocumentUseCase interface {
-	Execute(ctx context.Context, document string) (*customer.Customer, error)
+	Execute(ctx context.Context, document string) (*entities.Customer, error)
 }
 
 type ListCustomersUseCase interface {
-	Execute(ctx context.Context) ([]*customer.Customer, error)
+	Execute(ctx context.Context) ([]*entities.Customer, error)
 }
 
 type UpdateCustomerUseCase interface {
-	Execute(ctx context.Context, c *customer.Customer) error
+	Execute(ctx context.Context, c *entities.Customer) error
 }
 
 type DeleteCustomerUseCase interface {
@@ -38,23 +37,23 @@ type DeleteCustomerUseCase interface {
 // --- Vehicle ---
 
 type CreateVehicleUseCase interface {
-	Execute(ctx context.Context, v *vehicle.Vehicle) error
+	Execute(ctx context.Context, v *entities.Vehicle) error
 }
 
 type GetVehicleUseCase interface {
-	Execute(ctx context.Context, id string) (*vehicle.Vehicle, error)
+	Execute(ctx context.Context, id string) (*entities.Vehicle, error)
 }
 
 type ListVehiclesUseCase interface {
-	Execute(ctx context.Context) ([]*vehicle.Vehicle, error)
+	Execute(ctx context.Context) ([]*entities.Vehicle, error)
 }
 
 type ListVehiclesByCustomerUseCase interface {
-	Execute(ctx context.Context, customerID string) ([]*vehicle.Vehicle, error)
+	Execute(ctx context.Context, customerID string) ([]*entities.Vehicle, error)
 }
 
 type UpdateVehicleUseCase interface {
-	Execute(ctx context.Context, v *vehicle.Vehicle) error
+	Execute(ctx context.Context, v *entities.Vehicle) error
 }
 
 type DeleteVehicleUseCase interface {
@@ -64,27 +63,27 @@ type DeleteVehicleUseCase interface {
 // --- ServiceOrder ---
 
 type CreateServiceOrderUseCase interface {
-	Execute(ctx context.Context, so *serviceorder.ServiceOrder) error
+	Execute(ctx context.Context, so *entities.ServiceOrder) error
 }
 
 type GetServiceOrderUseCase interface {
-	Execute(ctx context.Context, id string) (*serviceorder.ServiceOrder, error)
+	Execute(ctx context.Context, id string) (*entities.ServiceOrder, error)
 }
 
 type ListServiceOrdersUseCase interface {
-	Execute(ctx context.Context) ([]*serviceorder.ServiceOrder, error)
+	Execute(ctx context.Context) ([]*entities.ServiceOrder, error)
 }
 
 type ListServiceOrdersByCustomerUseCase interface {
-	Execute(ctx context.Context, customerID string) ([]*serviceorder.ServiceOrder, error)
+	Execute(ctx context.Context, customerID string) ([]*entities.ServiceOrder, error)
 }
 
 type UpdateServiceOrderStatusUseCase interface {
-	Execute(ctx context.Context, id string, status serviceorder.Status) error
+	Execute(ctx context.Context, id string, status entities.OrderStatus) error
 }
 
 type UpdateServiceOrderUseCase interface {
-	Execute(ctx context.Context, so *serviceorder.ServiceOrder) error
+	Execute(ctx context.Context, so *entities.ServiceOrder) error
 }
 
 type DeleteServiceOrderUseCase interface {
@@ -94,19 +93,19 @@ type DeleteServiceOrderUseCase interface {
 // --- Service ---
 
 type CreateServiceUseCase interface {
-	Execute(ctx context.Context, s *service.Service) error
+	Execute(ctx context.Context, s *entities.Service) error
 }
 
 type GetServiceUseCase interface {
-	Execute(ctx context.Context, id string) (*service.Service, error)
+	Execute(ctx context.Context, id string) (*entities.Service, error)
 }
 
 type ListServicesUseCase interface {
-	Execute(ctx context.Context) ([]*service.Service, error)
+	Execute(ctx context.Context) ([]*entities.Service, error)
 }
 
 type UpdateServiceUseCase interface {
-	Execute(ctx context.Context, s *service.Service) error
+	Execute(ctx context.Context, s *entities.Service) error
 }
 
 type DeleteServiceUseCase interface {
@@ -116,19 +115,19 @@ type DeleteServiceUseCase interface {
 // --- Part ---
 
 type CreatePartUseCase interface {
-	Execute(ctx context.Context, p *part.Part) error
+	Execute(ctx context.Context, p *entities.Part) error
 }
 
 type GetPartUseCase interface {
-	Execute(ctx context.Context, id string) (*part.Part, error)
+	Execute(ctx context.Context, id string) (*entities.Part, error)
 }
 
 type ListPartsUseCase interface {
-	Execute(ctx context.Context) ([]*part.Part, error)
+	Execute(ctx context.Context) ([]*entities.Part, error)
 }
 
 type UpdatePartUseCase interface {
-	Execute(ctx context.Context, p *part.Part) error
+	Execute(ctx context.Context, p *entities.Part) error
 }
 
 type DeletePartUseCase interface {

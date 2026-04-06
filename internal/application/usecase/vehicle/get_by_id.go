@@ -3,7 +3,7 @@ package vehicleuc
 import (
 	"context"
 
-	"github.com/fiap/postech-tc1/internal/domain/vehicle"
+	"github.com/fiap/postech-tc1/internal/domain/entities"
 	"github.com/fiap/postech-tc1/internal/ports"
 )
 
@@ -15,6 +15,6 @@ func NewGetVehicle(repo ports.VehicleRepository) *GetVehicle {
 	return &GetVehicle{repo: repo}
 }
 
-func (uc *GetVehicle) Execute(ctx context.Context, id string) (*vehicle.Vehicle, error) {
+func (uc *GetVehicle) Execute(ctx context.Context, id string) (*entities.Vehicle, error) {
 	return uc.repo.FindByID(ctx, id)
 }

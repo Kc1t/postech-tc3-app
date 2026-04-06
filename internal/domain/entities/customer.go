@@ -1,4 +1,4 @@
-package customer
+package entities
 
 import "time"
 
@@ -12,7 +12,7 @@ type Customer struct {
 	updatedAt time.Time
 }
 
-func New(name, document, email, phone string) *Customer {
+func NewCustomer(name, document, email, phone string) *Customer {
 	now := time.Now()
 	return &Customer{
 		name:      name,
@@ -24,8 +24,8 @@ func New(name, document, email, phone string) *Customer {
 	}
 }
 
-// Reconstitute restaura uma entidade a partir de dados persistidos (uso exclusivo de repositories).
-func Reconstitute(id, name, document, email, phone string, createdAt, updatedAt time.Time) *Customer {
+// ReconstituteCustomer restaura uma entidade a partir de dados persistidos (uso exclusivo de repositories).
+func ReconstituteCustomer(id, name, document, email, phone string, createdAt, updatedAt time.Time) *Customer {
 	return &Customer{
 		id:        id,
 		name:      name,
@@ -37,7 +37,6 @@ func Reconstitute(id, name, document, email, phone string, createdAt, updatedAt 
 	}
 }
 
-// Getters
 func (c *Customer) ID() string           { return c.id }
 func (c *Customer) Name() string         { return c.name }
 func (c *Customer) Document() string     { return c.document }
@@ -46,7 +45,6 @@ func (c *Customer) Phone() string        { return c.phone }
 func (c *Customer) CreatedAt() time.Time { return c.createdAt }
 func (c *Customer) UpdatedAt() time.Time { return c.updatedAt }
 
-// Setters — apenas campos mutaveis apos criacao
 func (c *Customer) SetID(id string)       { c.id = id }
 func (c *Customer) SetName(name string)   { c.name = name; c.touch() }
 func (c *Customer) SetEmail(email string) { c.email = email; c.touch() }

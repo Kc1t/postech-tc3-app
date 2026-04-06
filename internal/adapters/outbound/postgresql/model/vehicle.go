@@ -3,7 +3,7 @@ package pgmodel
 import (
 	"time"
 
-	"github.com/fiap/postech-tc1/internal/domain/vehicle"
+	"github.com/fiap/postech-tc1/internal/domain/entities"
 )
 
 type Vehicle struct {
@@ -17,7 +17,7 @@ type Vehicle struct {
 	UpdatedAt  time.Time
 }
 
-func FromVehicle(v *vehicle.Vehicle) *Vehicle {
+func FromVehicle(v *entities.Vehicle) *Vehicle {
 	return &Vehicle{
 		ID:         v.ID(),
 		CustomerID: v.CustomerID(),
@@ -30,6 +30,6 @@ func FromVehicle(v *vehicle.Vehicle) *Vehicle {
 	}
 }
 
-func (m *Vehicle) ToDomain() *vehicle.Vehicle {
-	return vehicle.Reconstitute(m.ID, m.CustomerID, m.Plate, m.Brand, m.Model, m.Year, m.CreatedAt, m.UpdatedAt)
+func (m *Vehicle) ToDomain() *entities.Vehicle {
+	return entities.ReconstituteVehicle(m.ID, m.CustomerID, m.Plate, m.Brand, m.Model, m.Year, m.CreatedAt, m.UpdatedAt)
 }

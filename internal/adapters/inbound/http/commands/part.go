@@ -3,7 +3,7 @@ package commands
 import (
 	"time"
 
-	"github.com/fiap/postech-tc1/internal/domain/part"
+	"github.com/fiap/postech-tc1/internal/domain/entities"
 )
 
 type CreatePartRequest struct {
@@ -37,11 +37,11 @@ type PartResponse struct {
 	UpdatedAt   string  `json:"updated_at"`
 }
 
-func (r *CreatePartRequest) ToDomain() *part.Part {
-	return part.New(r.Name, r.Description, r.Unit, r.Price, r.Stock)
+func (r *CreatePartRequest) ToDomain() *entities.Part {
+	return entities.NewPart(r.Name, r.Description, r.Unit, r.Price, r.Stock)
 }
 
-func ToPartResponse(p *part.Part) PartResponse {
+func ToPartResponse(p *entities.Part) PartResponse {
 	return PartResponse{
 		ID:          p.ID(),
 		Name:        p.Name(),
@@ -54,7 +54,7 @@ func ToPartResponse(p *part.Part) PartResponse {
 	}
 }
 
-func ToPartListResponse(parts []*part.Part) []PartResponse {
+func ToPartListResponse(parts []*entities.Part) []PartResponse {
 	resp := make([]PartResponse, 0, len(parts))
 	for _, p := range parts {
 		resp = append(resp, ToPartResponse(p))

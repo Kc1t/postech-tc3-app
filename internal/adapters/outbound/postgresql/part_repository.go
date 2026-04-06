@@ -4,7 +4,7 @@ import (
 	"context"
 
 	pgmodel "github.com/fiap/postech-tc1/internal/adapters/outbound/postgresql/model"
-	"github.com/fiap/postech-tc1/internal/domain/part"
+	"github.com/fiap/postech-tc1/internal/domain/entities"
 	"github.com/fiap/postech-tc1/internal/ports"
 	"gorm.io/gorm"
 )
@@ -17,7 +17,7 @@ func NewPartRepository(db *gorm.DB) ports.PartRepository {
 	return &partRepository{db: db}
 }
 
-func (r *partRepository) Create(ctx context.Context, p *part.Part) error {
+func (r *partRepository) Create(ctx context.Context, p *entities.Part) error {
 	m := pgmodel.FromPart(p)
 	if err := r.db.WithContext(ctx).Create(m).Error; err != nil {
 		return err
@@ -26,7 +26,7 @@ func (r *partRepository) Create(ctx context.Context, p *part.Part) error {
 	return nil
 }
 
-func (r *partRepository) FindByID(ctx context.Context, id string) (*part.Part, error) {
+func (r *partRepository) FindByID(ctx context.Context, id string) (*entities.Part, error) {
 	var m pgmodel.Part
 	if err := r.db.WithContext(ctx).First(&m, "id = ?", id).Error; err != nil {
 		return nil, err
@@ -34,19 +34,19 @@ func (r *partRepository) FindByID(ctx context.Context, id string) (*part.Part, e
 	return m.ToDomain(), nil
 }
 
-func (r *partRepository) FindAll(ctx context.Context) ([]*part.Part, error) {
+func (r *partRepository) FindAll(ctx context.Context) ([]*entities.Part, error) {
 	var docs []pgmodel.Part
 	if err := r.db.WithContext(ctx).Find(&docs).Error; err != nil {
 		return nil, err
 	}
-	parts := make([]*part.Part, 0, len(docs))
+	parts := make([]*entities.Part, 0, len(docs))
 	for i := range docs {
 		parts = append(parts, docs[i].ToDomain())
 	}
 	return parts, nil
 }
 
-func (r *partRepository) Update(ctx context.Context, p *part.Part) error {
+func (r *partRepository) Update(ctx context.Context, p *entities.Part) error {
 	m := pgmodel.FromPart(p)
 	return r.db.WithContext(ctx).Save(m).Error
 }

@@ -3,7 +3,7 @@ package customeruc
 import (
 	"context"
 
-	"github.com/fiap/postech-tc1/internal/domain/customer"
+	"github.com/fiap/postech-tc1/internal/domain/entities"
 	"github.com/fiap/postech-tc1/internal/ports"
 )
 
@@ -15,7 +15,7 @@ func NewListCustomers(repo ports.CustomerRepository) *ListCustomers {
 	return &ListCustomers{repo: repo}
 }
 
-func (uc *ListCustomers) Execute(ctx context.Context) ([]*customer.Customer, error) {
+func (uc *ListCustomers) Execute(ctx context.Context) ([]*entities.Customer, error) {
 	// TODO: paginacao
 	return uc.repo.FindAll(ctx)
 }

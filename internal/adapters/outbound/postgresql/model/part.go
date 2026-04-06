@@ -3,7 +3,7 @@ package pgmodel
 import (
 	"time"
 
-	"github.com/fiap/postech-tc1/internal/domain/part"
+	"github.com/fiap/postech-tc1/internal/domain/entities"
 )
 
 type Part struct {
@@ -17,7 +17,7 @@ type Part struct {
 	UpdatedAt   time.Time
 }
 
-func FromPart(p *part.Part) *Part {
+func FromPart(p *entities.Part) *Part {
 	return &Part{
 		ID:          p.ID(),
 		Name:        p.Name(),
@@ -30,6 +30,6 @@ func FromPart(p *part.Part) *Part {
 	}
 }
 
-func (m *Part) ToDomain() *part.Part {
-	return part.Reconstitute(m.ID, m.Name, m.Description, m.Unit, m.Price, m.Stock, m.CreatedAt, m.UpdatedAt)
+func (m *Part) ToDomain() *entities.Part {
+	return entities.ReconstitutePart(m.ID, m.Name, m.Description, m.Unit, m.Price, m.Stock, m.CreatedAt, m.UpdatedAt)
 }
