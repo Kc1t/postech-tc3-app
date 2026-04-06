@@ -25,7 +25,7 @@ internal/application/usecase/
     list_by_customer.go
     update.go
     delete.go
-  serviceorder/
+  service_order/
     create.go
     get_by_id.go
     list.go
@@ -122,7 +122,7 @@ Atualmente cada entidade tem sua propria pasta dentro de `internal/domain/`:
 internal/domain/
   customer/entity.go      (package customer)
   vehicle/entity.go       (package vehicle)
-  serviceorder/entity.go  (package serviceorder)
+  service_order/entity.go  (package serviceorder)
   service/entity.go       (package service)
   part/entity.go          (package part)
 ```
@@ -307,7 +307,7 @@ internal/adapters/inbound/http/
     list_by_customer.go
     update.go
     delete.go
-  serviceorder/
+  service_order/
     handler.go
     create.go
     find_by_id.go

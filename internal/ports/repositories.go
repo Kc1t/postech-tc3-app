@@ -11,6 +11,8 @@ import (
 )
 
 //go:generate mockgen -source=./repositories.go -destination=./mocks/repositories.go -package=mocks
+
+// CustomerRepository define as operacoes de persistencia para clientes.
 type CustomerRepository interface {
 	Create(ctx context.Context, c *customer.Customer) error
 	FindByID(ctx context.Context, id string) (*customer.Customer, error)

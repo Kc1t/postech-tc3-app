@@ -10,7 +10,10 @@ import (
 	"github.com/fiap/postech-tc1/internal/domain/vehicle"
 )
 
-// go:generate mockgen -source=./usecases.go -destination=./mocks/usecases.go -package=mocks
+//go:generate mockgen -source=./usecases.go -destination=./mocks/usecases.go -package=mocks
+
+// --- Customer ---
+
 type CreateCustomerUseCase interface {
 	Execute(ctx context.Context, c *customer.Customer) error
 }
