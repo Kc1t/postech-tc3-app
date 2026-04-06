@@ -12,46 +12,46 @@ Cada use case e uma struct com um unico metodo `Execute`.
 ```
 internal/application/usecase/
   customer/
-    create_customer.go
-    get_customer.go
-    get_customer_by_document.go
-    list_customers.go
-    update_customer.go
-    delete_customer.go
+    create.go
+    get_by_id.go
+    get_by_document.go
+    list.go
+    update.go
+    delete.go
   vehicle/
-    create_vehicle.go
-    get_vehicle.go
-    list_vehicles.go
-    list_vehicles_by_customer.go
-    update_vehicle.go
-    delete_vehicle.go
+    create.go
+    get_by_id.go
+    list.go
+    list_by_customer.go
+    update.go
+    delete.go
   serviceorder/
-    create_service_order.go
-    get_service_order.go
-    list_service_orders.go
-    list_service_orders_by_customer.go
-    update_service_order_status.go
-    update_service_order.go
-    delete_service_order.go
+    create.go
+    get_by_id.go
+    list.go
+    list_by_customer.go
+    update_status.go
+    update.go
+    delete.go
   service/
-    create_service.go
-    get_service.go
-    list_services.go
-    update_service.go
-    delete_service.go
+    create.go
+    get_by_id.go
+    list.go
+    update.go
+    delete.go
   part/
-    create_part.go
-    get_part.go
-    list_parts.go
-    update_part.go
-    delete_part.go
+    create.go
+    get_by_id.go
+    list.go
+    update.go
+    delete.go
     adjust_stock.go
 ```
 
 ### Exemplo de implementacao
 
 ```go
-// internal/application/usecase/customer/create_customer.go
+// internal/application/usecase/customer/create.go
 package customeruc
 
 type CreateCustomer struct {
@@ -173,69 +173,6 @@ c  := entities.Customer{...}
 - [ ] Atualizar todos os imports nos ports, adapters, usecases e handlers
 - [ ] Remover pasta `internal/domain/` apos migracao
 
----
-
-## Estrutura de Injecao de Dependencia (pkg/ioc)
-
-Atualmente o `pkg/ioc` esta vazio (reservado). A ideia e implementar um container
-proprio e minimalista que sirva de base para o wiring da aplicacao.
-
-### Opcoes em avaliacao
-
-#### Opcao A — Manter constructor injection explicito (atual)
-O `container.go` faz o wiring manual em `setup*`. Simples, sem magia, facil de testar.
-Nenhuma mudanca necessaria no `pkg/ioc`.
-
-#### Opcao B — Fluent Builder sobre golobby/container
-Adicionar `github.com/golobby/container/v3` e expor apenas um Builder fluente:
-
-```go
-// pkg/ioc/builder.go
-ioc.NewBuilder().
-    Singleton(func() ports.CustomerRepository { ... }).
-    Singleton(func() ports.VehicleRepository { ... })
-
-// struct injection via tag
-type customerUseCase struct {
-    Repo ports.CustomerRepository `container:"type"`
-}
-ioc.Fill(uc) // golobby resolve por tipo
-```
-
-#### Opcao C — IoC proprio com generics (sem dependencia externa)
-Implementar `Register[T]`, `Resolve[T]` e `Inject` usando `sync.Map` + `reflect`:
-
-```go
-ioc.Register[ports.CustomerRepository](func() ports.CustomerRepository { ... })
-repo := ioc.Resolve[ports.CustomerRepository]()
-
-// ou fluente
-ioc.NewBuilder().
-    Singleton(func() ports.CustomerRepository { ... }).
-    Singleton(func() ports.VehicleRepository { ... })
-
-ioc.Inject(uc) // resolve campos com tag `container:"type"` por reflect
-```
-
-### Decisoes pendentes
-
-- [ ] Escolher entre opcao A, B ou C
-- [ ] Se B ou C: atualizar `container.go` para usar o novo pkg/ioc
-- [ ] Se B ou C: adicionar `Reset()` para limpar o registry nos testes
-- [ ] Avaliar se `pkg/ioc` deve expor `Singleton`, `Resolve`, `Fill` diretamente
-      ou apenas o `Builder` fluente
-
-### Convencao de tags
-
-Independente da opcao escolhida, manter consistencia nas tags:
-
-| Layer       | Tag                      |
-|-------------|--------------------------|
-| Repository  | `container:"repository"` |
-| Use Case    | `container:"usecase"`    |
-| Handler     | `container:"handler"`    |
-
----
 
 ## Criar Commands/DTOs e Erros de Dominio
 
@@ -343,15 +280,105 @@ func handleError(c *gin.Context, err error) {
 
 ---
 
-## SetupRoutes por Handler
+## Refatorar Handlers para um arquivo por operacao
 
-Atualmente todas as rotas estao centralizadas em `cmd/api/routes/routes.go`.
-A ideia e cada handler ser responsavel pelo proprio registro de rotas.
+Atualmente os handlers estao agrupados por entidade (ex: `customer_handler.go` com Create, FindAll, FindByID, Update, Delete).
 
-### Proposta
+A ideia e ter **um arquivo por operacao**, seguindo o mesmo padrao proposto para os use cases (SRP).
+O `SetupRoutes` fica num arquivo dedicado por entidade.
+
+### Estrutura proposta
+
+```
+internal/adapters/inbound/http/
+  customer/
+    handler.go        — struct CustomerHandler + NewCustomerHandler + SetupRoutes
+    create.go
+    find_by_id.go
+    find_by_document.go
+    list.go
+    update.go
+    delete.go
+  vehicle/
+    handler.go
+    create.go
+    find_by_id.go
+    list.go
+    list_by_customer.go
+    update.go
+    delete.go
+  serviceorder/
+    handler.go
+    create.go
+    find_by_id.go
+    list.go
+    list_by_customer.go
+    update_status.go
+    update.go
+    delete.go
+  service/
+    handler.go
+    create.go
+    find_by_id.go
+    list.go
+    update.go
+    delete.go
+  part/
+    handler.go
+    create.go
+    find_by_id.go
+    list.go
+    update.go
+    delete.go
+    adjust_stock.go
+```
+
+### Exemplo de implementacao
 
 ```go
-// routes/routes.go — limpo, so orquestra
+// internal/adapters/inbound/http/customer/handler.go
+package customerhandler
+
+import "github.com/gin-gonic/gin"
+
+type CustomerHandler struct {
+    create        ports.CreateCustomerUseCase
+    getByID       ports.GetCustomerUseCase
+    getByDocument ports.GetCustomerByDocumentUseCase
+    listAll       ports.ListCustomersUseCase
+    update        ports.UpdateCustomerUseCase
+    delete        ports.DeleteCustomerUseCase
+}
+
+func NewCustomerHandler(
+    create ports.CreateCustomerUseCase,
+    getByID ports.GetCustomerUseCase,
+    getByDocument ports.GetCustomerByDocumentUseCase,
+    listAll ports.ListCustomersUseCase,
+    update ports.UpdateCustomerUseCase,
+    delete ports.DeleteCustomerUseCase,
+) *CustomerHandler { ... }
+
+func (h *CustomerHandler) SetupRoutes(rg *gin.RouterGroup) {
+    g := rg.Group("/customers")
+    g.POST("",            h.Create)
+    g.GET("",             h.FindAll)
+    g.GET("/:id",         h.FindByID)
+    g.GET("/doc/:doc",    h.FindByDocument)
+    g.PUT("/:id",         h.Update)
+    g.DELETE("/:id",      h.Delete)
+}
+
+// internal/adapters/inbound/http/customer/create.go
+func (h *CustomerHandler) Create(c *gin.Context) {
+    // bind JSON, chamar h.create.Execute(...)
+}
+```
+
+### SetupRoutes centralizado
+
+```go
+// routes/routes.go — so orquestra
 func Setup(router *gin.Engine, c *bootstrap.Container) {
     v1 := router.Group("/api/v1")
     protected := v1.Group("/").Use(middleware.Auth(...))
@@ -362,28 +389,21 @@ func Setup(router *gin.Engine, c *bootstrap.Container) {
     c.ServiceHandler.SetupRoutes(protected)
     c.PartHandler.SetupRoutes(protected)
 }
-
-// customer_handler.go — cada handler registra suas proprias rotas
-func (h *CustomerHandler) SetupRoutes(rg *gin.RouterGroup) {
-    g := rg.Group("/customers")
-    g.POST("",     h.Create)
-    g.GET("",      h.FindAll)
-    g.GET("/:id",  h.FindByID)
-    g.PUT("/:id",  h.Update)
-    g.DELETE("/:id", h.Delete)
-}
 ```
 
 ### Vantagens
 
+- Cada arquivo tem uma unica razao para mudar (mesmo padrao dos use cases)
 - Adicionar um novo handler nao requer alterar `routes.go`
-- Cada handler declara seus proprios paths (coesao)
-- Facilita versionamento por handler
+- Facil localizar o handler pelo nome do arquivo
 
 ### Checklist
 
-- [ ] Adicionar metodo `SetupRoutes(rg *gin.RouterGroup)` em cada handler
-- [ ] Simplificar `routes.go` para apenas chamar `SetupRoutes` de cada handler
+- [ ] Criar subpasta por entidade em `internal/adapters/inbound/http/`
+- [ ] Mover struct + construtor + SetupRoutes para `handler.go` de cada entidade
+- [ ] Separar cada metodo HTTP em seu proprio arquivo
+- [ ] Atualizar imports no `container.go` e `routes.go`
+- [ ] Remover arquivos `*_handler.go` da pasta raiz de http apos migracao
 
 ---
 
@@ -399,3 +419,74 @@ func (h *CustomerHandler) SetupRoutes(rg *gin.RouterGroup) {
 - [ ] Testes de integracao
 - [ ] Scan de vulnerabilidades (requisito do tech challenge)
 - [ ] Documentacao DDD (Event Storming no Miro)
+
+
+---
+
+
+### DÉBITOS TÉCNICOS
+
+
+## Estrutura de Injecao de Dependencia (pkg/ioc)
+
+Atualmente o `pkg/ioc` esta vazio (reservado). A ideia e implementar um container
+proprio e minimalista que sirva de base para o wiring da aplicacao.
+
+### Opcoes em avaliacao
+
+#### Opcao A — Manter constructor injection explicito (atual)
+O `container.go` faz o wiring manual em `setup*`. Simples, sem magia, facil de testar.
+Nenhuma mudanca necessaria no `pkg/ioc`.
+
+#### Opcao B — Fluent Builder sobre golobby/container
+Adicionar `github.com/golobby/container/v3` e expor apenas um Builder fluente:
+
+```go
+// pkg/ioc/builder.go
+ioc.NewBuilder().
+    Singleton(func() ports.CustomerRepository { ... }).
+    Singleton(func() ports.VehicleRepository { ... })
+
+// struct injection via tag
+type customerUseCase struct {
+    Repo ports.CustomerRepository `container:"type"`
+}
+ioc.Fill(uc) // golobby resolve por tipo
+```
+
+#### Opcao C — IoC proprio com generics (sem dependencia externa)
+Implementar `Register[T]`, `Resolve[T]` e `Inject` usando `sync.Map` + `reflect`:
+
+```go
+ioc.Register[ports.CustomerRepository](func() ports.CustomerRepository { ... })
+repo := ioc.Resolve[ports.CustomerRepository]()
+
+// ou fluente
+ioc.NewBuilder().
+    Singleton(func() ports.CustomerRepository { ... }).
+    Singleton(func() ports.VehicleRepository { ... })
+
+ioc.Inject(uc) // resolve campos com tag `container:"type"` por reflect
+```
+
+### Decisoes pendentes
+
+- [ ] Escolher entre opcao A, B ou C
+- [ ] Se B ou C: atualizar `container.go` para usar o novo pkg/ioc
+- [ ] Se B ou C: adicionar `Reset()` para limpar o registry nos testes
+- [ ] Avaliar se `pkg/ioc` deve expor `Singleton`, `Resolve`, `Fill` diretamente
+      ou apenas o `Builder` fluente
+
+### Convencao de tags
+
+Independente da opcao escolhida, manter consistencia nas tags:
+
+| Layer       | Tag                      |
+|-------------|--------------------------|
+| Repository  | `container:"repository"` |
+| Use Case    | `container:"usecase"`    |
+| Handler     | `container:"handler"`    |
+
+---
+
+
