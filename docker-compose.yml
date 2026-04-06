@@ -6,22 +6,28 @@ services:
       - "8080:8080"
     env_file:
       - .env
+    environment:
+      POSTGRES_DSN: postgres://postgres:postgres@postgres:5432/workshop?sslmode=disable
     depends_on:
-      mongo:
+      postgres:
         condition: service_healthy
     networks:
       - workshop-net
     restart: unless-stopped
 
-  mongo:
-    image: mongo:7
-    container_name: workshop-mongo
+  postgres:
+    image: postgres:16
+    container_name: workshop-postgres
     ports:
-      - "27017:27017"
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: workshop
     volumes:
-      - mongo-data:/data/db
+      - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -29,23 +35,22 @@ services:
       - workshop-net
     restart: unless-stopped
 
-  mongo-express:
-    image: mongo-express:latest
-    container_name: workshop-mongo-express
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: workshop-pgadmin
     ports:
-      - "8081:8081"
+      - "8081:80"
     environment:
-      ME_CONFIG_MONGODB_SERVER: mongo
-      ME_CONFIG_BASICAUTH: "false"
+      PGADMIN_DEFAULT_EMAIL: admin@workshop.com
+      PGADMIN_DEFAULT_PASSWORD: admin
     depends_on:
-      mongo:
-        condition: service_healthy
+      - postgres
     networks:
       - workshop-net
     restart: unless-stopped
 
 volumes:
-  mongo-data:
+  postgres-data:
 
 networks:
   workshop-net:
