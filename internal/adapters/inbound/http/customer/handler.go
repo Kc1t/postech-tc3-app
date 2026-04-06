@@ -36,6 +36,7 @@ func (h *CustomerHandler) SetupRoutes(rg *gin.RouterGroup) {
 	g := rg.Group("/customers")
 	g.POST("", h.Create)
 	g.GET("", h.FindAll)
+	g.GET("/document/:document", h.FindByDocument)
 	g.GET("/:id", h.FindByID)
 	g.PUT("/:id", h.Update)
 	g.DELETE("/:id", h.Delete)
