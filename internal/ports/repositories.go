@@ -10,6 +10,8 @@ import (
 	"github.com/fiap/postech-tc1/internal/domain/vehicle"
 )
 
+//go:generate mockgen -source=./repositories.go -destination=./mocks/repositories.go -package=mocks
+
 // CustomerRepository define as operacoes de persistencia para clientes.
 type CustomerRepository interface {
 	Create(ctx context.Context, c *customer.Customer) error

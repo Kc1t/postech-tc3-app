@@ -5,16 +5,24 @@ import (
 	"sync"
 
 	"github.com/fiap/postech-tc1/config"
-	handler "github.com/fiap/postech-tc1/internal/adapters/inbound/http"
 	"github.com/fiap/postech-tc1/internal/adapters/outbound/postgresql"
 	pgmodel "github.com/fiap/postech-tc1/internal/adapters/outbound/postgresql/model"
-	"github.com/fiap/postech-tc1/internal/application/usecase"
 	"github.com/fiap/postech-tc1/internal/ports"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-)
 
-//TODO: Arrumar estrutura de injecao de dependencia
+	customerhandler "github.com/fiap/postech-tc1/internal/adapters/inbound/http/customer"
+	parthandler "github.com/fiap/postech-tc1/internal/adapters/inbound/http/part"
+	servicehandler "github.com/fiap/postech-tc1/internal/adapters/inbound/http/service"
+	serviceorderhandler "github.com/fiap/postech-tc1/internal/adapters/inbound/http/service_order"
+	vehiclehandler "github.com/fiap/postech-tc1/internal/adapters/inbound/http/vehicle"
+
+	customeruc "github.com/fiap/postech-tc1/internal/application/usecase/customer"
+	partuc "github.com/fiap/postech-tc1/internal/application/usecase/part"
+	serviceuc "github.com/fiap/postech-tc1/internal/application/usecase/service"
+	serviceorderuc "github.com/fiap/postech-tc1/internal/application/usecase/service_order"
+	vehicleuc "github.com/fiap/postech-tc1/internal/application/usecase/vehicle"
+)
 
 // Container centraliza o acesso as dependencias da aplicacao.
 // A tag `container` documenta a camada de cada dependencia.
@@ -29,19 +37,52 @@ type Container struct {
 	ServiceRepo      ports.ServiceRepository      `container:"repository"`
 	PartRepo         ports.PartRepository         `container:"repository"`
 
-	// Use Cases — logica de negocio
-	CustomerUseCase     ports.CustomerUseCase     `container:"usecase"`
-	VehicleUseCase      ports.VehicleUseCase      `container:"usecase"`
-	ServiceOrderUseCase ports.ServiceOrderUseCase `container:"usecase"`
-	ServiceUseCase      ports.ServiceUseCase      `container:"usecase"`
-	PartUseCase         ports.PartUseCase         `container:"usecase"`
+	// Use Cases — customer
+	CreateCustomer        ports.CreateCustomerUseCase        `container:"usecase"`
+	GetCustomer           ports.GetCustomerUseCase           `container:"usecase"`
+	GetCustomerByDocument ports.GetCustomerByDocumentUseCase `container:"usecase"`
+	ListCustomers         ports.ListCustomersUseCase         `container:"usecase"`
+	UpdateCustomer        ports.UpdateCustomerUseCase        `container:"usecase"`
+	DeleteCustomer        ports.DeleteCustomerUseCase        `container:"usecase"`
+
+	// Use Cases — vehicle
+	CreateVehicle          ports.CreateVehicleUseCase          `container:"usecase"`
+	GetVehicle             ports.GetVehicleUseCase             `container:"usecase"`
+	ListVehicles           ports.ListVehiclesUseCase           `container:"usecase"`
+	ListVehiclesByCustomer ports.ListVehiclesByCustomerUseCase `container:"usecase"`
+	UpdateVehicle          ports.UpdateVehicleUseCase          `container:"usecase"`
+	DeleteVehicle          ports.DeleteVehicleUseCase          `container:"usecase"`
+
+	// Use Cases — service order
+	CreateServiceOrder          ports.CreateServiceOrderUseCase          `container:"usecase"`
+	GetServiceOrder             ports.GetServiceOrderUseCase             `container:"usecase"`
+	ListServiceOrders           ports.ListServiceOrdersUseCase           `container:"usecase"`
+	ListServiceOrdersByCustomer ports.ListServiceOrdersByCustomerUseCase `container:"usecase"`
+	UpdateServiceOrderStatus    ports.UpdateServiceOrderStatusUseCase    `container:"usecase"`
+	UpdateServiceOrder          ports.UpdateServiceOrderUseCase          `container:"usecase"`
+	DeleteServiceOrder          ports.DeleteServiceOrderUseCase          `container:"usecase"`
+
+	// Use Cases — service
+	CreateService ports.CreateServiceUseCase `container:"usecase"`
+	GetService    ports.GetServiceUseCase    `container:"usecase"`
+	ListServices  ports.ListServicesUseCase  `container:"usecase"`
+	UpdateService ports.UpdateServiceUseCase `container:"usecase"`
+	DeleteService ports.DeleteServiceUseCase `container:"usecase"`
+
+	// Use Cases — part
+	CreatePart      ports.CreatePartUseCase      `container:"usecase"`
+	GetPart         ports.GetPartUseCase         `container:"usecase"`
+	ListParts       ports.ListPartsUseCase       `container:"usecase"`
+	UpdatePart      ports.UpdatePartUseCase      `container:"usecase"`
+	DeletePart      ports.DeletePartUseCase      `container:"usecase"`
+	AdjustPartStock ports.AdjustPartStockUseCase `container:"usecase"`
 
 	// Handlers — inbound adapters (HTTP)
-	CustomerHandler     *handler.CustomerHandler     `container:"handler"`
-	VehicleHandler      *handler.VehicleHandler      `container:"handler"`
-	ServiceOrderHandler *handler.ServiceOrderHandler `container:"handler"`
-	ServiceHandler      *handler.ServiceHandler      `container:"handler"`
-	PartHandler         *handler.PartHandler         `container:"handler"`
+	CustomerHandler     *customerhandler.CustomerHandler         `container:"handler"`
+	VehicleHandler      *vehiclehandler.VehicleHandler           `container:"handler"`
+	ServiceOrderHandler *serviceorderhandler.ServiceOrderHandler `container:"handler"`
+	ServiceHandler      *servicehandler.ServiceHandler           `container:"handler"`
+	PartHandler         *parthandler.PartHandler                 `container:"handler"`
 }
 
 var (
@@ -95,23 +136,69 @@ func (c *Container) setupRepositories() {
 }
 
 func (c *Container) setupUseCases() {
-	c.CustomerUseCase = usecase.NewCustomerUseCase(c.CustomerRepo)
-	c.VehicleUseCase = usecase.NewVehicleUseCase(c.VehicleRepo, c.CustomerRepo)
-	c.ServiceOrderUseCase = usecase.NewServiceOrderUseCase(
-		c.ServiceOrderRepo,
-		c.CustomerRepo,
-		c.VehicleRepo,
-		c.ServiceRepo,
-		c.PartRepo,
+	// Customer
+	c.CreateCustomer = customeruc.NewCreateCustomer(c.CustomerRepo)
+	c.GetCustomer = customeruc.NewGetCustomer(c.CustomerRepo)
+	c.GetCustomerByDocument = customeruc.NewGetCustomerByDocument(c.CustomerRepo)
+	c.ListCustomers = customeruc.NewListCustomers(c.CustomerRepo)
+	c.UpdateCustomer = customeruc.NewUpdateCustomer(c.CustomerRepo)
+	c.DeleteCustomer = customeruc.NewDeleteCustomer(c.CustomerRepo)
+
+	// Vehicle
+	c.CreateVehicle = vehicleuc.NewCreateVehicle(c.VehicleRepo, c.CustomerRepo)
+	c.GetVehicle = vehicleuc.NewGetVehicle(c.VehicleRepo)
+	c.ListVehicles = vehicleuc.NewListVehicles(c.VehicleRepo)
+	c.ListVehiclesByCustomer = vehicleuc.NewListVehiclesByCustomer(c.VehicleRepo)
+	c.UpdateVehicle = vehicleuc.NewUpdateVehicle(c.VehicleRepo)
+	c.DeleteVehicle = vehicleuc.NewDeleteVehicle(c.VehicleRepo)
+
+	// ServiceOrder
+	c.CreateServiceOrder = serviceorderuc.NewCreateServiceOrder(
+		c.ServiceOrderRepo, c.CustomerRepo, c.VehicleRepo, c.ServiceRepo, c.PartRepo,
 	)
-	c.ServiceUseCase = usecase.NewServiceUseCase(c.ServiceRepo)
-	c.PartUseCase = usecase.NewPartUseCase(c.PartRepo)
+	c.GetServiceOrder = serviceorderuc.NewGetServiceOrder(c.ServiceOrderRepo)
+	c.ListServiceOrders = serviceorderuc.NewListServiceOrders(c.ServiceOrderRepo)
+	c.ListServiceOrdersByCustomer = serviceorderuc.NewListServiceOrdersByCustomer(c.ServiceOrderRepo)
+	c.UpdateServiceOrderStatus = serviceorderuc.NewUpdateServiceOrderStatus(c.ServiceOrderRepo)
+	c.UpdateServiceOrder = serviceorderuc.NewUpdateServiceOrder(c.ServiceOrderRepo)
+	c.DeleteServiceOrder = serviceorderuc.NewDeleteServiceOrder(c.ServiceOrderRepo)
+
+	// Service
+	c.CreateService = serviceuc.NewCreateService(c.ServiceRepo)
+	c.GetService = serviceuc.NewGetService(c.ServiceRepo)
+	c.ListServices = serviceuc.NewListServices(c.ServiceRepo)
+	c.UpdateService = serviceuc.NewUpdateService(c.ServiceRepo)
+	c.DeleteService = serviceuc.NewDeleteService(c.ServiceRepo)
+
+	// Part
+	c.CreatePart = partuc.NewCreatePart(c.PartRepo)
+	c.GetPart = partuc.NewGetPart(c.PartRepo)
+	c.ListParts = partuc.NewListParts(c.PartRepo)
+	c.UpdatePart = partuc.NewUpdatePart(c.PartRepo)
+	c.DeletePart = partuc.NewDeletePart(c.PartRepo)
+	c.AdjustPartStock = partuc.NewAdjustPartStock(c.PartRepo)
 }
 
 func (c *Container) setupHandlers() {
-	c.CustomerHandler = handler.NewCustomerHandler(c.CustomerUseCase)
-	c.VehicleHandler = handler.NewVehicleHandler(c.VehicleUseCase)
-	c.ServiceOrderHandler = handler.NewServiceOrderHandler(c.ServiceOrderUseCase)
-	c.ServiceHandler = handler.NewServiceHandler(c.ServiceUseCase)
-	c.PartHandler = handler.NewPartHandler(c.PartUseCase)
+	c.CustomerHandler = customerhandler.NewCustomerHandler(
+		c.CreateCustomer, c.GetCustomer, c.GetCustomerByDocument,
+		c.ListCustomers, c.UpdateCustomer, c.DeleteCustomer,
+	)
+	c.VehicleHandler = vehiclehandler.NewVehicleHandler(
+		c.CreateVehicle, c.GetVehicle, c.ListVehicles,
+		c.ListVehiclesByCustomer, c.UpdateVehicle, c.DeleteVehicle,
+	)
+	c.ServiceOrderHandler = serviceorderhandler.NewServiceOrderHandler(
+		c.CreateServiceOrder, c.GetServiceOrder, c.ListServiceOrders,
+		c.ListServiceOrdersByCustomer, c.UpdateServiceOrderStatus,
+		c.UpdateServiceOrder, c.DeleteServiceOrder,
+	)
+	c.ServiceHandler = servicehandler.NewServiceHandler(
+		c.CreateService, c.GetService, c.ListServices,
+		c.UpdateService, c.DeleteService,
+	)
+	c.PartHandler = parthandler.NewPartHandler(
+		c.CreatePart, c.GetPart, c.ListParts,
+		c.UpdatePart, c.DeletePart, c.AdjustPartStock,
+	)
 }
