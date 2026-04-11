@@ -72,13 +72,15 @@ go run ./cmd/api
 
 ## Variaveis de ambiente
 
-| Variavel               | Padrao                                                              | Descricao                  |
-|------------------------|---------------------------------------------------------------------|----------------------------|
-| `APP_PORT`             | `8080`                                                              | Porta da API               |
-| `APP_ENV`              | `development`                                                       | Ambiente (development/prod)|
-| `POSTGRES_DSN`         | `postgres://postgres:postgres@localhost:5432/workshop?sslmode=disable` | DSN do PostgreSQL       |
-| `JWT_SECRET`           | `secret`                                                            | Chave secreta JWT          |
-| `JWT_EXPIRATION_HOURS` | `24`                                                                | Expiracao do token (horas) |
+| Variavel                 | Padrao                                                                 | Descricao                           |
+|--------------------------|------------------------------------------------------------------------|-------------------------------------|
+| `APP_PORT`               | `8080`                                                                 | Porta da API                        |
+| `APP_ENV`                | `development`                                                          | Ambiente (development/prod)         |
+| `POSTGRES_DSN`           | `postgres://postgres:postgres@localhost:5432/workshop?sslmode=disable` | DSN do PostgreSQL                   |
+| `JWT_SECRET`             | `secret`                                                               | Chave secreta JWT                   |
+| `ACCESS_TOKEN_EXP_MIN`   | `15`                                                                   | Expiracao do access token (minutos) |
+| `REFRESH_TOKEN_EXP_DAYS` | `7`                                                                    | Expiracao do refresh token (dias)   |
+| `BCRYPT_COST`            | `12`                                                                   | Custo do hash de senha com bcrypt   |
 
 ## Endpoints
 
