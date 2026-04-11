@@ -5,23 +5,28 @@ import "time"
 type Customer struct {
 	id        string
 	name      string
-	document  string // CPF ou CNPJ
+	document  Document // CPF ou CNPJ (Value Object)
 	email     string
 	phone     string
 	createdAt time.Time
 	updatedAt time.Time
 }
 
-func NewCustomer(name, document, email, phone string) *Customer {
+// NewCustomer cria um novo cliente validando o documento (CPF/CNPJ).
+func NewCustomer(name, document, email, phone string) (*Customer, error) {
+	doc, err := NewDocument(document)
+	if err != nil {
+		return nil, err
+	}
 	now := time.Now()
 	return &Customer{
 		name:      name,
-		document:  document,
+		document:  doc,
 		email:     email,
 		phone:     phone,
 		createdAt: now,
 		updatedAt: now,
-	}
+	}, nil
 }
 
 // ReconstituteCustomer restaura uma entidade a partir de dados persistidos (uso exclusivo de repositories).
@@ -29,7 +34,7 @@ func ReconstituteCustomer(id, name, document, email, phone string, createdAt, up
 	return &Customer{
 		id:        id,
 		name:      name,
-		document:  document,
+		document:  ReconstituteDocument(document),
 		email:     email,
 		phone:     phone,
 		createdAt: createdAt,
@@ -39,7 +44,8 @@ func ReconstituteCustomer(id, name, document, email, phone string, createdAt, up
 
 func (c *Customer) ID() string           { return c.id }
 func (c *Customer) Name() string         { return c.name }
-func (c *Customer) Document() string     { return c.document }
+func (c *Customer) Document() string     { return c.document.Value() }
+func (c *Customer) DocumentVO() Document { return c.document }
 func (c *Customer) Email() string        { return c.email }
 func (c *Customer) Phone() string        { return c.phone }
 func (c *Customer) CreatedAt() time.Time { return c.createdAt }

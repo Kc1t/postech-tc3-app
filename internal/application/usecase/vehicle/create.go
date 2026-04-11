@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/fiap/postech-tc1/internal/domain/entities"
+	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
 	"github.com/fiap/postech-tc1/internal/ports"
 )
 
@@ -17,6 +18,13 @@ func NewCreateVehicle(repo ports.VehicleRepository, customerRepo ports.CustomerR
 }
 
 func (uc *CreateVehicle) Execute(ctx context.Context, v *entities.Vehicle) error {
-	// TODO: validar placa, verificar se cliente existe
+	// Placa ja validada na factory NewVehicle (fast-fail no dominio)
+
+	// Verificar se o cliente existe
+	_, err := uc.customerRepo.FindByID(ctx, v.CustomerID())
+	if err != nil {
+		return domainerrors.ErrNotFound
+	}
+
 	return uc.repo.Create(ctx, v)
 }

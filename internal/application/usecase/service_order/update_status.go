@@ -16,6 +16,16 @@ func NewUpdateServiceOrderStatus(repo ports.ServiceOrderRepository) *UpdateServi
 }
 
 func (uc *UpdateServiceOrderStatus) Execute(ctx context.Context, id string, status entities.OrderStatus) error {
-	// TODO: validar transicao de status (maquina de estados)
+	// Buscar OS atual para validar transicao contra o status vigente
+	so, err := uc.repo.FindByID(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	// Maquina de estados valida a transicao no dominio (fast-fail)
+	if err := so.UpdateStatus(status); err != nil {
+		return err
+	}
+
 	return uc.repo.UpdateStatus(ctx, id, status)
 }
