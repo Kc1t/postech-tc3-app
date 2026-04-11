@@ -44,5 +44,5 @@ func (h *ServiceOrderHandler) SetupRoutes(rg *gin.RouterGroup) {
 	g.PUT("/:id", h.Update)
 	g.DELETE("/:id", h.Delete)
 
-	rg.GET("/customers/:customer_id/service-orders", h.ListByCustomer)
+	rg.GET("/customers/:id/service-orders", h.ListByCustomer)
 }

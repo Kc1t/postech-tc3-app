@@ -40,5 +40,5 @@ func (h *VehicleHandler) SetupRoutes(rg *gin.RouterGroup) {
 	g.PUT("/:id", h.Update)
 	g.DELETE("/:id", h.Delete)
 
-	rg.GET("/customers/:customer_id/vehicles", h.ListByCustomer)
+	rg.GET("/customers/:id/vehicles", h.ListByCustomer)
 }

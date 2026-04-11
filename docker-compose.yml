@@ -39,7 +39,7 @@ services:
     image: dpage/pgadmin4:latest
     container_name: workshop-pgadmin
     ports:
-      - "8081:80"
+      - "8082:80"
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@workshop.com
       PGADMIN_DEFAULT_PASSWORD: admin

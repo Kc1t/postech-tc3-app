@@ -1,22 +1,27 @@
 package bootstrap
 
 import (
+	"context"
 	"log"
+	"os"
 	"sync"
 
 	"github.com/fiap/postech-tc1/config"
 	"github.com/fiap/postech-tc1/internal/adapters/outbound/postgresql"
 	pgmodel "github.com/fiap/postech-tc1/internal/adapters/outbound/postgresql/model"
+	"github.com/fiap/postech-tc1/internal/domain/user"
 	"github.com/fiap/postech-tc1/internal/ports"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
+	authhandler "github.com/fiap/postech-tc1/internal/adapters/inbound/http/auth"
 	customerhandler "github.com/fiap/postech-tc1/internal/adapters/inbound/http/customer"
 	parthandler "github.com/fiap/postech-tc1/internal/adapters/inbound/http/part"
 	servicehandler "github.com/fiap/postech-tc1/internal/adapters/inbound/http/service"
 	serviceorderhandler "github.com/fiap/postech-tc1/internal/adapters/inbound/http/service_order"
 	vehiclehandler "github.com/fiap/postech-tc1/internal/adapters/inbound/http/vehicle"
 
+	authuc "github.com/fiap/postech-tc1/internal/application/usecase/auth"
 	customeruc "github.com/fiap/postech-tc1/internal/application/usecase/customer"
 	partuc "github.com/fiap/postech-tc1/internal/application/usecase/part"
 	serviceuc "github.com/fiap/postech-tc1/internal/application/usecase/service"
@@ -31,11 +36,19 @@ type Container struct {
 	db     *gorm.DB
 
 	// Repositories — outbound adapters (persistencia)
+	UserRepo         ports.UserRepository         `container:"repository"`
+	RefreshTokenRepo ports.RefreshTokenRepository `container:"repository"`
 	CustomerRepo     ports.CustomerRepository     `container:"repository"`
 	VehicleRepo      ports.VehicleRepository      `container:"repository"`
 	ServiceOrderRepo ports.ServiceOrderRepository `container:"repository"`
 	ServiceRepo      ports.ServiceRepository      `container:"repository"`
 	PartRepo         ports.PartRepository         `container:"repository"`
+
+	// Use Cases — auth
+	RegisterUseCase     ports.RegisterUseCase     `container:"usecase"`
+	LoginUseCase        ports.LoginUseCase        `container:"usecase"`
+	RefreshTokenUseCase ports.RefreshTokenUseCase `container:"usecase"`
+	LogoutUseCase       ports.LogoutUseCase       `container:"usecase"`
 
 	// Use Cases — customer
 	CreateCustomer        ports.CreateCustomerUseCase        `container:"usecase"`
@@ -78,6 +91,7 @@ type Container struct {
 	AdjustPartStock ports.AdjustPartStockUseCase `container:"usecase"`
 
 	// Handlers — inbound adapters (HTTP)
+	AuthHandler         *authhandler.AuthHandler                 `container:"handler"`
 	CustomerHandler     *customerhandler.CustomerHandler         `container:"handler"`
 	VehicleHandler      *vehiclehandler.VehicleHandler           `container:"handler"`
 	ServiceOrderHandler *serviceorderhandler.ServiceOrderHandler `container:"handler"`
@@ -105,6 +119,7 @@ func (c *Container) initialize() {
 	c.setupRepositories()
 	c.setupUseCases()
 	c.setupHandlers()
+	c.seedAdmin()
 }
 
 func (c *Container) setupDatabase() {
@@ -114,6 +129,8 @@ func (c *Container) setupDatabase() {
 	}
 
 	if err := db.AutoMigrate(
+		&pgmodel.User{},
+		&pgmodel.RefreshToken{},
 		&pgmodel.Customer{},
 		&pgmodel.Vehicle{},
 		&pgmodel.Service{},
@@ -128,6 +145,8 @@ func (c *Container) setupDatabase() {
 }
 
 func (c *Container) setupRepositories() {
+	c.UserRepo = postgresql.NewUserRepository(c.db)
+	c.RefreshTokenRepo = postgresql.NewRefreshTokenRepository(c.db)
 	c.CustomerRepo = postgresql.NewCustomerRepository(c.db)
 	c.VehicleRepo = postgresql.NewVehicleRepository(c.db)
 	c.ServiceOrderRepo = postgresql.NewServiceOrderRepository(c.db)
@@ -136,6 +155,13 @@ func (c *Container) setupRepositories() {
 }
 
 func (c *Container) setupUseCases() {
+	// Auth
+	c.RegisterUseCase = authuc.NewRegister(c.UserRepo, c.Config.BcryptCost)
+	c.LoginUseCase = authuc.NewLogin(c.UserRepo, c.RefreshTokenRepo, c.Config)
+	txManager := postgresql.NewTransactionManager(c.db)
+	c.RefreshTokenUseCase = authuc.NewRefresh(c.UserRepo, c.RefreshTokenRepo, txManager, c.Config)
+	c.LogoutUseCase = authuc.NewLogout(c.RefreshTokenRepo)
+
 	// Customer
 	c.CreateCustomer = customeruc.NewCreateCustomer(c.CustomerRepo)
 	c.GetCustomer = customeruc.NewGetCustomer(c.CustomerRepo)
@@ -180,6 +206,10 @@ func (c *Container) setupUseCases() {
 }
 
 func (c *Container) setupHandlers() {
+	c.AuthHandler = authhandler.NewAuthHandler(
+		c.RegisterUseCase, c.LoginUseCase, c.RefreshTokenUseCase,
+		c.LogoutUseCase, c.Config.AccessTokenExpMin,
+	)
 	c.CustomerHandler = customerhandler.NewCustomerHandler(
 		c.CreateCustomer, c.GetCustomer, c.GetCustomerByDocument,
 		c.ListCustomers, c.UpdateCustomer, c.DeleteCustomer,
@@ -201,4 +231,28 @@ func (c *Container) setupHandlers() {
 		c.CreatePart, c.GetPart, c.ListParts,
 		c.UpdatePart, c.DeletePart, c.AdjustPartStock,
 	)
+}
+
+func (c *Container) seedAdmin() {
+	email := getEnvOrDefault("ADMIN_EMAIL", "admin@workshop.com")
+	password := getEnvOrDefault("ADMIN_PASSWORD", "admin123")
+
+	ctx := context.Background()
+	_, err := c.UserRepo.FindByEmail(ctx, email)
+	if err == nil {
+		return // admin ja existe
+	}
+
+	if err := c.RegisterUseCase.Execute(ctx, "Admin", email, password, user.RoleAdmin); err != nil {
+		log.Printf("bootstrap: failed to seed admin user: %v", err)
+		return
+	}
+	log.Printf("bootstrap: admin user seeded (%s)", email)
+}
+
+func getEnvOrDefault(key, fallback string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+	return fallback
 }

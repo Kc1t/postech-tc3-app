@@ -2,6 +2,7 @@ package routes
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/fiap/postech-tc1/cmd/api/bootstrap"
 	"github.com/fiap/postech-tc1/cmd/api/middleware"
@@ -25,12 +26,38 @@ func Setup(router *gin.Engine, c *bootstrap.Container) {
 
 	v1 := router.Group("/api/v1")
 
+	// --- Auth (publico, com rate limiting) ---
+	authPublic := v1.Group("/auth")
+	authPublic.Use(middleware.RateLimit(5, time.Minute))
+	authPublic.POST("/register", c.AuthHandler.Register)
+	authPublic.POST("/login", c.AuthHandler.Login)
+	authPublic.POST("/refresh", c.AuthHandler.Refresh)
+
+	// --- Rotas protegidas (qualquer usuario autenticado) ---
 	protected := v1.Group("/")
 	protected.Use(middleware.Auth(c.Config.JWTSecret))
 
-	c.CustomerHandler.SetupRoutes(protected)
-	c.VehicleHandler.SetupRoutes(protected)
-	c.ServiceOrderHandler.SetupRoutes(protected)
-	c.ServiceHandler.SetupRoutes(protected)
-	c.PartHandler.SetupRoutes(protected)
+	// Logout (precisa de JWT)
+	protected.POST("/auth/logout", c.AuthHandler.Logout)
+
+	// Consulta de OS — client pode ver (filtra por customerID no handler)
+	protected.GET("/service-orders", c.ServiceOrderHandler.FindAll)
+	protected.GET("/service-orders/:id", c.ServiceOrderHandler.FindByID)
+
+	// --- Admin only ---
+	admin := protected.Group("/")
+	admin.Use(middleware.RequireRole("admin"))
+
+	c.CustomerHandler.SetupRoutes(admin)
+	c.VehicleHandler.SetupRoutes(admin)
+	c.ServiceHandler.SetupRoutes(admin)
+	c.PartHandler.SetupRoutes(admin)
+
+	// Service Orders — escrita apenas admin
+	orders := admin.Group("/service-orders")
+	orders.POST("", c.ServiceOrderHandler.Create)
+	orders.PUT("/:id/status", c.ServiceOrderHandler.UpdateStatus)
+	orders.PUT("/:id", c.ServiceOrderHandler.Update)
+	orders.DELETE("/:id", c.ServiceOrderHandler.Delete)
+	admin.GET("/customers/:id/service-orders", c.ServiceOrderHandler.ListByCustomer)
 }

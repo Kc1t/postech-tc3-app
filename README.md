@@ -4,12 +4,21 @@ Sistema Integrado de Atendimento e Execucao de Servicos para oficina mecanica.
 
 ## Tecnologias
 
-- **Go 1.22** — linguagem principal
+- **Go 1.23** — linguagem principal
 - **Gin** — framework HTTP
-- **MongoDB** — banco de dados (driver oficial `mongo-driver`)
+- **PostgreSQL 16** — banco de dados relacional (via GORM)
 - **Swagger** — documentacao da API (`swaggo/swag`)
 - **JWT** — autenticacao (`golang-jwt/jwt`)
 - **Docker + docker-compose** — containerizacao
+
+### Justificativa do banco de dados
+
+PostgreSQL foi escolhido por:
+- **Integridade relacional**: clientes, veiculos e ordens de servico possuem relacoes fortes (FK) que o Postgres garante nativamente
+- **UUID nativo**: `gen_random_uuid()` para IDs sem dependencia externa
+- **JSONB**: permite armazenar value objects (servicos e pecas dentro da OS) como JSON sem perder a capacidade de consulta
+- **Maturidade e ecossistema**: driver oficial Go (`pgx`), ORM maduro (GORM), ferramentas de administracao (pgAdmin)
+- **ACID**: transacoes completas para operacoes criticas como ajuste de estoque
 
 ## Arquitetura
 
@@ -20,14 +29,14 @@ cmd/api/
   main.go              — entrypoint
   bootstrap/           — DI container (singleton)
   routes/              — setup de rotas
-  middleware/          — auth JWT, CORS
+  middleware/           — auth JWT, CORS
 
 internal/
   domain/              — entidades de negocio
   ports/               — interfaces (repositories + usecases)
   adapters/
     inbound/http/      — handlers HTTP (Gin)
-    outbound/mongodb/  — implementacoes dos repositories
+    outbound/postgresql/ — implementacoes dos repositories (GORM)
   application/usecase/ — logica de negocio
 ```
 
@@ -46,12 +55,12 @@ docker compose up --build
 
 A API estara disponivel em `http://localhost:8080`.
 O Swagger UI estara em `http://localhost:8080/swagger/index.html`.
-O Mongo Express estara em `http://localhost:8081`.
+O pgAdmin estara em `http://localhost:8082` (login: `admin@workshop.com` / `admin`).
 
 ### Rodar localmente (sem Docker)
 
 ```bash
-# Necessario ter Go 1.22+ e MongoDB rodando localmente
+# Necessario ter Go 1.23+ e PostgreSQL rodando localmente
 cp .env.example .env
 
 # Gerar docs do swagger
@@ -63,33 +72,54 @@ go run ./cmd/api
 
 ## Variaveis de ambiente
 
-| Variavel               | Padrao                      | Descricao                  |
-|------------------------|-----------------------------|----------------------------|
-| `APP_PORT`             | `8080`                      | Porta da API               |
-| `APP_ENV`              | `development`               | Ambiente                   |
-| `MONGO_URI`            | `mongodb://localhost:27017` | URI do MongoDB             |
-| `MONGO_DB`             | `workshop`                  | Nome do banco              |
-| `JWT_SECRET`           | `change-me-in-production`   | Chave secreta JWT          |
-| `JWT_EXPIRATION_HOURS` | `24`                        | Expiracao do token (horas) |
+| Variavel               | Padrao                                                              | Descricao                  |
+|------------------------|---------------------------------------------------------------------|----------------------------|
+| `APP_PORT`             | `8080`                                                              | Porta da API               |
+| `APP_ENV`              | `development`                                                       | Ambiente (development/prod)|
+| `POSTGRES_DSN`         | `postgres://postgres:postgres@localhost:5432/workshop?sslmode=disable` | DSN do PostgreSQL       |
+| `JWT_SECRET`           | `secret`                                                            | Chave secreta JWT          |
+| `JWT_EXPIRATION_HOURS` | `24`                                                                | Expiracao do token (horas) |
 
 ## Endpoints
 
-| Metodo | Rota                            | Descricao                        |
-|--------|---------------------------------|----------------------------------|
-| GET    | `/health`                       | Health check                     |
-| POST   | `/api/v1/customers`             | Criar cliente                    |
-| GET    | `/api/v1/customers`             | Listar clientes                  |
-| GET    | `/api/v1/customers/:id`         | Buscar cliente                   |
-| PUT    | `/api/v1/customers/:id`         | Atualizar cliente                |
-| DELETE | `/api/v1/customers/:id`         | Deletar cliente                  |
-| POST   | `/api/v1/vehicles`              | Cadastrar veiculo                |
-| GET    | `/api/v1/vehicles`              | Listar veiculos                  |
-| POST   | `/api/v1/service-orders`        | Criar ordem de servico           |
-| GET    | `/api/v1/service-orders`        | Listar ordens de servico         |
-| GET    | `/api/v1/service-orders/:id`    | Buscar ordem de servico          |
-| PUT    | `/api/v1/service-orders/:id/status` | Atualizar status da OS       |
-| POST   | `/api/v1/services`              | Cadastrar servico                |
-| POST   | `/api/v1/parts`                 | Cadastrar peca/insumo            |
+| Metodo | Rota                                    | Descricao                        |
+|--------|-----------------------------------------|----------------------------------|
+| GET    | `/health`                               | Health check                     |
+| **Customers** | | |
+| POST   | `/api/v1/customers`                     | Criar cliente                    |
+| GET    | `/api/v1/customers`                     | Listar clientes                  |
+| GET    | `/api/v1/customers/:id`                 | Buscar cliente por ID            |
+| GET    | `/api/v1/customers/document/:document`  | Buscar cliente por CPF/CNPJ      |
+| PUT    | `/api/v1/customers/:id`                 | Atualizar cliente                |
+| DELETE | `/api/v1/customers/:id`                 | Deletar cliente                  |
+| **Vehicles** | | |
+| POST   | `/api/v1/vehicles`                      | Cadastrar veiculo                |
+| GET    | `/api/v1/vehicles`                      | Listar veiculos                  |
+| GET    | `/api/v1/vehicles/:id`                  | Buscar veiculo por ID            |
+| GET    | `/api/v1/customers/:id/vehicles`        | Listar veiculos por cliente      |
+| PUT    | `/api/v1/vehicles/:id`                  | Atualizar veiculo                |
+| DELETE | `/api/v1/vehicles/:id`                  | Deletar veiculo                  |
+| **Services** | | |
+| POST   | `/api/v1/services`                      | Cadastrar servico                |
+| GET    | `/api/v1/services`                      | Listar servicos                  |
+| GET    | `/api/v1/services/:id`                  | Buscar servico por ID            |
+| PUT    | `/api/v1/services/:id`                  | Atualizar servico                |
+| DELETE | `/api/v1/services/:id`                  | Deletar servico                  |
+| **Parts** | | |
+| POST   | `/api/v1/parts`                         | Cadastrar peca/insumo            |
+| GET    | `/api/v1/parts`                         | Listar pecas/insumos             |
+| GET    | `/api/v1/parts/:id`                     | Buscar peca por ID               |
+| PUT    | `/api/v1/parts/:id`                     | Atualizar peca                   |
+| DELETE | `/api/v1/parts/:id`                     | Deletar peca                     |
+| PATCH  | `/api/v1/parts/:id/stock`               | Ajustar estoque                  |
+| **Service Orders** | | |
+| POST   | `/api/v1/service-orders`                | Criar ordem de servico           |
+| GET    | `/api/v1/service-orders`                | Listar ordens de servico         |
+| GET    | `/api/v1/service-orders/:id`            | Buscar ordem por ID              |
+| GET    | `/api/v1/customers/:id/service-orders`  | Listar ordens por cliente        |
+| PUT    | `/api/v1/service-orders/:id/status`     | Atualizar status da OS           |
+| PUT    | `/api/v1/service-orders/:id`            | Atualizar OS                     |
+| DELETE | `/api/v1/service-orders/:id`            | Deletar OS                       |
 
 Todas as rotas `/api/v1/*` requerem header `Authorization: Bearer <token>`.
 
@@ -97,4 +127,11 @@ Todas as rotas `/api/v1/*` requerem header `Authorization: Bearer <token>`.
 
 ```bash
 swag init -g cmd/api/main.go -o docs
+```
+
+## Testes
+
+```bash
+go test ./... -v -coverprofile=coverage.out
+go tool cover -func=coverage.out
 ```
