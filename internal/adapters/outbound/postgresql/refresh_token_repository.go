@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	pgmodel "github.com/fiap/postech-tc1/internal/adapters/outbound/postgresql/model"
+	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
 	"github.com/fiap/postech-tc1/internal/domain/user"
 	"github.com/fiap/postech-tc1/internal/ports"
 	"gorm.io/gorm"
@@ -33,7 +34,7 @@ func (r *refreshTokenRepository) FindByTokenHash(ctx context.Context, hash strin
 	var m pgmodel.RefreshToken
 	if err := db.WithContext(ctx).First(&m, "token_hash = ? AND revoked = false", hash).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ports.ErrNotFound
+			return nil, domainerrors.ErrNotFound
 		}
 		return nil, err
 	}
@@ -42,10 +43,19 @@ func (r *refreshTokenRepository) FindByTokenHash(ctx context.Context, hash strin
 
 func (r *refreshTokenRepository) Revoke(ctx context.Context, id string) error {
 	db := GetDB(ctx, r.db)
-	return db.WithContext(ctx).
+	// Condicao revoked = false garante single-use real em cenarios concorrentes:
+	// apenas uma transacao consegue marcar o token como revogado.
+	result := db.WithContext(ctx).
 		Model(&pgmodel.RefreshToken{}).
-		Where("id = ?", id).
-		Update("revoked", true).Error
+		Where("id = ? AND revoked = false", id).
+		Update("revoked", true)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return domainerrors.ErrNotFound
+	}
+	return nil
 }
 
 func (r *refreshTokenRepository) RevokeByUserID(ctx context.Context, userID string) error {

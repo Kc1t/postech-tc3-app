@@ -2,7 +2,6 @@ package routes
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/fiap/postech-tc1/cmd/api/bootstrap"
 	"github.com/fiap/postech-tc1/cmd/api/middleware"
@@ -26,9 +25,12 @@ func Setup(router *gin.Engine, c *bootstrap.Container) {
 
 	v1 := router.Group("/api/v1")
 
-	// --- Auth (publico, com rate limiting) ---
+	// --- Auth (publico) ---
+	// Protecao contra brute force e feita via account lockout no use case
+	// (incrementa failed_attempts, bloqueia conta apos N tentativas).
+	// Rate limit por IP foi removido: facilmente burlavel por botnet e
+	// deve ser responsabilidade do infra layer (Cloudflare, nginx, WAF).
 	authPublic := v1.Group("/auth")
-	authPublic.Use(middleware.RateLimit(5, time.Minute))
 	authPublic.POST("/register", c.AuthHandler.Register)
 	authPublic.POST("/login", c.AuthHandler.Login)
 	authPublic.POST("/refresh", c.AuthHandler.Refresh)

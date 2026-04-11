@@ -234,8 +234,24 @@ func (c *Container) setupHandlers() {
 }
 
 func (c *Container) seedAdmin() {
-	email := getEnvOrDefault("ADMIN_EMAIL", "admin@workshop.com")
-	password := getEnvOrDefault("ADMIN_PASSWORD", "admin123")
+	email := os.Getenv("ADMIN_EMAIL")
+	password := os.Getenv("ADMIN_PASSWORD")
+
+	// Em producao o seed so roda se as credenciais estiverem explicitamente setadas.
+	// Em dev, fallback pra um admin padrao pra facilitar o onboarding.
+	if c.Config.AppEnv == "prod" {
+		if email == "" || password == "" {
+			log.Printf("bootstrap: skipping admin seed in prod (ADMIN_EMAIL and ADMIN_PASSWORD must be set)")
+			return
+		}
+	} else {
+		if email == "" {
+			email = "admin@workshop.com"
+		}
+		if password == "" {
+			password = "admin123"
+		}
+	}
 
 	ctx := context.Background()
 	_, err := c.UserRepo.FindByEmail(ctx, email)
@@ -248,11 +264,4 @@ func (c *Container) seedAdmin() {
 		return
 	}
 	log.Printf("bootstrap: admin user seeded (%s)", email)
-}
-
-func getEnvOrDefault(key, fallback string) string {
-	if v := os.Getenv(key); v != "" {
-		return v
-	}
-	return fallback
 }

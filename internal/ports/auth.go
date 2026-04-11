@@ -2,19 +2,13 @@ package ports
 
 import (
 	"context"
-	"errors"
 
 	"github.com/fiap/postech-tc1/internal/domain/user"
 )
 
-// Erros de dominio — usados por use cases e traduzidos pelos repositories.
-// Repositories devem converter erros de infra (ex: gorm.ErrRecordNotFound) pra estes.
-var (
-	ErrNotFound     = errors.New("resource not found")
-	ErrAlreadyExists = errors.New("resource already exists")
-)
-
 // TransactionManager abstrai transacoes de banco sem expor o ORM.
+// Use cases recebem essa interface pra executar multiplas operacoes
+// atomicamente sem conhecer o driver/ORM subjacente.
 type TransactionManager interface {
 	RunInTransaction(ctx context.Context, fn func(ctx context.Context) error) error
 }
@@ -26,6 +20,7 @@ type UserRepository interface {
 	Create(ctx context.Context, u *user.User) error
 	FindByEmail(ctx context.Context, email string) (*user.User, error)
 	FindByID(ctx context.Context, id string) (*user.User, error)
+	Update(ctx context.Context, u *user.User) error
 }
 
 // RefreshTokenRepository define as operacoes de persistencia para refresh tokens.

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
 	"github.com/fiap/postech-tc1/internal/domain/user"
 	"github.com/fiap/postech-tc1/internal/ports"
 	"golang.org/x/crypto/bcrypt"
@@ -21,11 +22,11 @@ func NewRegister(userRepo ports.UserRepository, bcryptCost int) *Register {
 func (uc *Register) Execute(ctx context.Context, name, email, rawPassword string, role user.Role) error {
 	// 1. Verificar se email ja existe
 	existing, err := uc.userRepo.FindByEmail(ctx, email)
-	if err != nil && !errors.Is(err, ports.ErrNotFound) {
+	if err != nil && !errors.Is(err, domainerrors.ErrNotFound) {
 		return err
 	}
 	if existing != nil {
-		return ports.ErrAlreadyExists
+		return domainerrors.ErrAlreadyExists
 	}
 
 	// 2. Hash da senha (logica de aplicacao, nao de handler)

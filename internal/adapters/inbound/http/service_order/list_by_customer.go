@@ -10,9 +10,9 @@ import (
 // @Summary     Listar ordens de servico por cliente
 // @Tags        service-orders
 // @Produce     json
-// @Param       customer_id path string true "Customer ID"
+// @Param       id path string true "Customer ID"
 // @Security    BearerAuth
-// @Router      /customers/{customer_id}/service-orders [get]
+// @Router      /customers/{id}/service-orders [get]
 func (h *ServiceOrderHandler) ListByCustomer(c *gin.Context) {
 	c.JSON(http.StatusNotImplemented, gin.H{"message": "not implemented"})
 }

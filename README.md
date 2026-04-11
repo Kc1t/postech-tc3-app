@@ -72,19 +72,30 @@ go run ./cmd/api
 
 ## Variaveis de ambiente
 
-| Variavel               | Padrao                                                              | Descricao                  |
-|------------------------|---------------------------------------------------------------------|----------------------------|
-| `APP_PORT`             | `8080`                                                              | Porta da API               |
-| `APP_ENV`              | `development`                                                       | Ambiente (development/prod)|
-| `POSTGRES_DSN`         | `postgres://postgres:postgres@localhost:5432/workshop?sslmode=disable` | DSN do PostgreSQL       |
-| `JWT_SECRET`           | `secret`                                                            | Chave secreta JWT          |
-| `JWT_EXPIRATION_HOURS` | `24`                                                                | Expiracao do token (horas) |
+| Variavel                 | Padrao                                                                 | Descricao                              |
+|--------------------------|------------------------------------------------------------------------|----------------------------------------|
+| `APP_PORT`               | `8080`                                                                 | Porta da API                           |
+| `APP_ENV`                | `development`                                                          | Ambiente (development/prod)            |
+| `POSTGRES_DSN`           | `postgres://postgres:postgres@localhost:5432/workshop?sslmode=disable` | DSN do PostgreSQL                      |
+| `JWT_SECRET`             | `secret`                                                               | Chave secreta JWT                      |
+| `ACCESS_TOKEN_EXP_MIN`   | `15`                                                                   | Expiracao do access token (minutos)    |
+| `REFRESH_TOKEN_EXP_DAYS` | `7`                                                                    | Expiracao do refresh token (dias)      |
+| `BCRYPT_COST`            | `12`                                                                   | Custo do hash de senha com bcrypt      |
+| `MAX_FAILED_LOGINS`      | `5`                                                                    | Tentativas falhas antes de bloquear a conta |
+| `LOGIN_LOCK_MIN`         | `15`                                                                   | Duracao do bloqueio apos limite (minutos) |
+| `ADMIN_EMAIL`            | `admin@workshop.com`                                                   | Email do admin seeded no boot          |
+| `ADMIN_PASSWORD`         | _(obrigatorio em prod)_                                                | Senha do admin seeded no boot          |
 
 ## Endpoints
 
 | Metodo | Rota                                    | Descricao                        |
 |--------|-----------------------------------------|----------------------------------|
 | GET    | `/health`                               | Health check                     |
+| **Auth (publico)** | | |
+| POST   | `/api/v1/auth/register`                 | Registrar usuario (role=client)  |
+| POST   | `/api/v1/auth/login`                    | Login (retorna access + refresh) |
+| POST   | `/api/v1/auth/refresh`                  | Rotacionar tokens                |
+| POST   | `/api/v1/auth/logout`                   | Encerrar sessao (requer JWT)     |
 | **Customers** | | |
 | POST   | `/api/v1/customers`                     | Criar cliente                    |
 | GET    | `/api/v1/customers`                     | Listar clientes                  |
@@ -121,7 +132,7 @@ go run ./cmd/api
 | PUT    | `/api/v1/service-orders/:id`            | Atualizar OS                     |
 | DELETE | `/api/v1/service-orders/:id`            | Deletar OS                       |
 
-Todas as rotas `/api/v1/*` requerem header `Authorization: Bearer <token>`.
+As rotas `/api/v1/auth/register`, `/login` e `/refresh` sao publicas (com rate limit). Todas as demais rotas `/api/v1/*` requerem header `Authorization: Bearer <token>`. Rotas administrativas exigem `role=admin` nas claims do JWT.
 
 ## Gerando o Swagger
 

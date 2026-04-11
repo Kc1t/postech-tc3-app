@@ -2,7 +2,6 @@ package authhandler
 
 import (
 	"github.com/fiap/postech-tc1/internal/ports"
-	"github.com/gin-gonic/gin"
 )
 
 type AuthHandler struct {
@@ -27,18 +26,4 @@ func NewAuthHandler(
 		logout:       logout,
 		accessExpMin: accessExpMin,
 	}
-}
-
-// SetupPublicRoutes registra rotas publicas (sem JWT).
-func (h *AuthHandler) SetupPublicRoutes(rg *gin.RouterGroup) {
-	auth := rg.Group("/auth")
-	auth.POST("/register", h.Register)
-	auth.POST("/login", h.Login)
-	auth.POST("/refresh", h.Refresh)
-}
-
-// SetupProtectedRoutes registra rotas que exigem JWT.
-func (h *AuthHandler) SetupProtectedRoutes(rg *gin.RouterGroup) {
-	auth := rg.Group("/auth")
-	auth.POST("/logout", h.Logout)
 }
