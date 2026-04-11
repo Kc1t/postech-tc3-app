@@ -3,7 +3,7 @@ package customeruc
 import (
 	"context"
 
-	"github.com/fiap/postech-tc1/internal/domain/customer"
+	"github.com/fiap/postech-tc1/internal/domain/entities"
 	"github.com/fiap/postech-tc1/internal/ports"
 )
 
@@ -15,6 +15,6 @@ func NewGetCustomerByDocument(repo ports.CustomerRepository) *GetCustomerByDocum
 	return &GetCustomerByDocument{repo: repo}
 }
 
-func (uc *GetCustomerByDocument) Execute(ctx context.Context, document string) (*customer.Customer, error) {
+func (uc *GetCustomerByDocument) Execute(ctx context.Context, document string) (*entities.Customer, error) {
 	return uc.repo.FindByDocument(ctx, document)
 }

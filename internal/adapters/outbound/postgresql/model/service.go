@@ -3,7 +3,7 @@ package pgmodel
 import (
 	"time"
 
-	"github.com/fiap/postech-tc1/internal/domain/service"
+	"github.com/fiap/postech-tc1/internal/domain/entities"
 )
 
 type Service struct {
@@ -16,7 +16,7 @@ type Service struct {
 	UpdatedAt   time.Time
 }
 
-func FromService(s *service.Service) *Service {
+func FromService(s *entities.Service) *Service {
 	return &Service{
 		ID:          s.ID(),
 		Name:        s.Name(),
@@ -28,6 +28,6 @@ func FromService(s *service.Service) *Service {
 	}
 }
 
-func (m *Service) ToDomain() *service.Service {
-	return service.Reconstitute(m.ID, m.Name, m.Description, m.Price, m.DurationMin, m.CreatedAt, m.UpdatedAt)
+func (m *Service) ToDomain() *entities.Service {
+	return entities.ReconstituteService(m.ID, m.Name, m.Description, m.Price, m.DurationMin, m.CreatedAt, m.UpdatedAt)
 }

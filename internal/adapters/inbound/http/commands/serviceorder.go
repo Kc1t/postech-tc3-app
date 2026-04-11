@@ -3,7 +3,7 @@ package commands
 import (
 	"time"
 
-	"github.com/fiap/postech-tc1/internal/domain/serviceorder"
+	"github.com/fiap/postech-tc1/internal/domain/entities"
 )
 
 type ServiceItemRequest struct {
@@ -28,7 +28,7 @@ type CreateServiceOrderRequest struct {
 }
 
 type UpdateStatusRequest struct {
-	Status serviceorder.Status `json:"status" binding:"required"`
+	Status entities.OrderStatus `json:"status" binding:"required"`
 }
 
 type ServiceItemResponse struct {
@@ -48,7 +48,7 @@ type ServiceOrderResponse struct {
 	ID          string                `json:"id"`
 	CustomerID  string                `json:"customer_id"`
 	VehicleID   string                `json:"vehicle_id"`
-	Status      serviceorder.Status   `json:"status"`
+	Status      entities.OrderStatus   `json:"status"`
 	Services    []ServiceItemResponse `json:"services"`
 	Parts       []PartItemResponse    `json:"parts"`
 	TotalAmount float64               `json:"total_amount"`
@@ -57,18 +57,18 @@ type ServiceOrderResponse struct {
 	UpdatedAt   string                `json:"updated_at"`
 }
 
-func (r *CreateServiceOrderRequest) ToDomain() *serviceorder.ServiceOrder {
-	so := serviceorder.New(r.CustomerID, r.VehicleID)
+func (r *CreateServiceOrderRequest) ToDomain() *entities.ServiceOrder {
+	so := entities.NewServiceOrder(r.CustomerID, r.VehicleID)
 	so.SetNotes(r.Notes)
 	for _, s := range r.Services {
-		so.AddService(serviceorder.ServiceItem{
+		so.AddService(entities.ServiceItem{
 			ServiceID:   s.ServiceID,
 			Description: s.Description,
 			Price:       s.Price,
 		})
 	}
 	for _, p := range r.Parts {
-		so.AddPart(serviceorder.PartItem{
+		so.AddPart(entities.PartItem{
 			PartID:      p.PartID,
 			Description: p.Description,
 			Quantity:    p.Quantity,
@@ -78,7 +78,7 @@ func (r *CreateServiceOrderRequest) ToDomain() *serviceorder.ServiceOrder {
 	return so
 }
 
-func ToServiceOrderResponse(so *serviceorder.ServiceOrder) ServiceOrderResponse {
+func ToServiceOrderResponse(so *entities.ServiceOrder) ServiceOrderResponse {
 	services := make([]ServiceItemResponse, 0, len(so.Services()))
 	for _, s := range so.Services() {
 		services = append(services, ServiceItemResponse{
@@ -112,7 +112,7 @@ func ToServiceOrderResponse(so *serviceorder.ServiceOrder) ServiceOrderResponse 
 	}
 }
 
-func ToServiceOrderListResponse(orders []*serviceorder.ServiceOrder) []ServiceOrderResponse {
+func ToServiceOrderListResponse(orders []*entities.ServiceOrder) []ServiceOrderResponse {
 	resp := make([]ServiceOrderResponse, 0, len(orders))
 	for _, so := range orders {
 		resp = append(resp, ToServiceOrderResponse(so))

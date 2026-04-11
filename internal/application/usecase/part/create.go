@@ -3,7 +3,7 @@ package partuc
 import (
 	"context"
 
-	"github.com/fiap/postech-tc1/internal/domain/part"
+	"github.com/fiap/postech-tc1/internal/domain/entities"
 	"github.com/fiap/postech-tc1/internal/ports"
 )
 
@@ -15,6 +15,6 @@ func NewCreatePart(repo ports.PartRepository) *CreatePart {
 	return &CreatePart{repo: repo}
 }
 
-func (uc *CreatePart) Execute(ctx context.Context, p *part.Part) error {
+func (uc *CreatePart) Execute(ctx context.Context, p *entities.Part) error {
 	return uc.repo.Create(ctx, p)
 }

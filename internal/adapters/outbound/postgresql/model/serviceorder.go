@@ -3,7 +3,7 @@ package pgmodel
 import (
 	"time"
 
-	"github.com/fiap/postech-tc1/internal/domain/serviceorder"
+	"github.com/fiap/postech-tc1/internal/domain/entities"
 )
 
 type ServiceItem struct {
@@ -23,7 +23,7 @@ type ServiceOrder struct {
 	ID          string              `gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
 	CustomerID  string              `gorm:"type:uuid;not null;index"`
 	VehicleID   string              `gorm:"type:uuid;not null"`
-	Status      serviceorder.Status `gorm:"not null"`
+	Status      entities.OrderStatus `gorm:"not null"`
 	Services    []ServiceItem       `gorm:"serializer:json"`
 	Parts       []PartItem          `gorm:"serializer:json"`
 	TotalAmount float64             `gorm:"not null"`
@@ -32,7 +32,7 @@ type ServiceOrder struct {
 	UpdatedAt   time.Time
 }
 
-func FromServiceOrder(so *serviceorder.ServiceOrder) *ServiceOrder {
+func FromServiceOrder(so *entities.ServiceOrder) *ServiceOrder {
 	services := make([]ServiceItem, 0, len(so.Services()))
 	for _, s := range so.Services() {
 		services = append(services, ServiceItem{ServiceID: s.ServiceID, Description: s.Description, Price: s.Price})
@@ -57,18 +57,18 @@ func FromServiceOrder(so *serviceorder.ServiceOrder) *ServiceOrder {
 	}
 }
 
-func (m *ServiceOrder) ToDomain() *serviceorder.ServiceOrder {
-	services := make([]serviceorder.ServiceItem, 0, len(m.Services))
+func (m *ServiceOrder) ToDomain() *entities.ServiceOrder {
+	services := make([]entities.ServiceItem, 0, len(m.Services))
 	for _, s := range m.Services {
-		services = append(services, serviceorder.ServiceItem{ServiceID: s.ServiceID, Description: s.Description, Price: s.Price})
+		services = append(services, entities.ServiceItem{ServiceID: s.ServiceID, Description: s.Description, Price: s.Price})
 	}
 
-	parts := make([]serviceorder.PartItem, 0, len(m.Parts))
+	parts := make([]entities.PartItem, 0, len(m.Parts))
 	for _, p := range m.Parts {
-		parts = append(parts, serviceorder.PartItem{PartID: p.PartID, Description: p.Description, Quantity: p.Quantity, UnitPrice: p.UnitPrice})
+		parts = append(parts, entities.PartItem{PartID: p.PartID, Description: p.Description, Quantity: p.Quantity, UnitPrice: p.UnitPrice})
 	}
 
-	return serviceorder.Reconstitute(
+	return entities.ReconstituteServiceOrder(
 		m.ID, m.CustomerID, m.VehicleID, m.Status,
 		services, parts, m.TotalAmount, m.Notes, m.CreatedAt, m.UpdatedAt,
 	)

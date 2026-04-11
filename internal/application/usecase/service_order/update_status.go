@@ -3,7 +3,7 @@ package serviceorderuc
 import (
 	"context"
 
-	"github.com/fiap/postech-tc1/internal/domain/serviceorder"
+	"github.com/fiap/postech-tc1/internal/domain/entities"
 	"github.com/fiap/postech-tc1/internal/ports"
 )
 
@@ -15,7 +15,7 @@ func NewUpdateServiceOrderStatus(repo ports.ServiceOrderRepository) *UpdateServi
 	return &UpdateServiceOrderStatus{repo: repo}
 }
 
-func (uc *UpdateServiceOrderStatus) Execute(ctx context.Context, id string, status serviceorder.Status) error {
+func (uc *UpdateServiceOrderStatus) Execute(ctx context.Context, id string, status entities.OrderStatus) error {
 	// TODO: validar transicao de status (maquina de estados)
 	return uc.repo.UpdateStatus(ctx, id, status)
 }

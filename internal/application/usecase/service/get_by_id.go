@@ -3,7 +3,7 @@ package serviceuc
 import (
 	"context"
 
-	"github.com/fiap/postech-tc1/internal/domain/service"
+	"github.com/fiap/postech-tc1/internal/domain/entities"
 	"github.com/fiap/postech-tc1/internal/ports"
 )
 
@@ -15,6 +15,6 @@ func NewGetService(repo ports.ServiceRepository) *GetService {
 	return &GetService{repo: repo}
 }
 
-func (uc *GetService) Execute(ctx context.Context, id string) (*service.Service, error) {
+func (uc *GetService) Execute(ctx context.Context, id string) (*entities.Service, error) {
 	return uc.repo.FindByID(ctx, id)
 }

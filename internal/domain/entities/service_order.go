@@ -1,16 +1,16 @@
-package serviceorder
+package entities
 
 import "time"
 
-type Status string
+type OrderStatus string
 
 const (
-	StatusReceived         Status = "received"
-	StatusInDiagnosis      Status = "in_diagnosis"
-	StatusAwaitingApproval Status = "awaiting_approval"
-	StatusInExecution      Status = "in_execution"
-	StatusFinished         Status = "finished"
-	StatusDelivered        Status = "delivered"
+	StatusReceived         OrderStatus = "received"
+	StatusInDiagnosis      OrderStatus = "in_diagnosis"
+	StatusAwaitingApproval OrderStatus = "awaiting_approval"
+	StatusInExecution      OrderStatus = "in_execution"
+	StatusFinished         OrderStatus = "finished"
+	StatusDelivered        OrderStatus = "delivered"
 )
 
 // ServiceItem e PartItem sao value objects — identificados por valor, sem identidade propria.
@@ -31,7 +31,7 @@ type ServiceOrder struct {
 	id          string
 	customerID  string
 	vehicleID   string
-	status      Status
+	status      OrderStatus
 	services    []ServiceItem
 	parts       []PartItem
 	totalAmount float64
@@ -40,7 +40,7 @@ type ServiceOrder struct {
 	updatedAt   time.Time
 }
 
-func New(customerID, vehicleID string) *ServiceOrder {
+func NewServiceOrder(customerID, vehicleID string) *ServiceOrder {
 	now := time.Now()
 	return &ServiceOrder{
 		customerID: customerID,
@@ -53,9 +53,10 @@ func New(customerID, vehicleID string) *ServiceOrder {
 	}
 }
 
-func Reconstitute(
+// ReconstituteServiceOrder restaura uma entidade a partir de dados persistidos (uso exclusivo de repositories).
+func ReconstituteServiceOrder(
 	id, customerID, vehicleID string,
-	status Status,
+	status OrderStatus,
 	services []ServiceItem,
 	parts []PartItem,
 	totalAmount float64,
@@ -76,11 +77,10 @@ func Reconstitute(
 	}
 }
 
-// Getters
 func (so *ServiceOrder) ID() string              { return so.id }
 func (so *ServiceOrder) CustomerID() string      { return so.customerID }
 func (so *ServiceOrder) VehicleID() string       { return so.vehicleID }
-func (so *ServiceOrder) Status() Status          { return so.status }
+func (so *ServiceOrder) Status() OrderStatus     { return so.status }
 func (so *ServiceOrder) Services() []ServiceItem { return so.services }
 func (so *ServiceOrder) Parts() []PartItem       { return so.parts }
 func (so *ServiceOrder) TotalAmount() float64    { return so.totalAmount }
@@ -88,14 +88,15 @@ func (so *ServiceOrder) Notes() string           { return so.notes }
 func (so *ServiceOrder) CreatedAt() time.Time    { return so.createdAt }
 func (so *ServiceOrder) UpdatedAt() time.Time    { return so.updatedAt }
 
-// Setters / comportamentos
 func (so *ServiceOrder) SetID(id string)           { so.id = id }
 func (so *ServiceOrder) SetNotes(n string)         { so.notes = n; so.touch() }
-func (so *ServiceOrder) UpdateStatus(s Status)     { so.status = s; so.touch() }
+func (so *ServiceOrder) UpdateStatus(s OrderStatus) { so.status = s; so.touch() }
+
 func (so *ServiceOrder) AddService(item ServiceItem) {
 	so.services = append(so.services, item)
 	so.recalcTotal()
 }
+
 func (so *ServiceOrder) AddPart(item PartItem) {
 	so.parts = append(so.parts, item)
 	so.recalcTotal()
