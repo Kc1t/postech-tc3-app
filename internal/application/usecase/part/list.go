@@ -3,7 +3,7 @@ package partuc
 import (
 	"context"
 
-	"github.com/fiap/postech-tc1/internal/domain/part"
+	"github.com/fiap/postech-tc1/internal/domain/entities"
 	"github.com/fiap/postech-tc1/internal/ports"
 )
 
@@ -15,6 +15,6 @@ func NewListParts(repo ports.PartRepository) *ListParts {
 	return &ListParts{repo: repo}
 }
 
-func (uc *ListParts) Execute(ctx context.Context) ([]*part.Part, error) {
+func (uc *ListParts) Execute(ctx context.Context) ([]*entities.Part, error) {
 	return uc.repo.FindAll(ctx)
 }

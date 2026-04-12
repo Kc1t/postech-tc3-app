@@ -3,7 +3,7 @@ package serviceorderuc
 import (
 	"context"
 
-	"github.com/fiap/postech-tc1/internal/domain/serviceorder"
+	"github.com/fiap/postech-tc1/internal/domain/entities"
 	"github.com/fiap/postech-tc1/internal/ports"
 )
 
@@ -15,6 +15,6 @@ func NewListServiceOrdersByCustomer(repo ports.ServiceOrderRepository) *ListServ
 	return &ListServiceOrdersByCustomer{repo: repo}
 }
 
-func (uc *ListServiceOrdersByCustomer) Execute(ctx context.Context, customerID string) ([]*serviceorder.ServiceOrder, error) {
+func (uc *ListServiceOrdersByCustomer) Execute(ctx context.Context, customerID string) ([]*entities.ServiceOrder, error) {
 	return uc.repo.FindByCustomerID(ctx, customerID)
 }

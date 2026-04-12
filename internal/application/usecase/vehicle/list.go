@@ -3,7 +3,7 @@ package vehicleuc
 import (
 	"context"
 
-	"github.com/fiap/postech-tc1/internal/domain/vehicle"
+	"github.com/fiap/postech-tc1/internal/domain/entities"
 	"github.com/fiap/postech-tc1/internal/ports"
 )
 
@@ -15,6 +15,6 @@ func NewListVehicles(repo ports.VehicleRepository) *ListVehicles {
 	return &ListVehicles{repo: repo}
 }
 
-func (uc *ListVehicles) Execute(ctx context.Context) ([]*vehicle.Vehicle, error) {
+func (uc *ListVehicles) Execute(ctx context.Context) ([]*entities.Vehicle, error) {
 	return uc.repo.FindAll(ctx)
 }

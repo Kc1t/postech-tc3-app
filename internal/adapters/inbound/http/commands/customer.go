@@ -3,7 +3,7 @@ package commands
 import (
 	"time"
 
-	"github.com/fiap/postech-tc1/internal/domain/customer"
+	"github.com/fiap/postech-tc1/internal/domain/entities"
 )
 
 type CreateCustomerRequest struct {
@@ -29,11 +29,11 @@ type CustomerResponse struct {
 	UpdatedAt string `json:"updated_at"`
 }
 
-func (r *CreateCustomerRequest) ToDomain() *customer.Customer {
-	return customer.New(r.Name, r.Document, r.Email, r.Phone)
+func (r *CreateCustomerRequest) ToDomain() *entities.Customer {
+	return entities.NewCustomer(r.Name, r.Document, r.Email, r.Phone)
 }
 
-func ToCustomerResponse(c *customer.Customer) CustomerResponse {
+func ToCustomerResponse(c *entities.Customer) CustomerResponse {
 	return CustomerResponse{
 		ID:        c.ID(),
 		Name:      c.Name(),
@@ -45,7 +45,7 @@ func ToCustomerResponse(c *customer.Customer) CustomerResponse {
 	}
 }
 
-func ToCustomerListResponse(customers []*customer.Customer) []CustomerResponse {
+func ToCustomerListResponse(customers []*entities.Customer) []CustomerResponse {
 	resp := make([]CustomerResponse, 0, len(customers))
 	for _, c := range customers {
 		resp = append(resp, ToCustomerResponse(c))

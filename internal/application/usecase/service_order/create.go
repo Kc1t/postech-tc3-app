@@ -3,7 +3,7 @@ package serviceorderuc
 import (
 	"context"
 
-	"github.com/fiap/postech-tc1/internal/domain/serviceorder"
+	"github.com/fiap/postech-tc1/internal/domain/entities"
 	"github.com/fiap/postech-tc1/internal/ports"
 )
 
@@ -31,8 +31,8 @@ func NewCreateServiceOrder(
 	}
 }
 
-func (uc *CreateServiceOrder) Execute(ctx context.Context, so *serviceorder.ServiceOrder) error {
+func (uc *CreateServiceOrder) Execute(ctx context.Context, so *entities.ServiceOrder) error {
 	// TODO: validar cliente e veiculo, calcular total
-	so.UpdateStatus(serviceorder.StatusReceived)
+	so.UpdateStatus(entities.StatusReceived)
 	return uc.repo.Create(ctx, so)
 }

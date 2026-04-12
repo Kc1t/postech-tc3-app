@@ -3,7 +3,7 @@ package commands
 import (
 	"time"
 
-	"github.com/fiap/postech-tc1/internal/domain/vehicle"
+	"github.com/fiap/postech-tc1/internal/domain/entities"
 )
 
 type CreateVehicleRequest struct {
@@ -32,11 +32,11 @@ type VehicleResponse struct {
 	UpdatedAt  string `json:"updated_at"`
 }
 
-func (r *CreateVehicleRequest) ToDomain() *vehicle.Vehicle {
-	return vehicle.New(r.CustomerID, r.Plate, r.Brand, r.Model, r.Year)
+func (r *CreateVehicleRequest) ToDomain() *entities.Vehicle {
+	return entities.NewVehicle(r.CustomerID, r.Plate, r.Brand, r.Model, r.Year)
 }
 
-func ToVehicleResponse(v *vehicle.Vehicle) VehicleResponse {
+func ToVehicleResponse(v *entities.Vehicle) VehicleResponse {
 	return VehicleResponse{
 		ID:         v.ID(),
 		CustomerID: v.CustomerID(),
@@ -49,7 +49,7 @@ func ToVehicleResponse(v *vehicle.Vehicle) VehicleResponse {
 	}
 }
 
-func ToVehicleListResponse(vehicles []*vehicle.Vehicle) []VehicleResponse {
+func ToVehicleListResponse(vehicles []*entities.Vehicle) []VehicleResponse {
 	resp := make([]VehicleResponse, 0, len(vehicles))
 	for _, v := range vehicles {
 		resp = append(resp, ToVehicleResponse(v))

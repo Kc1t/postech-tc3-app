@@ -3,7 +3,7 @@ package commands
 import (
 	"time"
 
-	"github.com/fiap/postech-tc1/internal/domain/service"
+	"github.com/fiap/postech-tc1/internal/domain/entities"
 )
 
 type CreateServiceRequest struct {
@@ -30,11 +30,11 @@ type ServiceResponse struct {
 	UpdatedAt   string  `json:"updated_at"`
 }
 
-func (r *CreateServiceRequest) ToDomain() *service.Service {
-	return service.New(r.Name, r.Description, r.Price, r.DurationMin)
+func (r *CreateServiceRequest) ToDomain() *entities.Service {
+	return entities.NewService(r.Name, r.Description, r.Price, r.DurationMin)
 }
 
-func ToServiceResponse(s *service.Service) ServiceResponse {
+func ToServiceResponse(s *entities.Service) ServiceResponse {
 	return ServiceResponse{
 		ID:          s.ID(),
 		Name:        s.Name(),
@@ -46,7 +46,7 @@ func ToServiceResponse(s *service.Service) ServiceResponse {
 	}
 }
 
-func ToServiceListResponse(services []*service.Service) []ServiceResponse {
+func ToServiceListResponse(services []*entities.Service) []ServiceResponse {
 	resp := make([]ServiceResponse, 0, len(services))
 	for _, s := range services {
 		resp = append(resp, ToServiceResponse(s))
