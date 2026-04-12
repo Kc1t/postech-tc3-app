@@ -237,18 +237,16 @@ func (c *Container) seedAdmin() {
 	email := os.Getenv("ADMIN_EMAIL")
 	password := os.Getenv("ADMIN_PASSWORD")
 
-	if c.Config.AppEnv == "prod" {
-		if email == "" || password == "" {
-			log.Printf("bootstrap: skipping admin seed in prod (ADMIN_EMAIL and ADMIN_PASSWORD must be set)")
-			return
-		}
-	} else {
-		if email == "" {
-			email = "admin@workshop.com"
-		}
-		if password == "" {
-			password = "admin123"
-		}
+	// Em prod exige credenciais explicitas, em dev usa fallback
+	if c.Config.AppEnv == "prod" && (email == "" || password == "") {
+		log.Printf("bootstrap: skipping admin seed in prod (ADMIN_EMAIL and ADMIN_PASSWORD must be set)")
+		return
+	}
+	if email == "" {
+		email = "admin@workshop.com"
+	}
+	if password == "" {
+		password = "admin123"
 	}
 
 	ctx := context.Background()
