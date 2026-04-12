@@ -9,30 +9,26 @@ import (
 	"github.com/fiap/postech-tc1/internal/domain/entities"
 	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
 	"github.com/fiap/postech-tc1/internal/ports"
+	"github.com/fiap/postech-tc1/pkg/token"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type Login struct {
 	userRepo    ports.UserRepository
 	refreshRepo ports.RefreshTokenRepository
-	provider    ports.TokenProvider
+	tokenSvc    token.Service
 	cfg         *config.Config
 	// dummyHash gerado com o MESMO bcrypt cost do config pra manter tempo
 	// constante quando o usuario nao existe (timing attack / user enumeration).
 	dummyHash []byte
 }
 
-func NewLogin(
-	userRepo ports.UserRepository,
-	refreshRepo ports.RefreshTokenRepository,
-	provider ports.TokenProvider,
-	cfg *config.Config,
-) *Login {
+func NewLogin(userRepo ports.UserRepository, refreshRepo ports.RefreshTokenRepository, tokenSvc token.Service, cfg *config.Config) *Login {
 	dummy, _ := bcrypt.GenerateFromPassword([]byte("timing-safe-dummy"), cfg.BcryptCost)
 	return &Login{
 		userRepo:    userRepo,
 		refreshRepo: refreshRepo,
-		provider:    provider,
+		tokenSvc:    tokenSvc,
 		cfg:         cfg,
 		dummyHash:   dummy,
 	}
@@ -69,7 +65,6 @@ func (uc *Login) Execute(ctx context.Context, email, password string) (string, s
 	if bcryptErr != nil {
 		lockDuration := time.Duration(uc.cfg.LoginLockMin) * time.Minute
 		u.RegisterFailedLogin(uc.cfg.MaxFailedLogins, lockDuration)
-		// Best-effort: se falhar o update nao trava o login, mas loga
 		_ = uc.userRepo.Update(ctx, u)
 		return "", "", domainerrors.ErrInvalidCredentials
 	}
@@ -81,19 +76,19 @@ func (uc *Login) Execute(ctx context.Context, email, password string) (string, s
 	}
 
 	// 7. Gerar access token
-	accessToken, err := uc.provider.GenerateAccessToken(u)
+	accessToken, err := uc.tokenSvc.GenerateAccessToken(u, time.Duration(uc.cfg.AccessTokenExpMin)*time.Minute)
 	if err != nil {
 		return "", "", err
 	}
 
 	// 8. Gerar refresh token (raw pro cliente, hash pro banco)
-	rawRefresh, hashRefresh, err := uc.provider.GenerateRefreshToken()
+	rawRefresh, hashRefresh, err := uc.tokenSvc.GenerateRefreshToken()
 	if err != nil {
 		return "", "", err
 	}
 
 	// 9. Persistir refresh token
-	expiresAt := time.Now().Add(uc.provider.RefreshTokenExpiration())
+	expiresAt := time.Now().Add(time.Duration(uc.cfg.RefreshTokenExpDays) * 24 * time.Hour)
 	rt := entities.NewRefreshToken(u.ID(), hashRefresh, expiresAt)
 	if err := uc.refreshRepo.Create(ctx, rt); err != nil {
 		return "", "", err

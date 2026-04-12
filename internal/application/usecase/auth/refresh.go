@@ -2,84 +2,80 @@ package authuc
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
+	"errors"
 	"time"
 
+	"github.com/fiap/postech-tc1/config"
 	"github.com/fiap/postech-tc1/internal/domain/entities"
 	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
 	"github.com/fiap/postech-tc1/internal/ports"
+	"github.com/fiap/postech-tc1/pkg/token"
 )
 
 type Refresh struct {
 	userRepo    ports.UserRepository
 	refreshRepo ports.RefreshTokenRepository
-	provider    ports.TokenProvider
+	tokenSvc    token.Service
+	cfg         *config.Config
 }
 
 func NewRefresh(
 	userRepo ports.UserRepository,
 	refreshRepo ports.RefreshTokenRepository,
-	provider ports.TokenProvider,
+	tokenSvc token.Service,
+	cfg *config.Config,
 ) *Refresh {
-	return &Refresh{userRepo: userRepo, refreshRepo: refreshRepo, provider: provider}
+	return &Refresh{userRepo: userRepo, refreshRepo: refreshRepo, tokenSvc: tokenSvc, cfg: cfg}
 }
 
 func (uc *Refresh) Execute(ctx context.Context, rawRefreshToken string) (string, string, error) {
-	tokenHash := hashToken(rawRefreshToken)
+	tokenHash := uc.tokenSvc.HashToken(rawRefreshToken)
 
-	// 1. Gerar novo refresh token
-	newRaw, newHash, err := uc.provider.GenerateRefreshToken()
+	// 1. Buscar o refresh token pelo hash
+	rt, err := uc.refreshRepo.FindByTokenHash(ctx, tokenHash)
 	if err != nil {
-		return "", "", err
-	}
-
-	expiresAt := time.Now().Add(uc.provider.RefreshTokenExpiration())
-	newRT := entities.NewRefreshToken("", newHash, expiresAt) // userID preenchido pelo repo
-
-	// 2. Rotacionar atomicamente (find + validate + revoke + create)
-	// O RotateToken precisa do userID do token antigo, entao fazemos em duas etapas:
-	// primeiro buscamos o token antigo pra pegar o userID.
-	oldRT, err := uc.refreshRepo.FindByTokenHash(ctx, tokenHash)
-	if err != nil {
-		if isNotFound(err) {
+		if errors.Is(err, domainerrors.ErrNotFound) {
 			return "", "", domainerrors.ErrInvalidRefreshToken
 		}
 		return "", "", err
 	}
 
-	if !oldRT.IsValid() {
+	// 2. Validar expiracao e estado de revogacao via dominio
+	if !rt.IsValid() {
 		return "", "", domainerrors.ErrInvalidRefreshToken
 	}
 
-	// Criar o novo RT com o userID correto
-	newRT = entities.NewRefreshToken(oldRT.UserID(), newHash, expiresAt)
-
-	_, err = uc.refreshRepo.RotateToken(ctx, tokenHash, newRT)
+	// 3. Buscar o usuario dono do token
+	u, err := uc.userRepo.FindByID(ctx, rt.UserID())
 	if err != nil {
 		return "", "", err
 	}
 
-	// 3. Gerar access token
-	u, err := uc.userRepo.FindByID(ctx, oldRT.UserID())
+	// 4. Gerar novo access token
+	accessToken, err := uc.tokenSvc.GenerateAccessToken(u, time.Duration(uc.cfg.AccessTokenExpMin)*time.Minute)
 	if err != nil {
 		return "", "", err
 	}
 
-	accessToken, err := uc.provider.GenerateAccessToken(u)
+	// 5. Gerar novo refresh token
+	rawToken, hash, err := uc.tokenSvc.GenerateRefreshToken()
 	if err != nil {
 		return "", "", err
 	}
 
-	return accessToken, newRaw, nil
-}
+	expiresAt := time.Now().Add(time.Duration(uc.cfg.RefreshTokenExpDays) * 24 * time.Hour)
+	newRT := entities.NewRefreshToken(u.ID(), hash, expiresAt)
 
-func isNotFound(err error) bool {
-	return err == domainerrors.ErrNotFound
-}
+	// 6. Revogar o token antigo e persistir o novo atomicamente.
+	// O repositorio garante single-use real com WHERE revoked = false e
+	// verifica RowsAffected, prevenindo double-spend em chamadas concorrentes.
+	_, err = uc.refreshRepo.RotateToken(ctx, rt.ID(), newRT)
+	if err != nil {
+		if errors.Is(err, domainerrors.ErrNotFound) {
+			return "", "", domainerrors.ErrInvalidRefreshToken
+		}
+		return "", "", err
+	}
 
-// hashToken retorna o SHA-256 hex-encoded de um token.
-func hashToken(token string) string {
-	h := sha256.Sum256([]byte(token))
-	return hex.EncodeToString(h[:])
+	return accessToken, rawToken, nil
 }

@@ -2,7 +2,6 @@ package ports
 
 import (
 	"context"
-	"time"
 
 	"github.com/fiap/postech-tc1/internal/domain/entities"
 )
@@ -73,12 +72,6 @@ type RefreshTokenRepository interface {
 	FindByTokenHash(ctx context.Context, hash string) (*entities.RefreshToken, error)
 	Revoke(ctx context.Context, id string) error
 	RevokeByUserID(ctx context.Context, userID string) error
-	RotateToken(ctx context.Context, oldTokenHash string, newRT *entities.RefreshToken) (*entities.RefreshToken, error)
+	RotateToken(ctx context.Context, oldID string, newRT *entities.RefreshToken) (*entities.RefreshToken, error)
 }
 
-// TokenProvider abstrai a geracao de tokens (JWT + refresh opaco).
-type TokenProvider interface {
-	GenerateAccessToken(u *entities.User) (string, error)
-	GenerateRefreshToken() (raw string, hash string, err error)
-	RefreshTokenExpiration() time.Duration
-}

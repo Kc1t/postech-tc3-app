@@ -62,36 +62,21 @@ func (r *refreshTokenRepository) RevokeByUserID(ctx context.Context, userID stri
 		Update("revoked", true).Error
 }
 
-// RotateToken atomicamente revoga o token antigo e cria um novo dentro de uma transacao.
-func (r *refreshTokenRepository) RotateToken(ctx context.Context, oldTokenHash string, newRT *entities.RefreshToken) (*entities.RefreshToken, error) {
+// RotateToken revoga o token antigo e persiste o novo em uma unica transacao.
+// Usa WHERE revoked = false com verificacao de RowsAffected para garantir
+// single-use real em cenarios de concorrencia.
+func (r *refreshTokenRepository) RotateToken(ctx context.Context, oldID string, newRT *entities.RefreshToken) (*entities.RefreshToken, error) {
 	err := r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		// 1. Buscar o token antigo
-		var old pgmodel.RefreshToken
-		if err := tx.First(&old, "token_hash = ? AND revoked = false", oldTokenHash).Error; err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return domainerrors.ErrInvalidRefreshToken
-			}
-			return err
-		}
-
-		// 2. Validar
-		domain := old.ToDomain()
-		if !domain.IsValid() {
-			return domainerrors.ErrInvalidRefreshToken
-		}
-
-		// 3. Revogar (single-use via WHERE revoked = false)
 		result := tx.Model(&pgmodel.RefreshToken{}).
-			Where("id = ? AND revoked = false", old.ID).
+			Where("id = ? AND revoked = false", oldID).
 			Update("revoked", true)
 		if result.Error != nil {
 			return result.Error
 		}
 		if result.RowsAffected == 0 {
-			return domainerrors.ErrInvalidRefreshToken
+			return domainerrors.ErrNotFound
 		}
 
-		// 4. Criar novo refresh token
 		m := pgmodel.FromRefreshToken(newRT)
 		if err := tx.Create(m).Error; err != nil {
 			return err

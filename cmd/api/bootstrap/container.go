@@ -7,11 +7,11 @@ import (
 	"sync"
 
 	"github.com/fiap/postech-tc1/config"
-	"github.com/fiap/postech-tc1/internal/adapters/outbound/jwt"
 	"github.com/fiap/postech-tc1/internal/adapters/outbound/postgresql"
 	pgmodel "github.com/fiap/postech-tc1/internal/adapters/outbound/postgresql/model"
 	"github.com/fiap/postech-tc1/internal/domain/entities"
 	"github.com/fiap/postech-tc1/internal/ports"
+	"github.com/fiap/postech-tc1/pkg/token"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
@@ -30,13 +30,11 @@ import (
 	vehicleuc "github.com/fiap/postech-tc1/internal/application/usecase/vehicle"
 )
 
-// Container centraliza o acesso as dependencias da aplicacao.
-// A tag `container` documenta a camada de cada dependencia.
 type Container struct {
 	Config *config.Config
 	db     *gorm.DB
 
-	// Repositories — outbound adapters (persistencia)
+	// Repositories
 	UserRepo         ports.UserRepository         `container:"repository"`
 	RefreshTokenRepo ports.RefreshTokenRepository `container:"repository"`
 	CustomerRepo     ports.CustomerRepository     `container:"repository"`
@@ -91,7 +89,7 @@ type Container struct {
 	DeletePart      ports.DeletePartUseCase      `container:"usecase"`
 	AdjustPartStock ports.AdjustPartStockUseCase `container:"usecase"`
 
-	// Handlers — inbound adapters (HTTP)
+	// Handlers
 	AuthHandler         *authhandler.AuthHandler                 `container:"handler"`
 	CustomerHandler     *customerhandler.CustomerHandler         `container:"handler"`
 	VehicleHandler      *vehiclehandler.VehicleHandler           `container:"handler"`
@@ -105,7 +103,6 @@ var (
 	once     sync.Once
 )
 
-// GetContainer retorna a instancia unica do Container (Singleton).
 func GetContainer() *Container {
 	once.Do(func() {
 		instance = &Container{}
@@ -156,11 +153,13 @@ func (c *Container) setupRepositories() {
 }
 
 func (c *Container) setupUseCases() {
+	// Servico de tokens JWT (desacoplado dos use cases via interface)
+	tokenSvc := token.New(c.Config.JWTSecret)
+
 	// Auth
-	tokenProvider := jwt.NewProvider(c.Config.JWTSecret, c.Config.AccessTokenExpMin, c.Config.RefreshTokenExpDays)
 	c.RegisterUseCase = authuc.NewRegister(c.UserRepo, c.Config.BcryptCost)
-	c.LoginUseCase = authuc.NewLogin(c.UserRepo, c.RefreshTokenRepo, tokenProvider, c.Config)
-	c.RefreshTokenUseCase = authuc.NewRefresh(c.UserRepo, c.RefreshTokenRepo, tokenProvider)
+	c.LoginUseCase = authuc.NewLogin(c.UserRepo, c.RefreshTokenRepo, tokenSvc, c.Config)
+	c.RefreshTokenUseCase = authuc.NewRefresh(c.UserRepo, c.RefreshTokenRepo, tokenSvc, c.Config)
 	c.LogoutUseCase = authuc.NewLogout(c.RefreshTokenRepo)
 
 	// Customer
@@ -238,8 +237,6 @@ func (c *Container) seedAdmin() {
 	email := os.Getenv("ADMIN_EMAIL")
 	password := os.Getenv("ADMIN_PASSWORD")
 
-	// Em producao o seed so roda se as credenciais estiverem explicitamente setadas.
-	// Em dev, fallback pra um admin padrao pra facilitar o onboarding.
 	if c.Config.AppEnv == "prod" {
 		if email == "" || password == "" {
 			log.Printf("bootstrap: skipping admin seed in prod (ADMIN_EMAIL and ADMIN_PASSWORD must be set)")
@@ -257,7 +254,7 @@ func (c *Container) seedAdmin() {
 	ctx := context.Background()
 	_, err := c.UserRepo.FindByEmail(ctx, email)
 	if err == nil {
-		return // admin ja existe
+		return
 	}
 
 	if err := c.RegisterUseCase.Execute(ctx, "Admin", email, password, entities.RoleAdmin); err != nil {
