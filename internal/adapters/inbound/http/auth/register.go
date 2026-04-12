@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/fiap/postech-tc1/internal/adapters/inbound/http/commands"
+	"github.com/fiap/postech-tc1/internal/domain/entities"
 	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
-	"github.com/fiap/postech-tc1/internal/domain/user"
 	"github.com/gin-gonic/gin"
 )
 
@@ -27,7 +27,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		return
 	}
 
-	err := h.register.Execute(c.Request.Context(), req.Name, req.Email, req.Password, user.RoleClient)
+	err := h.register.Execute(c.Request.Context(), req.Name, req.Email, req.Password, entities.RoleClient)
 	if err != nil {
 		if errors.Is(err, domainerrors.ErrAlreadyExists) {
 			c.JSON(http.StatusConflict, gin.H{"error": "email already registered"})

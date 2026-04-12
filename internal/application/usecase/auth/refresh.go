@@ -2,96 +2,84 @@ package authuc
 
 import (
 	"context"
-	"errors"
+	"crypto/sha256"
+	"encoding/hex"
 	"time"
 
-	"github.com/fiap/postech-tc1/config"
+	"github.com/fiap/postech-tc1/internal/domain/entities"
 	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
-	"github.com/fiap/postech-tc1/internal/domain/user"
 	"github.com/fiap/postech-tc1/internal/ports"
-)
-
-var (
-	ErrInvalidRefreshToken = errors.New("invalid or expired refresh token")
 )
 
 type Refresh struct {
 	userRepo    ports.UserRepository
 	refreshRepo ports.RefreshTokenRepository
-	txManager   ports.TransactionManager
-	cfg         *config.Config
+	provider    ports.TokenProvider
 }
 
 func NewRefresh(
 	userRepo ports.UserRepository,
 	refreshRepo ports.RefreshTokenRepository,
-	txManager ports.TransactionManager,
-	cfg *config.Config,
+	provider ports.TokenProvider,
 ) *Refresh {
-	return &Refresh{userRepo: userRepo, refreshRepo: refreshRepo, txManager: txManager, cfg: cfg}
+	return &Refresh{userRepo: userRepo, refreshRepo: refreshRepo, provider: provider}
 }
 
 func (uc *Refresh) Execute(ctx context.Context, rawRefreshToken string) (string, string, error) {
 	tokenHash := hashToken(rawRefreshToken)
 
-	var accessToken string
-	var newRaw string
+	// 1. Gerar novo refresh token
+	newRaw, newHash, err := uc.provider.GenerateRefreshToken()
+	if err != nil {
+		return "", "", err
+	}
 
-	// Find + validate + revoke + create dentro da mesma transacao.
-	// O Revoke do repositorio usa WHERE id = ? AND revoked = false e checa
-	// RowsAffected, garantindo que apenas UMA requisicao consegue consumir
-	// o token em cenarios de concorrencia (single-use real).
-	err := uc.txManager.RunInTransaction(ctx, func(txCtx context.Context) error {
-		rt, err := uc.refreshRepo.FindByTokenHash(txCtx, tokenHash)
-		if err != nil {
-			if errors.Is(err, domainerrors.ErrNotFound) {
-				return ErrInvalidRefreshToken
-			}
-			return err
+	expiresAt := time.Now().Add(uc.provider.RefreshTokenExpiration())
+	newRT := entities.NewRefreshToken("", newHash, expiresAt) // userID preenchido pelo repo
+
+	// 2. Rotacionar atomicamente (find + validate + revoke + create)
+	// O RotateToken precisa do userID do token antigo, entao fazemos em duas etapas:
+	// primeiro buscamos o token antigo pra pegar o userID.
+	oldRT, err := uc.refreshRepo.FindByTokenHash(ctx, tokenHash)
+	if err != nil {
+		if isNotFound(err) {
+			return "", "", domainerrors.ErrInvalidRefreshToken
 		}
+		return "", "", err
+	}
 
-		if !rt.IsValid() {
-			return ErrInvalidRefreshToken
-		}
+	if !oldRT.IsValid() {
+		return "", "", domainerrors.ErrInvalidRefreshToken
+	}
 
-		// Revoke eh quem efetivamente "consome" o token.
-		// Se outra requisicao concorrente ja revogou, aqui recebemos
-		// ErrNotFound (RowsAffected = 0) e retornamos token invalido.
-		if err := uc.refreshRepo.Revoke(txCtx, rt.ID()); err != nil {
-			if errors.Is(err, domainerrors.ErrNotFound) {
-				return ErrInvalidRefreshToken
-			}
-			return err
-		}
+	// Criar o novo RT com o userID correto
+	newRT = entities.NewRefreshToken(oldRT.UserID(), newHash, expiresAt)
 
-		u, err := uc.userRepo.FindByID(txCtx, rt.UserID())
-		if err != nil {
-			return err
-		}
+	_, err = uc.refreshRepo.RotateToken(ctx, tokenHash, newRT)
+	if err != nil {
+		return "", "", err
+	}
 
-		accessToken, err = generateAccessToken(u, uc.cfg.JWTSecret, uc.cfg.AccessTokenExpMin)
-		if err != nil {
-			return err
-		}
+	// 3. Gerar access token
+	u, err := uc.userRepo.FindByID(ctx, oldRT.UserID())
+	if err != nil {
+		return "", "", err
+	}
 
-		rawToken, hash, err := generateRefreshToken()
-		if err != nil {
-			return err
-		}
-
-		expiresAt := time.Now().Add(time.Duration(uc.cfg.RefreshTokenExpDays) * 24 * time.Hour)
-		newRT := user.NewRefreshToken(u.ID(), hash, expiresAt)
-		if err := uc.refreshRepo.Create(txCtx, newRT); err != nil {
-			return err
-		}
-
-		newRaw = rawToken
-		return nil
-	})
-
+	accessToken, err := uc.provider.GenerateAccessToken(u)
 	if err != nil {
 		return "", "", err
 	}
 
 	return accessToken, newRaw, nil
+}
+
+func isNotFound(err error) bool {
+	return err == domainerrors.ErrNotFound
+}
+
+// hashToken retorna o SHA-256 hex-encoded de um token.
+func hashToken(token string) string {
+	h := sha256.Sum256([]byte(token))
+	return hex.EncodeToString(h[:])
 }

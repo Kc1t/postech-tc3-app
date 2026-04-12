@@ -3,7 +3,7 @@ package pgmodel
 import (
 	"time"
 
-	"github.com/fiap/postech-tc1/internal/domain/user"
+	"github.com/fiap/postech-tc1/internal/domain/entities"
 )
 
 type RefreshToken struct {
@@ -15,7 +15,7 @@ type RefreshToken struct {
 	CreatedAt time.Time
 }
 
-func FromRefreshToken(rt *user.RefreshToken) *RefreshToken {
+func FromRefreshToken(rt *entities.RefreshToken) *RefreshToken {
 	return &RefreshToken{
 		ID:        rt.ID(),
 		UserID:    rt.UserID(),
@@ -26,6 +26,6 @@ func FromRefreshToken(rt *user.RefreshToken) *RefreshToken {
 	}
 }
 
-func (m *RefreshToken) ToDomain() *user.RefreshToken {
-	return user.ReconstituteRefreshToken(m.ID, m.UserID, m.TokenHash, m.ExpiresAt, m.Revoked, m.CreatedAt)
+func (m *RefreshToken) ToDomain() *entities.RefreshToken {
+	return entities.ReconstituteRefreshToken(m.ID, m.UserID, m.TokenHash, m.ExpiresAt, m.Revoked, m.CreatedAt)
 }

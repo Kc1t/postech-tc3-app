@@ -3,7 +3,7 @@ package pgmodel
 import (
 	"time"
 
-	"github.com/fiap/postech-tc1/internal/domain/user"
+	"github.com/fiap/postech-tc1/internal/domain/entities"
 )
 
 type User struct {
@@ -18,7 +18,7 @@ type User struct {
 	UpdatedAt      time.Time
 }
 
-func FromUser(u *user.User) *User {
+func FromUser(u *entities.User) *User {
 	return &User{
 		ID:             u.ID(),
 		Name:           u.Name(),
@@ -32,10 +32,10 @@ func FromUser(u *user.User) *User {
 	}
 }
 
-func (m *User) ToDomain() *user.User {
-	return user.Reconstitute(
+func (m *User) ToDomain() *entities.User {
+	return entities.ReconstituteUser(
 		m.ID, m.Name, m.Email, m.PasswordHash,
-		user.Role(m.Role),
+		entities.Role(m.Role),
 		m.FailedAttempts, m.LockedUntil,
 		m.CreatedAt, m.UpdatedAt,
 	)

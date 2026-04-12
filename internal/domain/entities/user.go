@@ -1,4 +1,4 @@
-package user
+package entities
 
 import "time"
 
@@ -21,7 +21,7 @@ type User struct {
 	updatedAt      time.Time
 }
 
-func New(name, email, passwordHash string, role Role) *User {
+func NewUser(name, email, passwordHash string, role Role) *User {
 	now := time.Now()
 	return &User{
 		name:         name,
@@ -33,8 +33,8 @@ func New(name, email, passwordHash string, role Role) *User {
 	}
 }
 
-// Reconstitute restaura uma entidade a partir de dados persistidos (uso exclusivo de repositories).
-func Reconstitute(
+// ReconstituteUser restaura uma entidade a partir de dados persistidos (uso exclusivo de repositories).
+func ReconstituteUser(
 	id, name, email, passwordHash string,
 	role Role,
 	failedAttempts int,

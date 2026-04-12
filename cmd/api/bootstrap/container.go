@@ -7,9 +7,10 @@ import (
 	"sync"
 
 	"github.com/fiap/postech-tc1/config"
+	"github.com/fiap/postech-tc1/internal/adapters/outbound/jwt"
 	"github.com/fiap/postech-tc1/internal/adapters/outbound/postgresql"
 	pgmodel "github.com/fiap/postech-tc1/internal/adapters/outbound/postgresql/model"
-	"github.com/fiap/postech-tc1/internal/domain/user"
+	"github.com/fiap/postech-tc1/internal/domain/entities"
 	"github.com/fiap/postech-tc1/internal/ports"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -156,10 +157,10 @@ func (c *Container) setupRepositories() {
 
 func (c *Container) setupUseCases() {
 	// Auth
+	tokenProvider := jwt.NewProvider(c.Config.JWTSecret, c.Config.AccessTokenExpMin, c.Config.RefreshTokenExpDays)
 	c.RegisterUseCase = authuc.NewRegister(c.UserRepo, c.Config.BcryptCost)
-	c.LoginUseCase = authuc.NewLogin(c.UserRepo, c.RefreshTokenRepo, c.Config)
-	txManager := postgresql.NewTransactionManager(c.db)
-	c.RefreshTokenUseCase = authuc.NewRefresh(c.UserRepo, c.RefreshTokenRepo, txManager, c.Config)
+	c.LoginUseCase = authuc.NewLogin(c.UserRepo, c.RefreshTokenRepo, tokenProvider, c.Config)
+	c.RefreshTokenUseCase = authuc.NewRefresh(c.UserRepo, c.RefreshTokenRepo, tokenProvider)
 	c.LogoutUseCase = authuc.NewLogout(c.RefreshTokenRepo)
 
 	// Customer
@@ -259,7 +260,7 @@ func (c *Container) seedAdmin() {
 		return // admin ja existe
 	}
 
-	if err := c.RegisterUseCase.Execute(ctx, "Admin", email, password, user.RoleAdmin); err != nil {
+	if err := c.RegisterUseCase.Execute(ctx, "Admin", email, password, entities.RoleAdmin); err != nil {
 		log.Printf("bootstrap: failed to seed admin user: %v", err)
 		return
 	}
