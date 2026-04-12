@@ -9,29 +9,26 @@ import (
 	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
 	"github.com/fiap/postech-tc1/internal/domain/user"
 	"github.com/fiap/postech-tc1/internal/ports"
+	"github.com/fiap/postech-tc1/pkg/token"
 	"golang.org/x/crypto/bcrypt"
-)
-
-var (
-	// ErrInvalidCredentials e retornado para senha errada OU usuario inexistente.
-	// Mesmo erro generico nos dois casos pra prevenir user enumeration.
-	ErrInvalidCredentials = errors.New("invalid email or password")
 )
 
 type Login struct {
 	userRepo    ports.UserRepository
 	refreshRepo ports.RefreshTokenRepository
+	tokenSvc    token.Service
 	cfg         *config.Config
 	// dummyHash gerado com o MESMO bcrypt cost do config pra manter tempo
 	// constante quando o usuario nao existe (timing attack / user enumeration).
 	dummyHash []byte
 }
 
-func NewLogin(userRepo ports.UserRepository, refreshRepo ports.RefreshTokenRepository, cfg *config.Config) *Login {
+func NewLogin(userRepo ports.UserRepository, refreshRepo ports.RefreshTokenRepository, tokenSvc token.Service, cfg *config.Config) *Login {
 	dummy, _ := bcrypt.GenerateFromPassword([]byte("timing-safe-dummy"), cfg.BcryptCost)
 	return &Login{
 		userRepo:    userRepo,
 		refreshRepo: refreshRepo,
+		tokenSvc:    tokenSvc,
 		cfg:         cfg,
 		dummyHash:   dummy,
 	}
@@ -55,13 +52,13 @@ func (uc *Login) Execute(ctx context.Context, email, password string) (string, s
 
 	// 3. User nao existe → erro generico
 	if u == nil {
-		return "", "", ErrInvalidCredentials
+		return "", "", domainerrors.ErrInvalidCredentials
 	}
 
 	// 4. Conta bloqueada → erro generico (nao revelamos estado de bloqueio
 	// pra prevenir enumeration/reconhaissance)
 	if u.IsLocked() {
-		return "", "", ErrInvalidCredentials
+		return "", "", domainerrors.ErrInvalidCredentials
 	}
 
 	// 5. Senha errada → incrementa contador e bloqueia se atingir limite
@@ -70,7 +67,7 @@ func (uc *Login) Execute(ctx context.Context, email, password string) (string, s
 		u.RegisterFailedLogin(uc.cfg.MaxFailedLogins, lockDuration)
 		// Best-effort: se falhar o update nao trava o login, mas loga
 		_ = uc.userRepo.Update(ctx, u)
-		return "", "", ErrInvalidCredentials
+		return "", "", domainerrors.ErrInvalidCredentials
 	}
 
 	// 6. Login bem-sucedido → reseta contador de falhas
@@ -80,13 +77,13 @@ func (uc *Login) Execute(ctx context.Context, email, password string) (string, s
 	}
 
 	// 7. Gerar access token
-	accessToken, err := generateAccessToken(u, uc.cfg.JWTSecret, uc.cfg.AccessTokenExpMin)
+	accessToken, err := uc.tokenSvc.GenerateAccessToken(u, time.Duration(uc.cfg.AccessTokenExpMin)*time.Minute)
 	if err != nil {
 		return "", "", err
 	}
 
 	// 8. Gerar refresh token (raw pro cliente, hash pro banco)
-	rawRefresh, hashRefresh, err := generateRefreshToken()
+	rawRefresh, hashRefresh, err := uc.tokenSvc.GenerateRefreshToken()
 	if err != nil {
 		return "", "", err
 	}

@@ -65,3 +65,27 @@ func (r *refreshTokenRepository) RevokeByUserID(ctx context.Context, userID stri
 		Where("user_id = ? AND revoked = false", userID).
 		Update("revoked", true).Error
 }
+
+// RevokeAndCreate revoga o token antigo e persiste o novo em uma unica transacao.
+// Usa WHERE revoked = false com verificacao de RowsAffected para garantir
+// single-use real em cenarios de concorrencia.
+func (r *refreshTokenRepository) RevokeAndCreate(ctx context.Context, oldID string, newToken *user.RefreshToken) error {
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		result := tx.Model(&pgmodel.RefreshToken{}).
+			Where("id = ? AND revoked = false", oldID).
+			Update("revoked", true)
+		if result.Error != nil {
+			return result.Error
+		}
+		if result.RowsAffected == 0 {
+			return domainerrors.ErrNotFound
+		}
+
+		m := pgmodel.FromRefreshToken(newToken)
+		if err := tx.Create(m).Error; err != nil {
+			return err
+		}
+		newToken.SetID(m.ID)
+		return nil
+	})
+}

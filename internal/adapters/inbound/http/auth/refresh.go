@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/fiap/postech-tc1/internal/adapters/inbound/http/commands"
-	authuc "github.com/fiap/postech-tc1/internal/application/usecase/auth"
+	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -28,7 +28,7 @@ func (h *AuthHandler) Refresh(c *gin.Context) {
 
 	accessToken, refreshToken, err := h.refresh.Execute(c.Request.Context(), req.RefreshToken)
 	if err != nil {
-		if errors.Is(err, authuc.ErrInvalidRefreshToken) {
+		if errors.Is(err, domainerrors.ErrInvalidRefreshToken) {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			return
 		}

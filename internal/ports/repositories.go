@@ -7,10 +7,30 @@ import (
 	"github.com/fiap/postech-tc1/internal/domain/part"
 	"github.com/fiap/postech-tc1/internal/domain/service"
 	"github.com/fiap/postech-tc1/internal/domain/serviceorder"
+	"github.com/fiap/postech-tc1/internal/domain/user"
 	"github.com/fiap/postech-tc1/internal/domain/vehicle"
 )
 
 //go:generate mockgen -source=./repositories.go -destination=./mocks/repositories.go -package=mocks
+
+// UserRepository define as operacoes de persistencia para usuarios.
+type UserRepository interface {
+	Create(ctx context.Context, u *user.User) error
+	FindByEmail(ctx context.Context, email string) (*user.User, error)
+	FindByID(ctx context.Context, id string) (*user.User, error)
+	Update(ctx context.Context, u *user.User) error
+}
+
+// RefreshTokenRepository define as operacoes de persistencia para refresh tokens.
+type RefreshTokenRepository interface {
+	Create(ctx context.Context, rt *user.RefreshToken) error
+	FindByTokenHash(ctx context.Context, hash string) (*user.RefreshToken, error)
+	Revoke(ctx context.Context, id string) error
+	RevokeByUserID(ctx context.Context, userID string) error
+	// RevokeAndCreate revoga o token antigo e cria o novo atomicamente.
+	// Garante single-use real: retorna ErrNotFound se o token ja foi revogado.
+	RevokeAndCreate(ctx context.Context, oldID string, newToken *user.RefreshToken) error
+}
 
 // CustomerRepository define as operacoes de persistencia para clientes.
 type CustomerRepository interface {

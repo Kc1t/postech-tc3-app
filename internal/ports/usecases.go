@@ -7,10 +7,33 @@ import (
 	"github.com/fiap/postech-tc1/internal/domain/part"
 	"github.com/fiap/postech-tc1/internal/domain/service"
 	"github.com/fiap/postech-tc1/internal/domain/serviceorder"
+	"github.com/fiap/postech-tc1/internal/domain/user"
 	"github.com/fiap/postech-tc1/internal/domain/vehicle"
 )
 
 //go:generate mockgen -source=./usecases.go -destination=./mocks/usecases.go -package=mocks
+
+// --- Auth ---
+
+// RegisterUseCase cria um novo usuario no sistema.
+type RegisterUseCase interface {
+	Execute(ctx context.Context, name, email, rawPassword string, role user.Role) error
+}
+
+// LoginUseCase autentica um usuario e retorna access + refresh tokens.
+type LoginUseCase interface {
+	Execute(ctx context.Context, email, password string) (accessToken, refreshToken string, err error)
+}
+
+// RefreshTokenUseCase rotaciona o par de tokens (refresh token rotation).
+type RefreshTokenUseCase interface {
+	Execute(ctx context.Context, rawRefreshToken string) (accessToken, newRefreshToken string, err error)
+}
+
+// LogoutUseCase invalida todos os refresh tokens do usuario.
+type LogoutUseCase interface {
+	Execute(ctx context.Context, userID string) error
+}
 
 // --- Customer ---
 

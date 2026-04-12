@@ -27,6 +27,7 @@ import (
 	serviceuc "github.com/fiap/postech-tc1/internal/application/usecase/service"
 	serviceorderuc "github.com/fiap/postech-tc1/internal/application/usecase/service_order"
 	vehicleuc "github.com/fiap/postech-tc1/internal/application/usecase/vehicle"
+	"github.com/fiap/postech-tc1/pkg/token"
 )
 
 // Container centraliza o acesso as dependencias da aplicacao.
@@ -155,11 +156,13 @@ func (c *Container) setupRepositories() {
 }
 
 func (c *Container) setupUseCases() {
+	// Servico de tokens JWT (desacoplado dos use cases via interface)
+	tokenSvc := token.New(c.Config.JWTSecret)
+
 	// Auth
 	c.RegisterUseCase = authuc.NewRegister(c.UserRepo, c.Config.BcryptCost)
-	c.LoginUseCase = authuc.NewLogin(c.UserRepo, c.RefreshTokenRepo, c.Config)
-	txManager := postgresql.NewTransactionManager(c.db)
-	c.RefreshTokenUseCase = authuc.NewRefresh(c.UserRepo, c.RefreshTokenRepo, txManager, c.Config)
+	c.LoginUseCase = authuc.NewLogin(c.UserRepo, c.RefreshTokenRepo, tokenSvc, c.Config)
+	c.RefreshTokenUseCase = authuc.NewRefresh(c.UserRepo, c.RefreshTokenRepo, tokenSvc, c.Config)
 	c.LogoutUseCase = authuc.NewLogout(c.RefreshTokenRepo)
 
 	// Customer

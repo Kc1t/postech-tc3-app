@@ -11,4 +11,12 @@ var (
 
 	// ErrAlreadyExists indica violacao de constraint de unicidade.
 	ErrAlreadyExists = errors.New("resource already exists")
+
+	// ErrInvalidCredentials e retornado para senha errada OU usuario inexistente.
+	// Mesmo erro generico nos dois casos pra prevenir user enumeration.
+	ErrInvalidCredentials = errors.New("invalid email or password")
+
+	// ErrInvalidRefreshToken e retornado quando o refresh token e invalido,
+	// expirado ou ja foi revogado.
+	ErrInvalidRefreshToken = errors.New("invalid or expired refresh token")
 )
