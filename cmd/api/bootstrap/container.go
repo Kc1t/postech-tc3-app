@@ -238,7 +238,7 @@ func (c *Container) seedAdmin() {
 	password := os.Getenv("ADMIN_PASSWORD")
 
 	// Em prod exige credenciais explicitas, em dev usa fallback
-	if c.Config.AppEnv == "prod" && (email == "" || password == "") {
+	if c.Config.AppEnv == config.EnvProduction && (email == "" || password == "") {
 		log.Printf("bootstrap: skipping admin seed in prod (ADMIN_EMAIL and ADMIN_PASSWORD must be set)")
 		return
 	}

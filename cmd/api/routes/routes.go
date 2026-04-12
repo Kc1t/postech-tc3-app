@@ -5,6 +5,7 @@ import (
 
 	"github.com/fiap/postech-tc1/cmd/api/bootstrap"
 	"github.com/fiap/postech-tc1/cmd/api/middleware"
+	"github.com/fiap/postech-tc1/internal/domain/entities"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -48,7 +49,7 @@ func Setup(router *gin.Engine, c *bootstrap.Container) {
 
 	// --- Admin only ---
 	admin := protected.Group("/")
-	admin.Use(middleware.RequireRole("admin"))
+	admin.Use(middleware.RequireRole(string(entities.RoleAdmin)))
 
 	c.CustomerHandler.SetupRoutes(admin)
 	c.VehicleHandler.SetupRoutes(admin)

@@ -5,9 +5,16 @@ import (
 	"github.com/joho/godotenv"
 )
 
+type AppEnv string
+
+const (
+	EnvDevelopment AppEnv = "development"
+	EnvProduction  AppEnv = "prod"
+)
+
 type Config struct {
 	AppPort             string
-	AppEnv              string
+	AppEnv              AppEnv
 	PostgresDSN         string
 	JWTSecret           string
 	AccessTokenExpMin   int
@@ -22,7 +29,7 @@ func Load() *Config {
 
 	return &Config{
 		AppPort:             env.GetOrDefault("APP_PORT", "8080"),
-		AppEnv:              env.GetOrDefault("APP_ENV", "development"),
+		AppEnv:              AppEnv(env.GetOrDefault("APP_ENV", string(EnvDevelopment))),
 		PostgresDSN:         env.GetOrDefault("POSTGRES_DSN", "postgres://postgres:postgres@localhost:5432/workshop?sslmode=disable"),
 		JWTSecret:           env.GetOrDefault("JWT_SECRET", "secret"),
 		AccessTokenExpMin:   env.GetIntOrDefault("ACCESS_TOKEN_EXP_MIN", 15),
