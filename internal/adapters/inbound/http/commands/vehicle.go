@@ -7,11 +7,11 @@ import (
 )
 
 type CreateVehicleRequest struct {
-	CustomerID string `json:"customer_id" binding:"required"`
-	Plate      string `json:"plate"       binding:"required"`
-	Brand      string `json:"brand"       binding:"required"`
-	Model      string `json:"model"       binding:"required"`
-	Year       int    `json:"year"        binding:"required"`
+	CustomerDocument string `json:"customer_document" binding:"required"`
+	Plate            string `json:"plate"             binding:"required"`
+	Brand            string `json:"brand"             binding:"required"`
+	Model            string `json:"model"             binding:"required"`
+	Year             int    `json:"year"              binding:"required"`
 }
 
 type UpdateVehicleRequest struct {
@@ -33,7 +33,7 @@ type VehicleResponse struct {
 }
 
 func (r *CreateVehicleRequest) ToDomain() *entities.Vehicle {
-	return entities.NewVehicle(r.CustomerID, r.Plate, r.Brand, r.Model, r.Year)
+	return entities.NewVehicle("", r.Plate, r.Brand, r.Model, r.Year)
 }
 
 func ToVehicleResponse(v *entities.Vehicle) VehicleResponse {

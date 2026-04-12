@@ -21,8 +21,10 @@ type PartItem struct {
 
 type ServiceOrder struct {
 	ID          string              `gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
-	CustomerID  string              `gorm:"type:uuid;not null;index"`
-	VehicleID   string              `gorm:"type:uuid;not null"`
+	CustomerID  string              `gorm:"type:uuid;not null;index;constraint:OnDelete:RESTRICT"`
+	Customer    Customer            `gorm:"foreignKey:CustomerID"`
+	VehicleID   string              `gorm:"type:uuid;not null;constraint:OnDelete:RESTRICT"`
+	Vehicle     Vehicle             `gorm:"foreignKey:VehicleID"`
 	Status      entities.OrderStatus `gorm:"not null"`
 	Services    []ServiceItem       `gorm:"serializer:json"`
 	Parts       []PartItem          `gorm:"serializer:json"`
