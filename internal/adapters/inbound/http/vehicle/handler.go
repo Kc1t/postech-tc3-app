@@ -6,29 +6,26 @@ import (
 )
 
 type VehicleHandler struct {
-	create            ports.CreateVehicleUseCase
-	getByID           ports.GetVehicleUseCase
-	listAll           ports.ListVehiclesUseCase
-	listByCustomer    ports.ListVehiclesByCustomerUseCase
-	update            ports.UpdateVehicleUseCase
-	delete            ports.DeleteVehicleUseCase
+	create  ports.CreateVehicleUseCase
+	getByID ports.GetVehicleUseCase
+	listAll ports.ListVehiclesUseCase
+	update  ports.UpdateVehicleUseCase
+	delete  ports.DeleteVehicleUseCase
 }
 
 func NewVehicleHandler(
 	create ports.CreateVehicleUseCase,
 	getByID ports.GetVehicleUseCase,
 	listAll ports.ListVehiclesUseCase,
-	listByCustomer ports.ListVehiclesByCustomerUseCase,
 	update ports.UpdateVehicleUseCase,
 	delete ports.DeleteVehicleUseCase,
 ) *VehicleHandler {
 	return &VehicleHandler{
-		create:         create,
-		getByID:        getByID,
-		listAll:        listAll,
-		listByCustomer: listByCustomer,
-		update:         update,
-		delete:         delete,
+		create:  create,
+		getByID: getByID,
+		listAll: listAll,
+		update:  update,
+		delete:  delete,
 	}
 }
 
@@ -40,5 +37,4 @@ func (h *VehicleHandler) SetupRoutes(rg *gin.RouterGroup) {
 	g.PUT("/:id", h.Update)
 	g.DELETE("/:id", h.Delete)
 
-	rg.GET("/customers/:customer_id/vehicles", h.ListByCustomer)
 }
