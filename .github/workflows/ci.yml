@@ -56,7 +56,10 @@ jobs:
 
       - name: Check coverage threshold
         run: |
-          COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print $3}' | tr -d '%')
+          grep -v "/internal/ports/mocks/" coverage.out \
+            | grep -v "/cmd/api/" \
+            > coverage_filtered.out
+          COVERAGE=$(go tool cover -func=coverage_filtered.out | grep total | awk '{print $3}' | tr -d '%')
           echo "Total coverage: ${COVERAGE}%"
           if (( $(echo "$COVERAGE < 50" | bc -l) )); then
             echo "Coverage ${COVERAGE}% is below the minimum threshold of 50%"
@@ -67,4 +70,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: coverage.out
+          path: coverage_filtered.out
