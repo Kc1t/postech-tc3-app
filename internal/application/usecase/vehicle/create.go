@@ -16,7 +16,12 @@ func NewCreateVehicle(repo ports.VehicleRepository, customerRepo ports.CustomerR
 	return &CreateVehicle{repo: repo, customerRepo: customerRepo}
 }
 
-func (uc *CreateVehicle) Execute(ctx context.Context, v *entities.Vehicle) error {
-	// TODO: validar placa, verificar se cliente existe
+func (uc *CreateVehicle) Execute(ctx context.Context, customerDocument string, v *entities.Vehicle) error {
+	customer, err := uc.customerRepo.FindByDocument(ctx, customerDocument)
+	if err != nil {
+		return err
+	}
+
+	v.SetCustomerID(customer.ID())
 	return uc.repo.Create(ctx, v)
 }

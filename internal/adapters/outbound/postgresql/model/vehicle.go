@@ -8,7 +8,8 @@ import (
 
 type Vehicle struct {
 	ID         string    `gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
-	CustomerID string    `gorm:"type:uuid;not null;index"`
+	CustomerID string    `gorm:"type:uuid;not null;index;constraint:OnDelete:RESTRICT"`
+	Customer   Customer  `gorm:"foreignKey:CustomerID"`
 	Plate      string    `gorm:"uniqueIndex;not null"`
 	Brand      string    `gorm:"not null"`
 	Model      string    `gorm:"not null"`

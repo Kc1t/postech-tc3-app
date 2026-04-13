@@ -37,7 +37,7 @@ type DeleteCustomerUseCase interface {
 // --- Vehicle ---
 
 type CreateVehicleUseCase interface {
-	Execute(ctx context.Context, v *entities.Vehicle) error
+	Execute(ctx context.Context, customerDocument string, v *entities.Vehicle) error
 }
 
 type GetVehicleUseCase interface {
