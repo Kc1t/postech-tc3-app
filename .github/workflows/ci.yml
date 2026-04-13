@@ -21,7 +21,7 @@ jobs:
         with:
           version: latest
           skip-cache: true
-          args: --go=1.24
+          args: --go=1.24 --timeout=5m
 
   dependencies:
     name: Dependencies
