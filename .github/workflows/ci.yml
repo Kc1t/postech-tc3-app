@@ -52,7 +52,7 @@ jobs:
           go-version-file: go.mod
 
       - name: Run tests with coverage
-        run: go test -v -coverprofile=coverage.out -covermode=atomic ./...
+        run: go test -v -timeout 120s -coverprofile=coverage.out -covermode=atomic ./...
 
       - name: Check coverage threshold
         run: |
