@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 
+	httputil "github.com/fiap/postech-tc1/internal/adapters/inbound/http"
 	"github.com/fiap/postech-tc1/internal/adapters/inbound/http/commands"
 	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
 	"github.com/gin-gonic/gin"
@@ -22,20 +23,19 @@ import (
 func (h *PartHandler) AdjustStock(c *gin.Context) {
 	var req commands.AdjustStockRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		httputil.HandleBadRequest(c, err)
 		return
 	}
 
 	if err := h.adjustStock.Execute(c.Request.Context(), c.Param("id"), req.Delta); err != nil {
-		if errors.Is(err, domainerrors.ErrNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "part not found"})
-			return
+		switch {
+		case errors.Is(err, domainerrors.ErrNotFound):
+			httputil.HandleError(c, err, msgNotFound)
+		case errors.Is(err, domainerrors.ErrInsufficientStock):
+			httputil.HandleError(c, err, msgInsufficientStock)
+		default:
+			httputil.HandleError(c, err)
 		}
-		if errors.Is(err, domainerrors.ErrInsufficientStock) {
-			c.JSON(http.StatusUnprocessableEntity, gin.H{"error": "insufficient stock"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 

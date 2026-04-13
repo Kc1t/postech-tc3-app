@@ -3,6 +3,7 @@ package servicehandler
 import (
 	"net/http"
 
+	httputil "github.com/fiap/postech-tc1/internal/adapters/inbound/http"
 	"github.com/fiap/postech-tc1/internal/adapters/inbound/http/commands"
 	"github.com/gin-gonic/gin"
 )
@@ -19,13 +20,13 @@ import (
 func (h *ServiceHandler) Create(c *gin.Context) {
 	var req commands.CreateServiceRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		httputil.HandleBadRequest(c, err)
 		return
 	}
 
 	service := req.ToDomain()
 	if err := h.create.Execute(c.Request.Context(), service); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		httputil.HandleError(c, err, msgAlreadyExists)
 		return
 	}
 

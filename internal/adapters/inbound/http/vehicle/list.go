@@ -3,6 +3,7 @@ package vehiclehandler
 import (
 	"net/http"
 
+	httputil "github.com/fiap/postech-tc1/internal/adapters/inbound/http"
 	"github.com/fiap/postech-tc1/internal/adapters/inbound/http/commands"
 	"github.com/gin-gonic/gin"
 )
@@ -17,7 +18,7 @@ import (
 func (h *VehicleHandler) FindAll(c *gin.Context) {
 	vehicles, err := h.listAll.Execute(c.Request.Context())
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		httputil.HandleError(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, commands.ToVehicleListResponse(vehicles))

@@ -1,11 +1,10 @@
 package customerhandler
 
 import (
-	"errors"
 	"net/http"
 
+	httputil "github.com/fiap/postech-tc1/internal/adapters/inbound/http"
 	"github.com/fiap/postech-tc1/internal/adapters/inbound/http/commands"
-	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -21,17 +20,13 @@ import (
 func (h *CustomerHandler) Create(c *gin.Context) {
 	var req commands.CreateCustomerRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		httputil.HandleBadRequest(c, err)
 		return
 	}
 
 	customer := req.ToDomain()
 	if err := h.create.Execute(c.Request.Context(), customer); err != nil {
-		if errors.Is(err, domainerrors.ErrAlreadyExists) {
-			c.JSON(http.StatusConflict, gin.H{"error": "customer already exists"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		httputil.HandleError(c, err, msgAlreadyExists)
 		return
 	}
 

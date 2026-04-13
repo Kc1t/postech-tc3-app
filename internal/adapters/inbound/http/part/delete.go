@@ -1,10 +1,9 @@
 package parthandler
 
 import (
-	"errors"
 	"net/http"
 
-	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
+	httputil "github.com/fiap/postech-tc1/internal/adapters/inbound/http"
 	"github.com/gin-gonic/gin"
 )
 
@@ -17,11 +16,7 @@ import (
 // @Router      /parts/{id} [delete]
 func (h *PartHandler) Delete(c *gin.Context) {
 	if err := h.delete.Execute(c.Request.Context(), c.Param("id")); err != nil {
-		if errors.Is(err, domainerrors.ErrNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "part not found"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		httputil.HandleError(c, err, msgNotFound)
 		return
 	}
 	c.Status(http.StatusNoContent)

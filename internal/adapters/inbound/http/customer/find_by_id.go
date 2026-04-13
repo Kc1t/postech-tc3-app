@@ -1,11 +1,10 @@
 package customerhandler
 
 import (
-	"errors"
 	"net/http"
 
+	httputil "github.com/fiap/postech-tc1/internal/adapters/inbound/http"
 	"github.com/fiap/postech-tc1/internal/adapters/inbound/http/commands"
-	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -20,11 +19,7 @@ import (
 func (h *CustomerHandler) FindByID(c *gin.Context) {
 	customer, err := h.getByID.Execute(c.Request.Context(), c.Param("id"))
 	if err != nil {
-		if errors.Is(err, domainerrors.ErrNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "customer not found"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		httputil.HandleError(c, err, msgNotFound)
 		return
 	}
 	c.JSON(http.StatusOK, commands.ToCustomerResponse(customer))

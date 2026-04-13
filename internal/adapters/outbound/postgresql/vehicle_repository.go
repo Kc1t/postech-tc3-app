@@ -20,7 +20,7 @@ func NewVehicleRepository(db *gorm.DB) ports.VehicleRepository {
 func (r *vehicleRepository) Create(ctx context.Context, v *entities.Vehicle) error {
 	m := pgmodel.FromVehicle(v)
 	if err := r.db.WithContext(ctx).Create(m).Error; err != nil {
-		return err
+		return mapError(err)
 	}
 	v.SetID(m.ID)
 	return nil
@@ -29,7 +29,7 @@ func (r *vehicleRepository) Create(ctx context.Context, v *entities.Vehicle) err
 func (r *vehicleRepository) FindByID(ctx context.Context, id string) (*entities.Vehicle, error) {
 	var m pgmodel.Vehicle
 	if err := r.db.WithContext(ctx).First(&m, "id = ?", id).Error; err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 	return m.ToDomain(), nil
 }
@@ -37,7 +37,7 @@ func (r *vehicleRepository) FindByID(ctx context.Context, id string) (*entities.
 func (r *vehicleRepository) FindByCustomerID(ctx context.Context, customerID string) ([]*entities.Vehicle, error) {
 	var docs []pgmodel.Vehicle
 	if err := r.db.WithContext(ctx).Find(&docs, "customer_id = ?", customerID).Error; err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 	vehicles := make([]*entities.Vehicle, 0, len(docs))
 	for i := range docs {
@@ -49,7 +49,7 @@ func (r *vehicleRepository) FindByCustomerID(ctx context.Context, customerID str
 func (r *vehicleRepository) FindAll(ctx context.Context) ([]*entities.Vehicle, error) {
 	var docs []pgmodel.Vehicle
 	if err := r.db.WithContext(ctx).Find(&docs).Error; err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 	vehicles := make([]*entities.Vehicle, 0, len(docs))
 	for i := range docs {
@@ -60,9 +60,9 @@ func (r *vehicleRepository) FindAll(ctx context.Context) ([]*entities.Vehicle, e
 
 func (r *vehicleRepository) Update(ctx context.Context, v *entities.Vehicle) error {
 	m := pgmodel.FromVehicle(v)
-	return r.db.WithContext(ctx).Save(m).Error
+	return mapError(r.db.WithContext(ctx).Save(m).Error)
 }
 
 func (r *vehicleRepository) Delete(ctx context.Context, id string) error {
-	return r.db.WithContext(ctx).Delete(&pgmodel.Vehicle{}, "id = ?", id).Error
+	return mapError(r.db.WithContext(ctx).Delete(&pgmodel.Vehicle{}, "id = ?", id).Error)
 }

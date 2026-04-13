@@ -20,7 +20,7 @@ func NewServiceOrderRepository(db *gorm.DB) ports.ServiceOrderRepository {
 func (r *serviceOrderRepository) Create(ctx context.Context, so *entities.ServiceOrder) error {
 	m := pgmodel.FromServiceOrder(so)
 	if err := r.db.WithContext(ctx).Create(m).Error; err != nil {
-		return err
+		return mapError(err)
 	}
 	so.SetID(m.ID)
 	return nil
@@ -29,7 +29,7 @@ func (r *serviceOrderRepository) Create(ctx context.Context, so *entities.Servic
 func (r *serviceOrderRepository) FindByID(ctx context.Context, id string) (*entities.ServiceOrder, error) {
 	var m pgmodel.ServiceOrder
 	if err := r.db.WithContext(ctx).First(&m, "id = ?", id).Error; err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 	return m.ToDomain(), nil
 }
@@ -37,7 +37,7 @@ func (r *serviceOrderRepository) FindByID(ctx context.Context, id string) (*enti
 func (r *serviceOrderRepository) FindAll(ctx context.Context) ([]*entities.ServiceOrder, error) {
 	var docs []pgmodel.ServiceOrder
 	if err := r.db.WithContext(ctx).Find(&docs).Error; err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 	orders := make([]*entities.ServiceOrder, 0, len(docs))
 	for i := range docs {
@@ -49,7 +49,7 @@ func (r *serviceOrderRepository) FindAll(ctx context.Context) ([]*entities.Servi
 func (r *serviceOrderRepository) FindByCustomerID(ctx context.Context, customerID string) ([]*entities.ServiceOrder, error) {
 	var docs []pgmodel.ServiceOrder
 	if err := r.db.WithContext(ctx).Find(&docs, "customer_id = ?", customerID).Error; err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 	orders := make([]*entities.ServiceOrder, 0, len(docs))
 	for i := range docs {
@@ -59,14 +59,14 @@ func (r *serviceOrderRepository) FindByCustomerID(ctx context.Context, customerI
 }
 
 func (r *serviceOrderRepository) UpdateStatus(ctx context.Context, id string, status entities.OrderStatus) error {
-	return r.db.WithContext(ctx).Model(&pgmodel.ServiceOrder{}).Where("id = ?", id).Update("status", status).Error
+	return mapError(r.db.WithContext(ctx).Model(&pgmodel.ServiceOrder{}).Where("id = ?", id).Update("status", status).Error)
 }
 
 func (r *serviceOrderRepository) Update(ctx context.Context, so *entities.ServiceOrder) error {
 	m := pgmodel.FromServiceOrder(so)
-	return r.db.WithContext(ctx).Save(m).Error
+	return mapError(r.db.WithContext(ctx).Save(m).Error)
 }
 
 func (r *serviceOrderRepository) Delete(ctx context.Context, id string) error {
-	return r.db.WithContext(ctx).Delete(&pgmodel.ServiceOrder{}, "id = ?", id).Error
+	return mapError(r.db.WithContext(ctx).Delete(&pgmodel.ServiceOrder{}, "id = ?", id).Error)
 }

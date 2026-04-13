@@ -1,11 +1,10 @@
 package parthandler
 
 import (
-	"errors"
 	"net/http"
 
+	httputil "github.com/fiap/postech-tc1/internal/adapters/inbound/http"
 	"github.com/fiap/postech-tc1/internal/adapters/inbound/http/commands"
-	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -22,17 +21,13 @@ import (
 func (h *PartHandler) Update(c *gin.Context) {
 	var req commands.UpdatePartRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		httputil.HandleBadRequest(c, err)
 		return
 	}
 
 	part, err := h.getByID.Execute(c.Request.Context(), c.Param("id"))
 	if err != nil {
-		if errors.Is(err, domainerrors.ErrNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "part not found"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		httputil.HandleError(c, err, msgNotFound)
 		return
 	}
 
@@ -53,7 +48,7 @@ func (h *PartHandler) Update(c *gin.Context) {
 	}
 
 	if err := h.update.Execute(c.Request.Context(), part); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		httputil.HandleError(c, err)
 		return
 	}
 

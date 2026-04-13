@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 
+	httputil "github.com/fiap/postech-tc1/internal/adapters/inbound/http"
 	"github.com/fiap/postech-tc1/internal/adapters/inbound/http/commands"
 	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
 	"github.com/gin-gonic/gin"
@@ -21,17 +22,20 @@ import (
 func (h *VehicleHandler) Create(c *gin.Context) {
 	var req commands.CreateVehicleRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		httputil.HandleBadRequest(c, err)
 		return
 	}
 
 	vehicle := req.ToDomain()
 	if err := h.create.Execute(c.Request.Context(), req.CustomerDocument, vehicle); err != nil {
-		if errors.Is(err, domainerrors.ErrNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "customer not found"})
-			return
+		switch {
+		case errors.Is(err, domainerrors.ErrNotFound):
+			httputil.HandleError(c, err, msgCustomerNotFound)
+		case errors.Is(err, domainerrors.ErrAlreadyExists):
+			httputil.HandleError(c, err, msgAlreadyExists)
+		default:
+			httputil.HandleError(c, err)
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 

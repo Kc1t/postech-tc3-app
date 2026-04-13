@@ -10,4 +10,6 @@ var (
 	ErrInvalidStatus       = errors.New("invalid status transition")
 	ErrInsufficientStock   = errors.New("insufficient stock")
 	ErrOrderNotCancellable = errors.New("order cannot be cancelled at current status")
+	ErrInvalidCredentials  = errors.New("invalid credentials")
+	ErrInvalidRefreshToken = errors.New("invalid or expired refresh token")
 )
