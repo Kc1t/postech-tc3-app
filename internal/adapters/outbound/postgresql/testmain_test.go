@@ -1,16 +1,12 @@
 package postgresql
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"os"
 	"testing"
-	"time"
 
 	pgmodel "github.com/fiap/postech-tc1/internal/adapters/outbound/postgresql/model"
-	"github.com/testcontainers/testcontainers-go"
-	"github.com/testcontainers/testcontainers-go/wait"
 	gormpostgres "gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -19,46 +15,15 @@ import (
 var testDB *gorm.DB
 
 func TestMain(m *testing.M) {
-	ctx := context.Background()
-
-	req := testcontainers.ContainerRequest{
-		Image:        "postgres:16-alpine",
-		ExposedPorts: []string{"5432/tcp"},
-		Env: map[string]string{
-			"POSTGRES_DB":       "testdb",
-			"POSTGRES_USER":     "test",
-			"POSTGRES_PASSWORD": "test",
-		},
-		WaitingFor: wait.ForLog("database system is ready to accept connections").
-			WithOccurrence(2).
-			WithStartupTimeout(60 * time.Second),
-	}
-
-	container, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
-		ContainerRequest: req,
-		Started:          true,
-	})
-	if err != nil {
-		log.Fatalf("failed to start postgres container: %v", err)
-	}
-	defer func() {
-		if err := container.Terminate(ctx); err != nil {
-			log.Printf("failed to terminate container: %v", err)
-		}
-	}()
-
-	host, err := container.Host(ctx)
-	if err != nil {
-		log.Fatalf("failed to get container host: %v", err)
-	}
-	port, err := container.MappedPort(ctx, "5432")
-	if err != nil {
-		log.Fatalf("failed to get container port: %v", err)
-	}
+	host := getEnvOrDefault("TEST_DB_HOST", "localhost")
+	port := getEnvOrDefault("TEST_DB_PORT", "5432")
+	user := getEnvOrDefault("TEST_DB_USER", "test")
+	password := getEnvOrDefault("TEST_DB_PASSWORD", "test")
+	dbname := getEnvOrDefault("TEST_DB_NAME", "testdb")
 
 	dsn := fmt.Sprintf(
-		"host=%s port=%s user=test password=test dbname=testdb sslmode=disable",
-		host, port.Port(),
+		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		host, port, user, password, dbname,
 	)
 
 	db, err := gorm.Open(gormpostgres.Open(dsn), &gorm.Config{
@@ -81,4 +46,11 @@ func TestMain(m *testing.M) {
 	testDB = db
 
 	os.Exit(m.Run())
+}
+
+func getEnvOrDefault(key, fallback string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+	return fallback
 }
