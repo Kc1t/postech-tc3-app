@@ -6,10 +6,12 @@ import (
 )
 
 func TestLoad_Defaults(t *testing.T) {
-	os.Unsetenv("APP_PORT")
-	os.Unsetenv("APP_ENV")
-	os.Unsetenv("POSTGRES_DSN")
-	os.Unsetenv("JWT_SECRET")
+	t.Helper()
+	for _, key := range []string{"APP_PORT", "APP_ENV", "POSTGRES_DSN", "JWT_SECRET"} {
+		if err := os.Unsetenv(key); err != nil {
+			t.Fatalf("Unsetenv(%q): %v", key, err)
+		}
+	}
 
 	cfg := Load()
 
@@ -28,13 +30,20 @@ func TestLoad_Defaults(t *testing.T) {
 }
 
 func TestLoad_EnvOverride(t *testing.T) {
-	os.Setenv("APP_PORT", "9090")
-	os.Setenv("APP_ENV", "production")
-	os.Setenv("JWT_SECRET", "my-secret")
+	envs := map[string]string{
+		"APP_PORT":   "9090",
+		"APP_ENV":    "production",
+		"JWT_SECRET": "my-secret",
+	}
+	for k, v := range envs {
+		if err := os.Setenv(k, v); err != nil {
+			t.Fatalf("Setenv(%q): %v", k, err)
+		}
+	}
 	defer func() {
-		os.Unsetenv("APP_PORT")
-		os.Unsetenv("APP_ENV")
-		os.Unsetenv("JWT_SECRET")
+		for k := range envs {
+			_ = os.Unsetenv(k)
+		}
 	}()
 
 	cfg := Load()
@@ -51,8 +60,10 @@ func TestLoad_EnvOverride(t *testing.T) {
 }
 
 func TestGetEnv_WithValue(t *testing.T) {
-	os.Setenv("TEST_KEY_XYZ", "test-value")
-	defer os.Unsetenv("TEST_KEY_XYZ")
+	if err := os.Setenv("TEST_KEY_XYZ", "test-value"); err != nil {
+		t.Fatalf("Setenv: %v", err)
+	}
+	defer func() { _ = os.Unsetenv("TEST_KEY_XYZ") }()
 
 	result := getEnv("TEST_KEY_XYZ", "fallback")
 	if result != "test-value" {
@@ -61,7 +72,9 @@ func TestGetEnv_WithValue(t *testing.T) {
 }
 
 func TestGetEnv_WithFallback(t *testing.T) {
-	os.Unsetenv("TEST_KEY_MISSING")
+	if err := os.Unsetenv("TEST_KEY_MISSING"); err != nil {
+		t.Fatalf("Unsetenv: %v", err)
+	}
 	result := getEnv("TEST_KEY_MISSING", "fallback")
 	if result != "fallback" {
 		t.Errorf("expected %q, got %q", "fallback", result)
