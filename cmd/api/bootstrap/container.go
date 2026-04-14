@@ -8,6 +8,7 @@ import (
 	"github.com/fiap/postech-tc1/internal/adapters/outbound/postgresql"
 	pgmodel "github.com/fiap/postech-tc1/internal/adapters/outbound/postgresql/model"
 	"github.com/fiap/postech-tc1/internal/ports"
+	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
@@ -100,6 +101,7 @@ func GetContainer() *Container {
 }
 
 func (c *Container) initialize() {
+	_ = godotenv.Load()
 	c.Config = config.Load()
 	c.setupDatabase()
 	c.setupRepositories()
