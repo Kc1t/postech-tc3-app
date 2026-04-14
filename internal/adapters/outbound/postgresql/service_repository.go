@@ -37,7 +37,7 @@ func (r *serviceRepository) FindByID(ctx context.Context, id string) (*entities.
 func (r *serviceRepository) FindByIDs(ctx context.Context, ids []string) ([]*entities.Service, error) {
 	var docs []pgmodel.Service
 	if err := r.db.WithContext(ctx).Where("id IN ?", ids).Find(&docs).Error; err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 	services := make([]*entities.Service, 0, len(docs))
 	for i := range docs {

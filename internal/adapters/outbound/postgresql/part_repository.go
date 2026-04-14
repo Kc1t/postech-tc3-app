@@ -37,7 +37,7 @@ func (r *partRepository) FindByID(ctx context.Context, id string) (*entities.Par
 func (r *partRepository) FindByIDs(ctx context.Context, ids []string) ([]*entities.Part, error) {
 	var docs []pgmodel.Part
 	if err := r.db.WithContext(ctx).Where("id IN ?", ids).Find(&docs).Error; err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 	parts := make([]*entities.Part, 0, len(docs))
 	for i := range docs {
