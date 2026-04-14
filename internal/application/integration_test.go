@@ -11,8 +11,8 @@ import (
 	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
 
 	customeruc "github.com/fiap/postech-tc1/internal/application/usecase/customer"
-	vehicleuc "github.com/fiap/postech-tc1/internal/application/usecase/vehicle"
 	serviceorderuc "github.com/fiap/postech-tc1/internal/application/usecase/service_order"
+	vehicleuc "github.com/fiap/postech-tc1/internal/application/usecase/vehicle"
 )
 
 // =============================================================================
@@ -235,8 +235,10 @@ func (r *inMemoryServiceOrderRepo) FindByID(_ context.Context, id string) (*enti
 func (r *inMemoryServiceOrderRepo) UpdateStatus(_ context.Context, id string, status entities.OrderStatus) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	if so, ok := r.data[id]; ok {
-		so.UpdateStatus(status)
+	if _, ok := r.data[id]; ok {
+		// O use case ja validou e aplicou a transicao na entidade.
+		// O repo apenas persiste — como o objeto em memoria ja foi atualizado
+		// pelo use case, nao precisamos fazer nada aqui.
 		return nil
 	}
 	return domainerrors.ErrNotFound
@@ -292,6 +294,26 @@ func setupTestEnv() *testEnv {
 	}
 }
 
+// setupCustomerAndVehicle cria um cliente e veiculo para testes, falhando se houver erro.
+func setupCustomerAndVehicle(t *testing.T, env *testEnv, ctx context.Context) (*entities.Customer, *entities.Vehicle) {
+	t.Helper()
+	customer, err := entities.NewCustomer("Diego", "52998224725", "d@e.com", "")
+	if err != nil {
+		t.Fatalf("erro ao criar customer: %v", err)
+	}
+	if err := env.createCustomer.Execute(ctx, customer); err != nil {
+		t.Fatalf("erro ao persistir customer: %v", err)
+	}
+	vehicle, err := entities.NewVehicle(customer.ID(), "ABC-1234", "Fiat", "Uno", 2020)
+	if err != nil {
+		t.Fatalf("erro ao criar vehicle: %v", err)
+	}
+	if err := env.createVehicle.Execute(ctx, vehicle); err != nil {
+		t.Fatalf("erro ao persistir vehicle: %v", err)
+	}
+	return customer, vehicle
+}
+
 // =============================================================================
 // TESTE 1 — Validacao CPF/CNPJ no fluxo de criacao de cliente
 // =============================================================================
@@ -309,7 +331,7 @@ func TestIntegracao_CriarCliente_CPFValido(t *testing.T) {
 		t.Fatalf("criar cliente deveria ter sucesso: %v", err)
 	}
 
-	t.Logf("✓ Cliente criado: ID=%s, Doc=%s (tipo=%s)", customer.ID(), customer.DocumentVO().Formatted(), customer.DocumentVO().Type())
+	t.Logf("Cliente criado: ID=%s, Doc=%s (tipo=%s)", customer.ID(), customer.DocumentVO().Formatted(), customer.DocumentVO().Type())
 }
 
 func TestIntegracao_CriarCliente_CNPJValido(t *testing.T) {
@@ -325,7 +347,7 @@ func TestIntegracao_CriarCliente_CNPJValido(t *testing.T) {
 		t.Fatalf("criar cliente PJ deveria ter sucesso: %v", err)
 	}
 
-	t.Logf("✓ Cliente PJ criado: ID=%s, Doc=%s (tipo=%s)", customer.ID(), customer.DocumentVO().Formatted(), customer.DocumentVO().Type())
+	t.Logf("Cliente PJ criado: ID=%s, Doc=%s (tipo=%s)", customer.ID(), customer.DocumentVO().Formatted(), customer.DocumentVO().Type())
 }
 
 func TestIntegracao_CriarCliente_CPFInvalido(t *testing.T) {
@@ -333,7 +355,7 @@ func TestIntegracao_CriarCliente_CPFInvalido(t *testing.T) {
 	if err == nil {
 		t.Fatal("CPF invalido deveria ser rejeitado na criacao da entidade")
 	}
-	t.Logf("✓ CPF invalido rejeitado: %v", err)
+	t.Logf("CPF invalido rejeitado: %v", err)
 }
 
 func TestIntegracao_CriarCliente_DocumentoDuplicado(t *testing.T) {
@@ -341,14 +363,16 @@ func TestIntegracao_CriarCliente_DocumentoDuplicado(t *testing.T) {
 	ctx := context.Background()
 
 	c1, _ := entities.NewCustomer("Diego", "529.982.247-25", "d@e.com", "")
-	env.createCustomer.Execute(ctx, c1)
+	if err := env.createCustomer.Execute(ctx, c1); err != nil {
+		t.Fatalf("primeiro cliente deveria ser criado: %v", err)
+	}
 
 	c2, _ := entities.NewCustomer("Outro Diego", "52998224725", "outro@e.com", "")
 	err := env.createCustomer.Execute(ctx, c2)
 	if err == nil {
 		t.Fatal("documento duplicado deveria ser rejeitado")
 	}
-	t.Logf("✓ Duplicidade detectada: %v", err)
+	t.Logf("Duplicidade detectada: %v", err)
 }
 
 // =============================================================================
@@ -359,9 +383,10 @@ func TestIntegracao_CriarVeiculo_PlacaAntigaValida(t *testing.T) {
 	env := setupTestEnv()
 	ctx := context.Background()
 
-	// Criar cliente primeiro
 	customer, _ := entities.NewCustomer("Diego", "52998224725", "d@e.com", "")
-	env.createCustomer.Execute(ctx, customer)
+	if err := env.createCustomer.Execute(ctx, customer); err != nil {
+		t.Fatalf("setup falhou: %v", err)
+	}
 
 	vehicle, err := entities.NewVehicle(customer.ID(), "ABC-1234", "Fiat", "Uno", 2020)
 	if err != nil {
@@ -372,7 +397,7 @@ func TestIntegracao_CriarVeiculo_PlacaAntigaValida(t *testing.T) {
 		t.Fatalf("criar veiculo deveria ter sucesso: %v", err)
 	}
 
-	t.Logf("✓ Veiculo criado: ID=%s, Placa=%s (formato=%s)", vehicle.ID(), vehicle.PlateVO().String(), vehicle.PlateVO().Format())
+	t.Logf("Veiculo criado: ID=%s, Placa=%s (formato=%s)", vehicle.ID(), vehicle.PlateVO().String(), vehicle.PlateVO().Format())
 }
 
 func TestIntegracao_CriarVeiculo_PlacaMercosulValida(t *testing.T) {
@@ -380,7 +405,9 @@ func TestIntegracao_CriarVeiculo_PlacaMercosulValida(t *testing.T) {
 	ctx := context.Background()
 
 	customer, _ := entities.NewCustomer("Diego", "52998224725", "d@e.com", "")
-	env.createCustomer.Execute(ctx, customer)
+	if err := env.createCustomer.Execute(ctx, customer); err != nil {
+		t.Fatalf("setup falhou: %v", err)
+	}
 
 	vehicle, err := entities.NewVehicle(customer.ID(), "BRA0S18", "VW", "Gol", 2022)
 	if err != nil {
@@ -391,7 +418,7 @@ func TestIntegracao_CriarVeiculo_PlacaMercosulValida(t *testing.T) {
 		t.Fatalf("criar veiculo deveria ter sucesso: %v", err)
 	}
 
-	t.Logf("✓ Veiculo criado: ID=%s, Placa=%s (formato=%s)", vehicle.ID(), vehicle.PlateVO().String(), vehicle.PlateVO().Format())
+	t.Logf("Veiculo criado: ID=%s, Placa=%s (formato=%s)", vehicle.ID(), vehicle.PlateVO().String(), vehicle.PlateVO().Format())
 }
 
 func TestIntegracao_CriarVeiculo_PlacaInvalida(t *testing.T) {
@@ -399,7 +426,7 @@ func TestIntegracao_CriarVeiculo_PlacaInvalida(t *testing.T) {
 	if err == nil {
 		t.Fatal("placa invalida deveria ser rejeitada")
 	}
-	t.Logf("✓ Placa invalida rejeitada: %v", err)
+	t.Logf("Placa invalida rejeitada: %v", err)
 }
 
 func TestIntegracao_CriarVeiculo_ClienteInexistente(t *testing.T) {
@@ -411,7 +438,7 @@ func TestIntegracao_CriarVeiculo_ClienteInexistente(t *testing.T) {
 	if err == nil {
 		t.Fatal("deveria rejeitar veiculo para cliente inexistente")
 	}
-	t.Logf("✓ Cliente inexistente detectado: %v", err)
+	t.Logf("Cliente inexistente detectado: %v", err)
 }
 
 // =============================================================================
@@ -422,26 +449,28 @@ func TestIntegracao_CriarOS_OrcamentoAutomatico(t *testing.T) {
 	env := setupTestEnv()
 	ctx := context.Background()
 
-	// Setup: cliente + veiculo + servicos + pecas
-	customer, _ := entities.NewCustomer("Diego", "52998224725", "d@e.com", "")
-	env.createCustomer.Execute(ctx, customer)
-
-	vehicle, _ := entities.NewVehicle(customer.ID(), "ABC-1234", "Fiat", "Uno", 2020)
-	env.createVehicle.Execute(ctx, vehicle)
+	customer, vehicle := setupCustomerAndVehicle(t, env, ctx)
 
 	svc1 := entities.NewService("Troca de oleo", "Troca completa de oleo", 150.00, 30)
-	env.serviceRepo.Create(ctx, svc1)
+	if err := env.serviceRepo.Create(ctx, svc1); err != nil {
+		t.Fatalf("setup svc1 falhou: %v", err)
+	}
 
 	svc2 := entities.NewService("Alinhamento", "Alinhamento e balanceamento", 120.00, 45)
-	env.serviceRepo.Create(ctx, svc2)
+	if err := env.serviceRepo.Create(ctx, svc2); err != nil {
+		t.Fatalf("setup svc2 falhou: %v", err)
+	}
 
 	part1 := entities.NewPart("Filtro de oleo", "Filtro WIX", "un", 35.00, 50)
-	env.partRepo.Create(ctx, part1)
+	if err := env.partRepo.Create(ctx, part1); err != nil {
+		t.Fatalf("setup part1 falhou: %v", err)
+	}
 
 	part2 := entities.NewPart("Oleo 5W30", "Oleo sintetico 1L", "litro", 45.00, 100)
-	env.partRepo.Create(ctx, part2)
+	if err := env.partRepo.Create(ctx, part2); err != nil {
+		t.Fatalf("setup part2 falhou: %v", err)
+	}
 
-	// Criar OS com precos "do input" (que serao sobrescritos pelo orcamento)
 	so := entities.NewServiceOrder(customer.ID(), vehicle.ID())
 	so.AddService(entities.ServiceItem{ServiceID: svc1.ID(), Description: "qualquer", Price: 999.99})
 	so.AddService(entities.ServiceItem{ServiceID: svc2.ID(), Description: "qualquer", Price: 999.99})
@@ -452,32 +481,16 @@ func TestIntegracao_CriarOS_OrcamentoAutomatico(t *testing.T) {
 		t.Fatalf("criar OS deveria ter sucesso: %v", err)
 	}
 
-	// Verificar: precos vieram do cadastro, nao do input
-	t.Logf("── Orcamento gerado ──")
-
-	for _, s := range so.Services() {
-		t.Logf("  Servico: %s = R$ %.2f", s.Description, s.Price)
-	}
-	for _, p := range so.Parts() {
-		t.Logf("  Peca:    %s x%d = R$ %.2f (un: R$ %.2f)", p.Description, p.Quantity, float64(p.Quantity)*p.UnitPrice, p.UnitPrice)
-	}
-
-	// Total esperado: 150 + 120 + (2*35) + (4*45) = 150 + 120 + 70 + 180 = 520
 	expectedTotal := 520.00
 	if so.TotalAmount() != expectedTotal {
 		t.Errorf("TotalAmount = %.2f, esperava %.2f", so.TotalAmount(), expectedTotal)
 	}
-	t.Logf("  TOTAL:   R$ %.2f ✓", so.TotalAmount())
-
-	// Verificar que descricoes vieram do cadastro
 	if so.Services()[0].Description != "Troca de oleo" {
 		t.Errorf("Descricao do servico deveria vir do cadastro, veio: %q", so.Services()[0].Description)
 	}
 	if so.Services()[0].Price != 150.00 {
 		t.Errorf("Preco deveria ser 150.00 (do cadastro), veio: %.2f", so.Services()[0].Price)
 	}
-
-	t.Logf("✓ Orcamento automatico: precos do cadastro, input ignorado, total correto")
 }
 
 func TestIntegracao_CriarOS_VeiculoDeOutroCliente(t *testing.T) {
@@ -485,39 +498,39 @@ func TestIntegracao_CriarOS_VeiculoDeOutroCliente(t *testing.T) {
 	ctx := context.Background()
 
 	c1, _ := entities.NewCustomer("Diego", "52998224725", "d@e.com", "")
-	env.createCustomer.Execute(ctx, c1)
+	if err := env.createCustomer.Execute(ctx, c1); err != nil {
+		t.Fatalf("setup c1 falhou: %v", err)
+	}
 
 	c2, _ := entities.NewCustomer("Maria", "11222333000181", "m@e.com", "")
-	env.createCustomer.Execute(ctx, c2)
+	if err := env.createCustomer.Execute(ctx, c2); err != nil {
+		t.Fatalf("setup c2 falhou: %v", err)
+	}
 
-	// Veiculo pertence a Diego (c1)
 	vehicle, _ := entities.NewVehicle(c1.ID(), "ABC-1234", "Fiat", "Uno", 2020)
-	env.createVehicle.Execute(ctx, vehicle)
+	if err := env.createVehicle.Execute(ctx, vehicle); err != nil {
+		t.Fatalf("setup vehicle falhou: %v", err)
+	}
 
-	// Tentar criar OS para Maria (c2) com veiculo do Diego
 	so := entities.NewServiceOrder(c2.ID(), vehicle.ID())
 	err := env.createOrder.Execute(ctx, so)
 	if err == nil {
 		t.Fatal("deveria rejeitar OS com veiculo de outro cliente")
 	}
-	t.Logf("✓ Veiculo de outro cliente rejeitado: %v", err)
+	t.Logf("Veiculo de outro cliente rejeitado: %v", err)
 }
 
 func TestIntegracao_CriarOS_EstoqueInsuficiente(t *testing.T) {
 	env := setupTestEnv()
 	ctx := context.Background()
 
-	customer, _ := entities.NewCustomer("Diego", "52998224725", "d@e.com", "")
-	env.createCustomer.Execute(ctx, customer)
+	customer, vehicle := setupCustomerAndVehicle(t, env, ctx)
 
-	vehicle, _ := entities.NewVehicle(customer.ID(), "ABC-1234", "Fiat", "Uno", 2020)
-	env.createVehicle.Execute(ctx, vehicle)
-
-	// Peca com estoque = 2
 	part := entities.NewPart("Filtro raro", "Filtro especial", "un", 100.00, 2)
-	env.partRepo.Create(ctx, part)
+	if err := env.partRepo.Create(ctx, part); err != nil {
+		t.Fatalf("setup part falhou: %v", err)
+	}
 
-	// Pedir 10 unidades (estoque = 2)
 	so := entities.NewServiceOrder(customer.ID(), vehicle.ID())
 	so.AddPart(entities.PartItem{PartID: part.ID(), Quantity: 10})
 
@@ -525,7 +538,7 @@ func TestIntegracao_CriarOS_EstoqueInsuficiente(t *testing.T) {
 	if err == nil {
 		t.Fatal("deveria rejeitar por estoque insuficiente")
 	}
-	t.Logf("✓ Estoque insuficiente detectado: %v", err)
+	t.Logf("Estoque insuficiente detectado: %v", err)
 }
 
 // =============================================================================
@@ -536,22 +549,16 @@ func TestIntegracao_FluxoCompleto_StatusOS(t *testing.T) {
 	env := setupTestEnv()
 	ctx := context.Background()
 
-	// Setup
-	customer, _ := entities.NewCustomer("Diego", "52998224725", "d@e.com", "")
-	env.createCustomer.Execute(ctx, customer)
-
-	vehicle, _ := entities.NewVehicle(customer.ID(), "ABC-1234", "Fiat", "Uno", 2020)
-	env.createVehicle.Execute(ctx, vehicle)
+	customer, vehicle := setupCustomerAndVehicle(t, env, ctx)
 
 	so := entities.NewServiceOrder(customer.ID(), vehicle.ID())
-	env.createOrder.Execute(ctx, so)
+	if err := env.createOrder.Execute(ctx, so); err != nil {
+		t.Fatalf("criar OS falhou: %v", err)
+	}
 
-	t.Logf("OS criada: ID=%s, Status=%s", so.ID(), so.Status())
-
-	// Fluxo completo: received -> ... -> delivered
 	transicoes := []struct {
-		para    entities.OrderStatus
-		descr   string
+		para  entities.OrderStatus
+		descr string
 	}{
 		{entities.StatusInDiagnosis, "Mecanico inicia diagnostico"},
 		{entities.StatusAwaitingApproval, "Diagnostico concluido, aguarda aprovacao"},
@@ -564,105 +571,91 @@ func TestIntegracao_FluxoCompleto_StatusOS(t *testing.T) {
 		if err := env.updateStatus.Execute(ctx, so.ID(), tr.para); err != nil {
 			t.Fatalf("transicao para %q falhou: %v", tr.para, err)
 		}
-
-		// Buscar do repo pra confirmar persistencia
 		found, _ := env.serviceOrderRepo.FindByID(ctx, so.ID())
-		t.Logf("  %s → Status: %s ✓", tr.descr, found.Status())
+		t.Logf("  %s -> Status: %s", tr.descr, found.Status())
 	}
-
-	t.Logf("✓ Fluxo completo concluido com sucesso")
 }
 
 func TestIntegracao_StatusOS_TransicaoInvalida_PularEtapa(t *testing.T) {
 	env := setupTestEnv()
 	ctx := context.Background()
 
-	customer, _ := entities.NewCustomer("Diego", "52998224725", "d@e.com", "")
-	env.createCustomer.Execute(ctx, customer)
-
-	vehicle, _ := entities.NewVehicle(customer.ID(), "ABC-1234", "Fiat", "Uno", 2020)
-	env.createVehicle.Execute(ctx, vehicle)
+	customer, vehicle := setupCustomerAndVehicle(t, env, ctx)
 
 	so := entities.NewServiceOrder(customer.ID(), vehicle.ID())
-	env.createOrder.Execute(ctx, so)
+	if err := env.createOrder.Execute(ctx, so); err != nil {
+		t.Fatalf("criar OS falhou: %v", err)
+	}
 
-	// Tentar pular de received direto para finished
 	err := env.updateStatus.Execute(ctx, so.ID(), entities.StatusFinished)
 	if err == nil {
 		t.Fatal("nao deveria permitir pular de received para finished")
 	}
 
-	// Verificar que o status nao mudou
 	found, _ := env.serviceOrderRepo.FindByID(ctx, so.ID())
 	if found.Status() != entities.StatusReceived {
 		t.Errorf("status deveria permanecer received, esta: %s", found.Status())
 	}
-
-	t.Logf("✓ Pulo de etapa bloqueado: %v (status permanece: %s)", err, found.Status())
 }
 
 func TestIntegracao_StatusOS_RecusaDoCliente(t *testing.T) {
 	env := setupTestEnv()
 	ctx := context.Background()
 
-	customer, _ := entities.NewCustomer("Diego", "52998224725", "d@e.com", "")
-	env.createCustomer.Execute(ctx, customer)
-
-	vehicle, _ := entities.NewVehicle(customer.ID(), "ABC-1234", "Fiat", "Uno", 2020)
-	env.createVehicle.Execute(ctx, vehicle)
+	customer, vehicle := setupCustomerAndVehicle(t, env, ctx)
 
 	so := entities.NewServiceOrder(customer.ID(), vehicle.ID())
-	env.createOrder.Execute(ctx, so)
+	if err := env.createOrder.Execute(ctx, so); err != nil {
+		t.Fatalf("criar OS falhou: %v", err)
+	}
 
-	// received -> in_diagnosis -> awaiting_approval
-	env.updateStatus.Execute(ctx, so.ID(), entities.StatusInDiagnosis)
-	env.updateStatus.Execute(ctx, so.ID(), entities.StatusAwaitingApproval)
+	if err := env.updateStatus.Execute(ctx, so.ID(), entities.StatusInDiagnosis); err != nil {
+		t.Fatalf("transicao para in_diagnosis falhou: %v", err)
+	}
+	if err := env.updateStatus.Execute(ctx, so.ID(), entities.StatusAwaitingApproval); err != nil {
+		t.Fatalf("transicao para awaiting_approval falhou: %v", err)
+	}
 
-	// Cliente RECUSA o orcamento → volta para received
-	err := env.updateStatus.Execute(ctx, so.ID(), entities.StatusReceived)
-	if err != nil {
+	if err := env.updateStatus.Execute(ctx, so.ID(), entities.StatusReceived); err != nil {
 		t.Fatalf("recusa deveria ser permitida: %v", err)
 	}
 
 	found, _ := env.serviceOrderRepo.FindByID(ctx, so.ID())
-	t.Logf("✓ Cliente recusou orcamento: status voltou para %s", found.Status())
+	t.Logf("Cliente recusou orcamento: status voltou para %s", found.Status())
 
-	// Deve poder reiniciar o fluxo
-	err = env.updateStatus.Execute(ctx, so.ID(), entities.StatusInDiagnosis)
-	if err != nil {
+	if err := env.updateStatus.Execute(ctx, so.ID(), entities.StatusInDiagnosis); err != nil {
 		t.Fatalf("reinicio do fluxo deveria ser permitido: %v", err)
 	}
-
-	t.Logf("✓ Fluxo reiniciado com sucesso apos recusa")
 }
 
 func TestIntegracao_StatusOS_EstadoTerminal(t *testing.T) {
 	env := setupTestEnv()
 	ctx := context.Background()
 
-	customer, _ := entities.NewCustomer("Diego", "52998224725", "d@e.com", "")
-	env.createCustomer.Execute(ctx, customer)
-
-	vehicle, _ := entities.NewVehicle(customer.ID(), "ABC-1234", "Fiat", "Uno", 2020)
-	env.createVehicle.Execute(ctx, vehicle)
+	customer, vehicle := setupCustomerAndVehicle(t, env, ctx)
 
 	so := entities.NewServiceOrder(customer.ID(), vehicle.ID())
-	env.createOrder.Execute(ctx, so)
+	if err := env.createOrder.Execute(ctx, so); err != nil {
+		t.Fatalf("criar OS falhou: %v", err)
+	}
 
-	// Percorrer todo o fluxo ate delivered
-	env.updateStatus.Execute(ctx, so.ID(), entities.StatusInDiagnosis)
-	env.updateStatus.Execute(ctx, so.ID(), entities.StatusAwaitingApproval)
-	env.updateStatus.Execute(ctx, so.ID(), entities.StatusInExecution)
-	env.updateStatus.Execute(ctx, so.ID(), entities.StatusFinished)
-	env.updateStatus.Execute(ctx, so.ID(), entities.StatusDelivered)
+	fluxo := []entities.OrderStatus{
+		entities.StatusInDiagnosis,
+		entities.StatusAwaitingApproval,
+		entities.StatusInExecution,
+		entities.StatusFinished,
+		entities.StatusDelivered,
+	}
+	for _, status := range fluxo {
+		if err := env.updateStatus.Execute(ctx, so.ID(), status); err != nil {
+			t.Fatalf("transicao para %q falhou: %v", status, err)
+		}
+	}
 
-	// Tentar qualquer transicao a partir de delivered
 	err := env.updateStatus.Execute(ctx, so.ID(), entities.StatusReceived)
 	if err == nil {
 		t.Fatal("delivered e estado terminal, nao deveria aceitar transicao")
 	}
-
-	t.Logf("✓ Estado terminal (delivered) bloqueou transicao: %v", err)
 }
 
 // =============================================================================
@@ -673,36 +666,53 @@ func TestIntegracao_FluxoCompletoOficina(t *testing.T) {
 	env := setupTestEnv()
 	ctx := context.Background()
 
-	t.Log("━━━ SIMULACAO: Fluxo completo de atendimento da oficina ━━━")
-	t.Log("")
+	t.Log("SIMULACAO: Fluxo completo de atendimento da oficina")
 
 	// 1. Cadastrar cliente
-	customer, _ := entities.NewCustomer("Carlos Mecenas", "529.982.247-25", "carlos@email.com", "11987654321")
-	env.createCustomer.Execute(ctx, customer)
+	customer, err := entities.NewCustomer("Carlos Mecenas", "529.982.247-25", "carlos@email.com", "11987654321")
+	if err != nil {
+		t.Fatalf("erro ao criar customer: %v", err)
+	}
+	if err := env.createCustomer.Execute(ctx, customer); err != nil {
+		t.Fatalf("erro ao persistir customer: %v", err)
+	}
 	t.Logf("1. Cliente cadastrado: %s (CPF: %s)", customer.Name(), customer.DocumentVO().Formatted())
 
 	// 2. Cadastrar veiculo
-	vehicle, _ := entities.NewVehicle(customer.ID(), "BRA0S18", "Honda", "Civic", 2023)
-	env.createVehicle.Execute(ctx, vehicle)
+	vehicle, err := entities.NewVehicle(customer.ID(), "BRA0S18", "Honda", "Civic", 2023)
+	if err != nil {
+		t.Fatalf("erro ao criar vehicle: %v", err)
+	}
+	if err := env.createVehicle.Execute(ctx, vehicle); err != nil {
+		t.Fatalf("erro ao persistir vehicle: %v", err)
+	}
 	t.Logf("2. Veiculo cadastrado: %s %s %d (Placa: %s - %s)", vehicle.Brand(), vehicle.Model(), vehicle.Year(), vehicle.PlateVO().String(), vehicle.PlateVO().Format())
 
-	// 3. Cadastrar servicos e pecas disponíveis
+	// 3. Cadastrar servicos e pecas
 	svcRevisao := entities.NewService("Revisao completa", "Revisao dos 30.000km", 450.00, 120)
-	env.serviceRepo.Create(ctx, svcRevisao)
+	if err := env.serviceRepo.Create(ctx, svcRevisao); err != nil {
+		t.Fatalf("setup svcRevisao falhou: %v", err)
+	}
 
 	svcFreio := entities.NewService("Troca de pastilha", "Troca pastilha de freio dianteira", 180.00, 60)
-	env.serviceRepo.Create(ctx, svcFreio)
+	if err := env.serviceRepo.Create(ctx, svcFreio); err != nil {
+		t.Fatalf("setup svcFreio falhou: %v", err)
+	}
 
 	partPastilha := entities.NewPart("Pastilha Bosch", "Pastilha de freio dianteira", "jogo", 189.90, 15)
-	env.partRepo.Create(ctx, partPastilha)
+	if err := env.partRepo.Create(ctx, partPastilha); err != nil {
+		t.Fatalf("setup partPastilha falhou: %v", err)
+	}
 
 	partOleo := entities.NewPart("Oleo Mobil 5W30", "Oleo sintetico 1L", "litro", 52.90, 200)
-	env.partRepo.Create(ctx, partOleo)
+	if err := env.partRepo.Create(ctx, partOleo); err != nil {
+		t.Fatalf("setup partOleo falhou: %v", err)
+	}
 
 	partFiltro := entities.NewPart("Filtro de oleo", "Filtro Tecfil", "un", 38.50, 30)
-	env.partRepo.Create(ctx, partFiltro)
-
-	t.Logf("3. Catalogo: %d servicos, %d pecas cadastrados", 2, 3)
+	if err := env.partRepo.Create(ctx, partFiltro); err != nil {
+		t.Fatalf("setup partFiltro falhou: %v", err)
+	}
 
 	// 4. Criar OS com orcamento automatico
 	so := entities.NewServiceOrder(customer.ID(), vehicle.ID())
@@ -717,20 +727,7 @@ func TestIntegracao_FluxoCompletoOficina(t *testing.T) {
 		t.Fatalf("criar OS falhou: %v", err)
 	}
 
-	t.Logf("4. OS criada: #%s", so.ID())
-	t.Logf("   Obs: %s", so.Notes())
-	t.Log("   ── Orcamento ──")
-	for _, s := range so.Services() {
-		t.Logf("   Servico: %-30s R$ %8.2f", s.Description, s.Price)
-	}
-	for _, p := range so.Parts() {
-		t.Logf("   Peca:    %-20s x%-2d   R$ %8.2f", p.Description, p.Quantity, float64(p.Quantity)*p.UnitPrice)
-	}
-
-	// Total: 450 + 180 + 189.90 + (4*52.90) + 38.50 = 450 + 180 + 189.90 + 211.60 + 38.50 = 1070.00
-	t.Logf("   ─────────────────────────────────────")
-	t.Logf("   TOTAL:                        R$ %8.2f", so.TotalAmount())
-	t.Log("")
+	t.Logf("4. OS criada: #%s (Total: R$ %.2f)", so.ID(), so.TotalAmount())
 
 	expectedTotal := 1070.00
 	if so.TotalAmount() != expectedTotal {
@@ -754,10 +751,9 @@ func TestIntegracao_FluxoCompletoOficina(t *testing.T) {
 			t.Fatalf("passo %d falhou: %v", i+1, err)
 		}
 		found, _ := env.serviceOrderRepo.FindByID(ctx, so.ID())
-		t.Logf("5.%d %s → [%s]", i+1, step.msg, found.Status())
+		t.Logf("5.%d %s -> [%s]", i+1, step.msg, found.Status())
 	}
 
-	t.Log("")
-	t.Logf("━━━ FLUXO COMPLETO CONCLUIDO COM SUCESSO ━━━")
+	t.Logf("FLUXO COMPLETO CONCLUIDO COM SUCESSO")
 	t.Logf("   Tempo do teste: %s", time.Since(time.Now().Add(-time.Millisecond)).Round(time.Millisecond))
 }
