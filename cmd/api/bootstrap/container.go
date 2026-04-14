@@ -8,6 +8,7 @@ import (
 	"github.com/fiap/postech-tc1/internal/adapters/outbound/postgresql"
 	pgmodel "github.com/fiap/postech-tc1/internal/adapters/outbound/postgresql/model"
 	"github.com/fiap/postech-tc1/internal/ports"
+	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
@@ -100,6 +101,7 @@ func GetContainer() *Container {
 }
 
 func (c *Container) initialize() {
+	_ = godotenv.Load()
 	c.Config = config.Load()
 	c.setupDatabase()
 	c.setupRepositories()
@@ -186,12 +188,11 @@ func (c *Container) setupHandlers() {
 	)
 	c.VehicleHandler = vehiclehandler.NewVehicleHandler(
 		c.CreateVehicle, c.GetVehicle, c.ListVehicles,
-		c.ListVehiclesByCustomer, c.UpdateVehicle, c.DeleteVehicle,
+		c.UpdateVehicle, c.DeleteVehicle,
 	)
 	c.ServiceOrderHandler = serviceorderhandler.NewServiceOrderHandler(
 		c.CreateServiceOrder, c.GetServiceOrder, c.ListServiceOrders,
-		c.ListServiceOrdersByCustomer, c.UpdateServiceOrderStatus,
-		c.UpdateServiceOrder, c.DeleteServiceOrder,
+		c.UpdateServiceOrderStatus, c.UpdateServiceOrder, c.DeleteServiceOrder,
 	)
 	c.ServiceHandler = servicehandler.NewServiceHandler(
 		c.CreateService, c.GetService, c.ListServices,

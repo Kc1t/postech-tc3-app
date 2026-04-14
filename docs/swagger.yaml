@@ -1,0 +1,732 @@
+basePath: /api/v1
+definitions:
+  commands.AdjustStockRequest:
+    properties:
+      delta:
+        description: positivo = entrada, negativo = saida
+        type: integer
+    required:
+    - delta
+    type: object
+  commands.CreateCustomerRequest:
+    properties:
+      document:
+        type: string
+      email:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+    required:
+    - document
+    - email
+    - name
+    type: object
+  commands.CreatePartRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      price:
+        type: number
+      stock:
+        minimum: 0
+        type: integer
+      unit:
+        type: string
+    required:
+    - name
+    - price
+    - unit
+    type: object
+  commands.CreateServiceRequest:
+    properties:
+      description:
+        type: string
+      duration_min:
+        type: integer
+      name:
+        type: string
+      price:
+        type: number
+    required:
+    - duration_min
+    - name
+    - price
+    type: object
+  commands.CreateVehicleRequest:
+    properties:
+      brand:
+        type: string
+      customer_document:
+        type: string
+      model:
+        type: string
+      plate:
+        type: string
+      year:
+        type: integer
+    required:
+    - brand
+    - customer_document
+    - model
+    - plate
+    - year
+    type: object
+  commands.CustomerResponse:
+    properties:
+      created_at:
+        type: string
+      document:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  commands.PartResponse:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      price:
+        type: number
+      stock:
+        type: integer
+      unit:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  commands.ServiceResponse:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      duration_min:
+        type: integer
+      id:
+        type: string
+      name:
+        type: string
+      price:
+        type: number
+      updated_at:
+        type: string
+    type: object
+  commands.UpdateCustomerRequest:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+    type: object
+  commands.UpdatePartRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      price:
+        type: number
+      stock:
+        minimum: 0
+        type: integer
+      unit:
+        type: string
+    type: object
+  commands.UpdateServiceRequest:
+    properties:
+      description:
+        type: string
+      duration_min:
+        type: integer
+      name:
+        type: string
+      price:
+        type: number
+    type: object
+  commands.UpdateVehicleRequest:
+    properties:
+      brand:
+        type: string
+      model:
+        type: string
+      plate:
+        type: string
+      year:
+        type: integer
+    type: object
+  commands.VehicleResponse:
+    properties:
+      brand:
+        type: string
+      created_at:
+        type: string
+      customer_id:
+        type: string
+      id:
+        type: string
+      model:
+        type: string
+      plate:
+        type: string
+      updated_at:
+        type: string
+      year:
+        type: integer
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: Sistema Integrado de Atendimento e Execucao de Servicos — Oficina Mecanica
+  title: Workshop API
+  version: "1.0"
+paths:
+  /customers:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/commands.CustomerResponse'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Listar clientes
+      tags:
+      - customers
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dados do cliente
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/commands.CreateCustomerRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/commands.CustomerResponse'
+      security:
+      - BearerAuth: []
+      summary: Criar cliente
+      tags:
+      - customers
+  /customers/{id}:
+    delete:
+      parameters:
+      - description: Customer ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+      security:
+      - BearerAuth: []
+      summary: Deletar cliente
+      tags:
+      - customers
+    get:
+      parameters:
+      - description: Customer ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/commands.CustomerResponse'
+      security:
+      - BearerAuth: []
+      summary: Buscar cliente por ID
+      tags:
+      - customers
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Customer ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Dados para atualizar
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/commands.UpdateCustomerRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/commands.CustomerResponse'
+      security:
+      - BearerAuth: []
+      summary: Atualizar cliente
+      tags:
+      - customers
+  /customers/document/{document}:
+    get:
+      parameters:
+      - description: Customer Document
+        in: path
+        name: document
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - BearerAuth: []
+      summary: Buscar cliente por documento
+      tags:
+      - customers
+  /parts:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/commands.PartResponse'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Listar pecas/insumos
+      tags:
+      - parts
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dados da peca
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/commands.CreatePartRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/commands.PartResponse'
+      security:
+      - BearerAuth: []
+      summary: Cadastrar peca/insumo
+      tags:
+      - parts
+  /parts/{id}:
+    delete:
+      parameters:
+      - description: Part ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+      security:
+      - BearerAuth: []
+      summary: Deletar peca/insumo
+      tags:
+      - parts
+    get:
+      parameters:
+      - description: Part ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/commands.PartResponse'
+      security:
+      - BearerAuth: []
+      summary: Buscar peca/insumo por ID
+      tags:
+      - parts
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Part ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Dados para atualizar
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/commands.UpdatePartRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/commands.PartResponse'
+      security:
+      - BearerAuth: []
+      summary: Atualizar peca/insumo
+      tags:
+      - parts
+  /parts/{id}/stock:
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Part ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Delta de estoque
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/commands.AdjustStockRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      security:
+      - BearerAuth: []
+      summary: Ajustar estoque de peca/insumo
+      tags:
+      - parts
+  /service-orders:
+    get:
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - BearerAuth: []
+      summary: Listar ordens de servico
+      tags:
+      - service-orders
+    post:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - BearerAuth: []
+      summary: Criar ordem de servico
+      tags:
+      - service-orders
+  /service-orders/{id}:
+    delete:
+      parameters:
+      - description: ServiceOrder ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - BearerAuth: []
+      summary: Deletar ordem de servico
+      tags:
+      - service-orders
+    get:
+      parameters:
+      - description: ServiceOrder ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - BearerAuth: []
+      summary: Buscar ordem de servico por ID
+      tags:
+      - service-orders
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: ServiceOrder ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - BearerAuth: []
+      summary: Atualizar ordem de servico
+      tags:
+      - service-orders
+  /service-orders/{id}/status:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: ServiceOrder ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - BearerAuth: []
+      summary: Atualizar status da ordem de servico
+      tags:
+      - service-orders
+  /services:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/commands.ServiceResponse'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Listar servicos
+      tags:
+      - services
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dados do servico
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/commands.CreateServiceRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/commands.ServiceResponse'
+      security:
+      - BearerAuth: []
+      summary: Criar servico
+      tags:
+      - services
+  /services/{id}:
+    delete:
+      parameters:
+      - description: Service ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+      security:
+      - BearerAuth: []
+      summary: Deletar servico
+      tags:
+      - services
+    get:
+      parameters:
+      - description: Service ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/commands.ServiceResponse'
+      security:
+      - BearerAuth: []
+      summary: Buscar servico por ID
+      tags:
+      - services
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Service ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Dados para atualizar
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/commands.UpdateServiceRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/commands.ServiceResponse'
+      security:
+      - BearerAuth: []
+      summary: Atualizar servico
+      tags:
+      - services
+  /vehicles:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/commands.VehicleResponse'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Listar veiculos
+      tags:
+      - vehicles
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Dados do veiculo
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/commands.CreateVehicleRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/commands.VehicleResponse'
+      security:
+      - BearerAuth: []
+      summary: Cadastrar veiculo
+      tags:
+      - vehicles
+  /vehicles/{id}:
+    delete:
+      parameters:
+      - description: Vehicle ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+      security:
+      - BearerAuth: []
+      summary: Deletar veiculo
+      tags:
+      - vehicles
+    get:
+      parameters:
+      - description: Vehicle ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - BearerAuth: []
+      summary: Buscar veiculo por ID
+      tags:
+      - vehicles
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Vehicle ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Dados para atualizar
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/commands.UpdateVehicleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/commands.VehicleResponse'
+      security:
+      - BearerAuth: []
+      summary: Atualizar veiculo
+      tags:
+      - vehicles
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

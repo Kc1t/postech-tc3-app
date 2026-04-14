@@ -1,0 +1,235 @@
+{
+  "info": {
+    "name": "Postech TC1 - Workshop API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8080/api/v1" },
+    { "key": "token", "value": "" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "Customers",
+      "item": [
+        {
+          "name": "Create Customer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/customers", "host": ["{{base_url}}"], "path": ["customers"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"João Silva\",\n  \"document\": \"52998224725\",\n  \"email\": \"joao@email.com\",\n  \"phone\": \"11999990000\"\n}"
+            }
+          }
+        },
+        {
+          "name": "List Customers",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/customers", "host": ["{{base_url}}"], "path": ["customers"] }
+          }
+        },
+        {
+          "name": "Get Customer by ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/customers/:id", "host": ["{{base_url}}"], "path": ["customers", ":id"], "variable": [{ "key": "id", "value": "" }] }
+          }
+        },
+        {
+          "name": "Get Customer by Document",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/customers/document/:document", "host": ["{{base_url}}"], "path": ["customers", "document", ":document"], "variable": [{ "key": "document", "value": "52998224725" }] }
+          }
+        },
+        {
+          "name": "Update Customer",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/customers/:id", "host": ["{{base_url}}"], "path": ["customers", ":id"], "variable": [{ "key": "id", "value": "" }] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"João Silva Atualizado\",\n  \"email\": \"joao.novo@email.com\",\n  \"phone\": \"11888880000\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Customer",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/customers/:id", "host": ["{{base_url}}"], "path": ["customers", ":id"], "variable": [{ "key": "id", "value": "" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Vehicles",
+      "item": [
+        {
+          "name": "Create Vehicle",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/vehicles", "host": ["{{base_url}}"], "path": ["vehicles"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customer_document\": \"52998224725\",\n  \"plate\": \"ABC1D23\",\n  \"brand\": \"Toyota\",\n  \"model\": \"Corolla\",\n  \"year\": 2022\n}"
+            }
+          }
+        },
+        {
+          "name": "List Vehicles",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/vehicles", "host": ["{{base_url}}"], "path": ["vehicles"] }
+          }
+        },
+        {
+          "name": "Get Vehicle by ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/vehicles/:id", "host": ["{{base_url}}"], "path": ["vehicles", ":id"], "variable": [{ "key": "id", "value": "" }] }
+          }
+        },
+        {
+          "name": "Update Vehicle",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/vehicles/:id", "host": ["{{base_url}}"], "path": ["vehicles", ":id"], "variable": [{ "key": "id", "value": "" }] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"plate\": \"XYZ9A87\",\n  \"brand\": \"Toyota\",\n  \"model\": \"Corolla Cross\",\n  \"year\": 2023\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Vehicle",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/vehicles/:id", "host": ["{{base_url}}"], "path": ["vehicles", ":id"], "variable": [{ "key": "id", "value": "" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Services",
+      "item": [
+        {
+          "name": "Create Service",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/services", "host": ["{{base_url}}"], "path": ["services"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Troca de Óleo\",\n  \"description\": \"Troca de óleo e filtro\",\n  \"price\": 150.00,\n  \"duration_min\": 60\n}"
+            }
+          }
+        },
+        {
+          "name": "List Services",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/services", "host": ["{{base_url}}"], "path": ["services"] }
+          }
+        },
+        {
+          "name": "Get Service by ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/services/:id", "host": ["{{base_url}}"], "path": ["services", ":id"], "variable": [{ "key": "id", "value": "" }] }
+          }
+        },
+        {
+          "name": "Update Service",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/services/:id", "host": ["{{base_url}}"], "path": ["services", ":id"], "variable": [{ "key": "id", "value": "" }] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Troca de Óleo Sintético\",\n  \"price\": 200.00,\n  \"duration_min\": 45\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Service",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/services/:id", "host": ["{{base_url}}"], "path": ["services", ":id"], "variable": [{ "key": "id", "value": "" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Parts",
+      "item": [
+        {
+          "name": "Create Part",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/parts", "host": ["{{base_url}}"], "path": ["parts"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Filtro de Óleo\",\n  \"description\": \"Filtro de óleo motor\",\n  \"unit\": \"unidade\",\n  \"price\": 35.90,\n  \"stock\": 50\n}"
+            }
+          }
+        },
+        {
+          "name": "List Parts",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/parts", "host": ["{{base_url}}"], "path": ["parts"] }
+          }
+        },
+        {
+          "name": "Get Part by ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/parts/:id", "host": ["{{base_url}}"], "path": ["parts", ":id"], "variable": [{ "key": "id", "value": "" }] }
+          }
+        },
+        {
+          "name": "Update Part",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/parts/:id", "host": ["{{base_url}}"], "path": ["parts", ":id"], "variable": [{ "key": "id", "value": "" }] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Filtro de Óleo Premium\",\n  \"price\": 45.90\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Part",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/parts/:id", "host": ["{{base_url}}"], "path": ["parts", ":id"], "variable": [{ "key": "id", "value": "" }] }
+          }
+        },
+        {
+          "name": "Adjust Stock",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/parts/:id/stock", "host": ["{{base_url}}"], "path": ["parts", ":id", "stock"], "variable": [{ "key": "id", "value": "" }] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"delta\": 10\n}"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -3,6 +3,8 @@ package customerhandler
 import (
 	"net/http"
 
+	httputil "github.com/fiap/postech-tc1/internal/adapters/inbound/http"
+	"github.com/fiap/postech-tc1/internal/adapters/inbound/http/commands"
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,5 +16,10 @@ import (
 // @Security    BearerAuth
 // @Router      /customers/document/{document} [get]
 func (h *CustomerHandler) FindByDocument(c *gin.Context) {
-	c.JSON(http.StatusNotImplemented, gin.H{"message": "not implemented"})
+	customer, err := h.getByDocument.Execute(c.Request.Context(), c.Param("document"))
+	if err != nil {
+		httputil.HandleError(c, err, msgNotFound)
+		return
+	}
+	c.JSON(http.StatusOK, commands.ToCustomerResponse(customer))
 }

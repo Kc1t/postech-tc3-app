@@ -55,7 +55,8 @@ func (v *Vehicle) Year() int            { return v.year }
 func (v *Vehicle) CreatedAt() time.Time { return v.createdAt }
 func (v *Vehicle) UpdatedAt() time.Time { return v.updatedAt }
 
-func (v *Vehicle) SetID(id string) { v.id = id }
+func (v *Vehicle) SetID(id string)         { v.id = id }
+func (v *Vehicle) SetCustomerID(id string) { v.customerID = id }
 
 // SetPlate valida e atualiza a placa.
 func (v *Vehicle) SetPlate(raw string) error {
@@ -67,7 +68,6 @@ func (v *Vehicle) SetPlate(raw string) error {
 	v.touch()
 	return nil
 }
-
 func (v *Vehicle) SetBrand(b string) { v.brand = b; v.touch() }
 func (v *Vehicle) SetModel(m string) { v.model = m; v.touch() }
 func (v *Vehicle) SetYear(y int)     { v.year = y; v.touch() }
