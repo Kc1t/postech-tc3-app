@@ -3,6 +3,7 @@ package postgresql
 import (
 	"context"
 	"testing"
+	"time"
 
 	pgmodel "github.com/fiap/postech-tc1/internal/adapters/outbound/postgresql/model"
 	"github.com/fiap/postech-tc1/internal/domain/entities"
@@ -13,7 +14,8 @@ func seedVehicle(t *testing.T, plate string) (*entities.Customer, *entities.Vehi
 	t.Helper()
 	crepo := NewCustomerRepository(testDB)
 	doc := "99999999909"
-	c := entities.NewCustomer("Cliente OS", doc, "os@test.com", "11999990010")
+	now := time.Now()
+	c := entities.ReconstituteCustomer("", "Cliente OS", doc, "os@test.com", "11999990010", now, now)
 	if err := crepo.Create(context.Background(), c); err != nil {
 		existing, ferr := crepo.FindByDocument(context.Background(), doc)
 		if ferr != nil {
@@ -25,7 +27,7 @@ func seedVehicle(t *testing.T, plate string) (*entities.Customer, *entities.Vehi
 	}
 
 	vrepo := NewVehicleRepository(testDB)
-	v := entities.NewVehicle(c.ID(), plate, "Toyota", "Hilux", 2023)
+	v := entities.ReconstituteVehicle("", c.ID(), plate, "Toyota", "Hilux", 2023, now, now)
 	if err := vrepo.Create(context.Background(), v); err != nil {
 		t.Fatalf("seedVehicle: vehicle create failed: %v", err)
 	}

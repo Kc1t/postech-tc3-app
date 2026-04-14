@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/fiap/postech-tc1/internal/domain/entities"
 	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
@@ -49,10 +50,10 @@ func TestVehicleHandler_Create_Success(t *testing.T) {
 	defer ctrl.Finish()
 
 	h, create, _, _, _, _ := newHandler(ctrl)
-	create.EXPECT().Execute(gomock.Any(), "12345678901", gomock.Any()).Return(nil)
+	create.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(nil)
 
 	body, _ := json.Marshal(map[string]any{
-		"customer_document": "12345678901",
+		"customer_id": "cust-1",
 		"plate": "ABC1234", "brand": "Toyota", "model": "Corolla", "year": 2020,
 	})
 	w := httptest.NewRecorder()
@@ -86,10 +87,10 @@ func TestVehicleHandler_Create_CustomerNotFound(t *testing.T) {
 	defer ctrl.Finish()
 
 	h, create, _, _, _, _ := newHandler(ctrl)
-	create.EXPECT().Execute(gomock.Any(), gomock.Any(), gomock.Any()).Return(domainerrors.ErrNotFound)
+	create.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(domainerrors.ErrNotFound)
 
 	body, _ := json.Marshal(map[string]any{
-		"customer_document": "00000000000",
+		"customer_id": "cust-x",
 		"plate": "ABC1234", "brand": "Toyota", "model": "Corolla", "year": 2020,
 	})
 	w := httptest.NewRecorder()
@@ -107,10 +108,10 @@ func TestVehicleHandler_Create_AlreadyExists(t *testing.T) {
 	defer ctrl.Finish()
 
 	h, create, _, _, _, _ := newHandler(ctrl)
-	create.EXPECT().Execute(gomock.Any(), gomock.Any(), gomock.Any()).Return(domainerrors.ErrAlreadyExists)
+	create.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(domainerrors.ErrAlreadyExists)
 
 	body, _ := json.Marshal(map[string]any{
-		"customer_document": "12345678901",
+		"customer_id": "cust-1",
 		"plate": "ABC1234", "brand": "Toyota", "model": "Corolla", "year": 2020,
 	})
 	w := httptest.NewRecorder()
@@ -128,10 +129,10 @@ func TestVehicleHandler_Create_InternalError(t *testing.T) {
 	defer ctrl.Finish()
 
 	h, create, _, _, _, _ := newHandler(ctrl)
-	create.EXPECT().Execute(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("unexpected"))
+	create.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(errors.New("unexpected"))
 
 	body, _ := json.Marshal(map[string]any{
-		"customer_document": "12345678901",
+		"customer_id": "cust-1",
 		"plate": "ABC1234", "brand": "Toyota", "model": "Corolla", "year": 2020,
 	})
 	w := httptest.NewRecorder()
@@ -150,7 +151,8 @@ func TestVehicleHandler_FindByID_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	vehicle := entities.NewVehicle("cust-1", "ABC1234", "Toyota", "Corolla", 2020)
+	now := time.Now()
+	vehicle := entities.ReconstituteVehicle("veh-1", "cust-1", "ABC1234", "Toyota", "Corolla", 2020, now, now)
 	h, _, getByID, _, _, _ := newHandler(ctrl)
 	getByID.EXPECT().Execute(gomock.Any(), "veh-1").Return(vehicle, nil)
 
@@ -185,7 +187,8 @@ func TestVehicleHandler_FindAll_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	vehicles := []*entities.Vehicle{entities.NewVehicle("cust-1", "ABC1234", "Toyota", "Corolla", 2020)}
+	now := time.Now()
+	vehicles := []*entities.Vehicle{entities.ReconstituteVehicle("", "cust-1", "ABC1234", "Toyota", "Corolla", 2020, now, now)}
 	h, _, _, list, _, _ := newHandler(ctrl)
 	list.EXPECT().Execute(gomock.Any()).Return(vehicles, nil)
 
@@ -220,7 +223,8 @@ func TestVehicleHandler_Update_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	vehicle := entities.NewVehicle("cust-1", "ABC1234", "Toyota", "Corolla", 2020)
+	now := time.Now()
+	vehicle := entities.ReconstituteVehicle("veh-1", "cust-1", "ABC1234", "Toyota", "Corolla", 2020, now, now)
 	h, _, getByID, _, update, _ := newHandler(ctrl)
 	getByID.EXPECT().Execute(gomock.Any(), "veh-1").Return(vehicle, nil)
 	update.EXPECT().Execute(gomock.Any(), vehicle).Return(nil)
@@ -258,7 +262,8 @@ func TestVehicleHandler_Update_UpdateFails(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	vehicle := entities.NewVehicle("cust-1", "ABC1234", "Toyota", "Corolla", 2020)
+	now := time.Now()
+	vehicle := entities.ReconstituteVehicle("veh-1", "cust-1", "ABC1234", "Toyota", "Corolla", 2020, now, now)
 	h, _, getByID, _, update, _ := newHandler(ctrl)
 	getByID.EXPECT().Execute(gomock.Any(), "veh-1").Return(vehicle, nil)
 	update.EXPECT().Execute(gomock.Any(), vehicle).Return(errors.New("db error"))

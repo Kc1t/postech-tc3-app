@@ -3,6 +3,7 @@ package postgresql
 import (
 	"context"
 	"testing"
+	"time"
 
 	pgmodel "github.com/fiap/postech-tc1/internal/adapters/outbound/postgresql/model"
 	"github.com/fiap/postech-tc1/internal/domain/entities"
@@ -12,8 +13,8 @@ import (
 func seedCustomer(t *testing.T) *entities.Customer {
 	t.Helper()
 	repo := NewCustomerRepository(testDB)
-	// use document unique per test via t.Name hash or just a fixed doc per file
-	c := entities.NewCustomer("Cliente Veiculo", "88888888808", "veiculo@test.com", "11999990009")
+	now := time.Now()
+	c := entities.ReconstituteCustomer("", "Cliente Veiculo", "88888888808", "veiculo@test.com", "11999990009", now, now)
 	if err := repo.Create(context.Background(), c); err != nil {
 		// already exists from a previous run — fetch it
 		existing, ferr := repo.FindByDocument(context.Background(), "88888888808")
@@ -29,7 +30,8 @@ func seedCustomer(t *testing.T) *entities.Customer {
 func TestVehicleRepository_Create(t *testing.T) {
 	customer := seedCustomer(t)
 	repo := NewVehicleRepository(testDB)
-	v := entities.NewVehicle(customer.ID(), "TST0001", "Toyota", "Corolla", 2020)
+	now := time.Now()
+	v := entities.ReconstituteVehicle("", customer.ID(), "TST0001", "Toyota", "Corolla", 2020, now, now)
 
 	if err := repo.Create(context.Background(), v); err != nil {
 		t.Fatalf("expected no error, got %v", err)
@@ -43,8 +45,9 @@ func TestVehicleRepository_Create(t *testing.T) {
 func TestVehicleRepository_Create_DuplicatePlate(t *testing.T) {
 	customer := seedCustomer(t)
 	repo := NewVehicleRepository(testDB)
-	v1 := entities.NewVehicle(customer.ID(), "TST0002", "Honda", "Civic", 2021)
-	v2 := entities.NewVehicle(customer.ID(), "TST0002", "Ford", "Ka", 2019)
+	now := time.Now()
+	v1 := entities.ReconstituteVehicle("", customer.ID(), "TST0002", "Honda", "Civic", 2021, now, now)
+	v2 := entities.ReconstituteVehicle("", customer.ID(), "TST0002", "Ford", "Ka", 2019, now, now)
 
 	if err := repo.Create(context.Background(), v1); err != nil {
 		t.Fatalf("first create failed: %v", err)
@@ -64,7 +67,8 @@ func TestVehicleRepository_Create_DuplicatePlate(t *testing.T) {
 func TestVehicleRepository_FindByID(t *testing.T) {
 	customer := seedCustomer(t)
 	repo := NewVehicleRepository(testDB)
-	v := entities.NewVehicle(customer.ID(), "TST0003", "Volkswagen", "Golf", 2022)
+	now := time.Now()
+	v := entities.ReconstituteVehicle("", customer.ID(), "TST0003", "Volkswagen", "Golf", 2022, now, now)
 	if err := repo.Create(context.Background(), v); err != nil {
 		t.Fatalf("setup failed: %v", err)
 	}
@@ -91,7 +95,8 @@ func TestVehicleRepository_FindByID_NotFound(t *testing.T) {
 func TestVehicleRepository_FindAll(t *testing.T) {
 	customer := seedCustomer(t)
 	repo := NewVehicleRepository(testDB)
-	v := entities.NewVehicle(customer.ID(), "TST0004", "Chevrolet", "Onix", 2023)
+	now := time.Now()
+	v := entities.ReconstituteVehicle("", customer.ID(), "TST0004", "Chevrolet", "Onix", 2023, now, now)
 	if err := repo.Create(context.Background(), v); err != nil {
 		t.Fatalf("setup failed: %v", err)
 	}
@@ -109,7 +114,8 @@ func TestVehicleRepository_FindAll(t *testing.T) {
 func TestVehicleRepository_FindByCustomerID(t *testing.T) {
 	customer := seedCustomer(t)
 	repo := NewVehicleRepository(testDB)
-	v := entities.NewVehicle(customer.ID(), "TST0005", "Fiat", "Uno", 2018)
+	now := time.Now()
+	v := entities.ReconstituteVehicle("", customer.ID(), "TST0005", "Fiat", "Uno", 2018, now, now)
 	if err := repo.Create(context.Background(), v); err != nil {
 		t.Fatalf("setup failed: %v", err)
 	}
@@ -127,7 +133,8 @@ func TestVehicleRepository_FindByCustomerID(t *testing.T) {
 func TestVehicleRepository_Update(t *testing.T) {
 	customer := seedCustomer(t)
 	repo := NewVehicleRepository(testDB)
-	v := entities.NewVehicle(customer.ID(), "TST0006", "Renault", "Sandero", 2017)
+	now := time.Now()
+	v := entities.ReconstituteVehicle("", customer.ID(), "TST0006", "Renault", "Sandero", 2017, now, now)
 	if err := repo.Create(context.Background(), v); err != nil {
 		t.Fatalf("setup failed: %v", err)
 	}
@@ -147,7 +154,8 @@ func TestVehicleRepository_Update(t *testing.T) {
 func TestVehicleRepository_Delete(t *testing.T) {
 	customer := seedCustomer(t)
 	repo := NewVehicleRepository(testDB)
-	v := entities.NewVehicle(customer.ID(), "TST0007", "Peugeot", "208", 2021)
+	now := time.Now()
+	v := entities.ReconstituteVehicle("", customer.ID(), "TST0007", "Peugeot", "208", 2021, now, now)
 	if err := repo.Create(context.Background(), v); err != nil {
 		t.Fatalf("setup failed: %v", err)
 	}

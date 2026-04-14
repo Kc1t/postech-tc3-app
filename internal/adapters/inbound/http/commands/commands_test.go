@@ -10,15 +10,19 @@ import (
 // --- Customer ---
 
 func TestCreateCustomerRequest_ToDomain(t *testing.T) {
-	req := CreateCustomerRequest{Name: "João", Document: "123", Email: "j@j.com", Phone: "11999"}
-	c := req.ToDomain()
-	if c.Name() != "João" || c.Document() != "123" || c.Email() != "j@j.com" || c.Phone() != "11999" {
+	req := CreateCustomerRequest{Name: "João", Document: "52998224725", Email: "j@j.com", Phone: "11999"}
+	c, err := req.ToDomain()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if c.Name() != "João" || c.Document() != "52998224725" || c.Email() != "j@j.com" || c.Phone() != "11999" {
 		t.Fatalf("unexpected domain customer: %+v", c)
 	}
 }
 
 func TestToCustomerResponse(t *testing.T) {
-	c := entities.NewCustomer("João", "123", "j@j.com", "11999")
+	now := time.Now()
+	c := entities.ReconstituteCustomer("id-1", "João", "123", "j@j.com", "11999", now, now)
 	resp := ToCustomerResponse(c)
 	if resp.Name != "João" || resp.Document != "123" || resp.Email != "j@j.com" {
 		t.Fatalf("unexpected response: %+v", resp)
@@ -29,9 +33,10 @@ func TestToCustomerResponse(t *testing.T) {
 }
 
 func TestToCustomerListResponse(t *testing.T) {
+	now := time.Now()
 	customers := []*entities.Customer{
-		entities.NewCustomer("João", "123", "j@j.com", "11999"),
-		entities.NewCustomer("Maria", "456", "m@m.com", "11888"),
+		entities.ReconstituteCustomer("", "João", "123", "j@j.com", "11999", now, now),
+		entities.ReconstituteCustomer("", "Maria", "456", "m@m.com", "11888", now, now),
 	}
 	resp := ToCustomerListResponse(customers)
 	if len(resp) != 2 {
@@ -42,15 +47,19 @@ func TestToCustomerListResponse(t *testing.T) {
 // --- Vehicle ---
 
 func TestCreateVehicleRequest_ToDomain(t *testing.T) {
-	req := CreateVehicleRequest{CustomerDocument: "123", Plate: "ABC1234", Brand: "Toyota", Model: "Corolla", Year: 2020}
-	v := req.ToDomain()
+	req := CreateVehicleRequest{CustomerID: "cust-1", Plate: "ABC1234", Brand: "Toyota", Model: "Corolla", Year: 2020}
+	v, err := req.ToDomain()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 	if v.Plate() != "ABC1234" || v.Brand() != "Toyota" || v.Year() != 2020 {
 		t.Fatalf("unexpected domain vehicle: %+v", v)
 	}
 }
 
 func TestToVehicleResponse(t *testing.T) {
-	v := entities.NewVehicle("cust-1", "ABC1234", "Toyota", "Corolla", 2020)
+	now := time.Now()
+	v := entities.ReconstituteVehicle("", "cust-1", "ABC1234", "Toyota", "Corolla", 2020, now, now)
 	resp := ToVehicleResponse(v)
 	if resp.Plate != "ABC1234" || resp.Year != 2020 {
 		t.Fatalf("unexpected response: %+v", resp)
@@ -61,8 +70,9 @@ func TestToVehicleResponse(t *testing.T) {
 }
 
 func TestToVehicleListResponse(t *testing.T) {
+	now := time.Now()
 	vehicles := []*entities.Vehicle{
-		entities.NewVehicle("cust-1", "ABC1234", "Toyota", "Corolla", 2020),
+		entities.ReconstituteVehicle("", "cust-1", "ABC1234", "Toyota", "Corolla", 2020, now, now),
 	}
 	resp := ToVehicleListResponse(vehicles)
 	if len(resp) != 1 {

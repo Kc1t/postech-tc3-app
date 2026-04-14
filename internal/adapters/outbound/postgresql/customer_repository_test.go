@@ -3,15 +3,17 @@ package postgresql
 import (
 	"context"
 	"testing"
+	"time"
 
 	pgmodel "github.com/fiap/postech-tc1/internal/adapters/outbound/postgresql/model"
-	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
 	"github.com/fiap/postech-tc1/internal/domain/entities"
+	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
 )
 
 func TestCustomerRepository_Create(t *testing.T) {
 	repo := NewCustomerRepository(testDB)
-	c := entities.NewCustomer("João Silva", "11111111101", "joao@test.com", "11999990001")
+	now := time.Now()
+	c := entities.ReconstituteCustomer("", "João Silva", "11111111101", "joao@test.com", "11999990001", now, now)
 
 	err := repo.Create(context.Background(), c)
 	if err != nil {
@@ -28,8 +30,9 @@ func TestCustomerRepository_Create(t *testing.T) {
 
 func TestCustomerRepository_Create_DuplicateDocument(t *testing.T) {
 	repo := NewCustomerRepository(testDB)
-	c1 := entities.NewCustomer("João", "22222222202", "j1@test.com", "11999990002")
-	c2 := entities.NewCustomer("João2", "22222222202", "j2@test.com", "11999990003")
+	now := time.Now()
+	c1 := entities.ReconstituteCustomer("", "João", "22222222202", "j1@test.com", "11999990002", now, now)
+	c2 := entities.ReconstituteCustomer("", "João2", "22222222202", "j2@test.com", "11999990003", now, now)
 
 	if err := repo.Create(context.Background(), c1); err != nil {
 		t.Fatalf("first create failed: %v", err)
@@ -48,7 +51,8 @@ func TestCustomerRepository_Create_DuplicateDocument(t *testing.T) {
 
 func TestCustomerRepository_FindByID(t *testing.T) {
 	repo := NewCustomerRepository(testDB)
-	c := entities.NewCustomer("Maria", "33333333303", "maria@test.com", "11999990004")
+	now := time.Now()
+	c := entities.ReconstituteCustomer("", "Maria", "33333333303", "maria@test.com", "11999990004", now, now)
 	if err := repo.Create(context.Background(), c); err != nil {
 		t.Fatalf("setup failed: %v", err)
 	}
@@ -77,7 +81,8 @@ func TestCustomerRepository_FindByID_NotFound(t *testing.T) {
 
 func TestCustomerRepository_FindByDocument(t *testing.T) {
 	repo := NewCustomerRepository(testDB)
-	c := entities.NewCustomer("Carlos", "44444444404", "carlos@test.com", "11999990005")
+	now := time.Now()
+	c := entities.ReconstituteCustomer("", "Carlos", "44444444404", "carlos@test.com", "11999990005", now, now)
 	if err := repo.Create(context.Background(), c); err != nil {
 		t.Fatalf("setup failed: %v", err)
 	}
@@ -106,7 +111,8 @@ func TestCustomerRepository_FindByDocument_NotFound(t *testing.T) {
 
 func TestCustomerRepository_FindAll(t *testing.T) {
 	repo := NewCustomerRepository(testDB)
-	c := entities.NewCustomer("Ana", "55555555505", "ana@test.com", "11999990006")
+	now := time.Now()
+	c := entities.ReconstituteCustomer("", "Ana", "55555555505", "ana@test.com", "11999990006", now, now)
 	if err := repo.Create(context.Background(), c); err != nil {
 		t.Fatalf("setup failed: %v", err)
 	}
@@ -123,7 +129,8 @@ func TestCustomerRepository_FindAll(t *testing.T) {
 
 func TestCustomerRepository_Update(t *testing.T) {
 	repo := NewCustomerRepository(testDB)
-	c := entities.NewCustomer("Pedro", "66666666606", "pedro@test.com", "11999990007")
+	now := time.Now()
+	c := entities.ReconstituteCustomer("", "Pedro", "66666666606", "pedro@test.com", "11999990007", now, now)
 	if err := repo.Create(context.Background(), c); err != nil {
 		t.Fatalf("setup failed: %v", err)
 	}
@@ -142,7 +149,8 @@ func TestCustomerRepository_Update(t *testing.T) {
 
 func TestCustomerRepository_Delete(t *testing.T) {
 	repo := NewCustomerRepository(testDB)
-	c := entities.NewCustomer("Lucas", "77777777707", "lucas@test.com", "11999990008")
+	now := time.Now()
+	c := entities.ReconstituteCustomer("", "Lucas", "77777777707", "lucas@test.com", "11999990008", now, now)
 	if err := repo.Create(context.Background(), c); err != nil {
 		t.Fatalf("setup failed: %v", err)
 	}

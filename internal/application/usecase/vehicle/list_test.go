@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/fiap/postech-tc1/internal/domain/entities"
 	"github.com/fiap/postech-tc1/internal/ports/mocks"
@@ -15,7 +16,7 @@ func TestListVehicles_Execute_Success(t *testing.T) {
 	defer ctrl.Finish()
 
 	expected := []*entities.Vehicle{
-		entities.NewVehicle("cust-1", "ABC1234", "Toyota", "Corolla", 2020),
+		entities.ReconstituteVehicle("", "cust-1", "ABC1234", "Toyota", "Corolla", 2020, time.Now(), time.Now()),
 	}
 	repo := mocks.NewMockVehicleRepository(ctrl)
 	repo.EXPECT().FindAll(gomock.Any()).Return(expected, nil)

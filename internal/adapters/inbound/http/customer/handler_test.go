@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/fiap/postech-tc1/internal/domain/entities"
 	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
@@ -54,7 +55,7 @@ func TestCustomerHandler_Create_Success(t *testing.T) {
 	create.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(nil)
 
 	body, _ := json.Marshal(map[string]string{
-		"name": "João Silva", "document": "12345678901",
+		"name": "João Silva", "document": "52998224725",
 		"email": "j@j.com", "phone": "11999",
 	})
 	w := httptest.NewRecorder()
@@ -91,7 +92,7 @@ func TestCustomerHandler_Create_AlreadyExists(t *testing.T) {
 	create.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(domainerrors.ErrAlreadyExists)
 
 	body, _ := json.Marshal(map[string]string{
-		"name": "João", "document": "12345678901",
+		"name": "João", "document": "52998224725",
 		"email": "j@j.com", "phone": "11999",
 	})
 	w := httptest.NewRecorder()
@@ -110,7 +111,7 @@ func TestCustomerHandler_FindByID_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	customer := entities.NewCustomer("João", "123", "j@j.com", "11999")
+	customer := entities.ReconstituteCustomer("", "João", "123", "j@j.com", "11999", time.Now(), time.Now())
 	h, _, getByID, _, _, _, _ := newHandler(ctrl)
 	getByID.EXPECT().Execute(gomock.Any(), "cust-1").Return(customer, nil)
 
@@ -145,7 +146,7 @@ func TestCustomerHandler_FindByDocument_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	customer := entities.NewCustomer("João", "12345678901", "j@j.com", "11999")
+	customer := entities.ReconstituteCustomer("", "João", "12345678901", "j@j.com", "11999", time.Now(), time.Now())
 	h, _, _, getByDoc, _, _, _ := newHandler(ctrl)
 	getByDoc.EXPECT().Execute(gomock.Any(), "12345678901").Return(customer, nil)
 
@@ -180,7 +181,7 @@ func TestCustomerHandler_FindAll_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	customers := []*entities.Customer{entities.NewCustomer("João", "123", "j@j.com", "11999")}
+	customers := []*entities.Customer{entities.ReconstituteCustomer("", "João", "123", "j@j.com", "11999", time.Now(), time.Now())}
 	h, _, _, _, list, _, _ := newHandler(ctrl)
 	list.EXPECT().Execute(gomock.Any()).Return(customers, nil)
 
@@ -215,7 +216,7 @@ func TestCustomerHandler_Update_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	customer := entities.NewCustomer("João", "123", "j@j.com", "11999")
+	customer := entities.ReconstituteCustomer("", "João", "123", "j@j.com", "11999", time.Now(), time.Now())
 	h, _, getByID, _, _, update, _ := newHandler(ctrl)
 	getByID.EXPECT().Execute(gomock.Any(), "cust-1").Return(customer, nil)
 	update.EXPECT().Execute(gomock.Any(), customer).Return(nil)
@@ -269,7 +270,7 @@ func TestCustomerHandler_Update_UpdateFails(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	customer := entities.NewCustomer("João", "123", "j@j.com", "11999")
+	customer := entities.ReconstituteCustomer("", "João", "123", "j@j.com", "11999", time.Now(), time.Now())
 	h, _, getByID, _, _, update, _ := newHandler(ctrl)
 	getByID.EXPECT().Execute(gomock.Any(), "cust-1").Return(customer, nil)
 	update.EXPECT().Execute(gomock.Any(), customer).Return(errors.New("db error"))

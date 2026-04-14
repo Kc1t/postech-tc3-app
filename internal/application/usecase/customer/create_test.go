@@ -8,43 +8,17 @@ import (
 
 	"github.com/fiap/postech-tc1/internal/domain/entities"
 	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
+	"github.com/fiap/postech-tc1/internal/ports/mocks"
+	"go.uber.org/mock/gomock"
 )
 
-func fixedTime() time.Time { return time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC) }
-
-// --- Mock do CustomerRepository ---
-
-type mockCustomerRepo struct {
-	findByDocumentFn func(ctx context.Context, doc string) (*entities.Customer, error)
-	createFn         func(ctx context.Context, c *entities.Customer) error
-}
-
-func (m *mockCustomerRepo) Create(ctx context.Context, c *entities.Customer) error {
-	return m.createFn(ctx, c)
-}
-func (m *mockCustomerRepo) FindByID(ctx context.Context, id string) (*entities.Customer, error) {
-	return nil, domainerrors.ErrNotFound
-}
-func (m *mockCustomerRepo) FindByDocument(ctx context.Context, doc string) (*entities.Customer, error) {
-	return m.findByDocumentFn(ctx, doc)
-}
-func (m *mockCustomerRepo) FindAll(ctx context.Context) ([]*entities.Customer, error) {
-	return nil, nil
-}
-func (m *mockCustomerRepo) Update(ctx context.Context, c *entities.Customer) error { return nil }
-func (m *mockCustomerRepo) Delete(ctx context.Context, id string) error            { return nil }
-
-// --- Testes ---
-
 func TestCreateCustomer_Sucesso(t *testing.T) {
-	repo := &mockCustomerRepo{
-		findByDocumentFn: func(_ context.Context, _ string) (*entities.Customer, error) {
-			return nil, domainerrors.ErrNotFound
-		},
-		createFn: func(_ context.Context, _ *entities.Customer) error {
-			return nil
-		},
-	}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	repo := mocks.NewMockCustomerRepository(ctrl)
+	repo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(nil, domainerrors.ErrNotFound)
+	repo.EXPECT().Create(gomock.Any(), gomock.Any()).Return(nil)
 
 	uc := NewCreateCustomer(repo)
 	customer, err := entities.NewCustomer("Diego", "52998224725", "diego@email.com", "11999999999")
@@ -58,48 +32,58 @@ func TestCreateCustomer_Sucesso(t *testing.T) {
 }
 
 func TestCreateCustomer_DocumentoDuplicado(t *testing.T) {
-	existing := entities.ReconstituteCustomer("id-1", "Outro", "52998224725", "outro@email.com", "", fixedTime(), fixedTime())
-	repo := &mockCustomerRepo{
-		findByDocumentFn: func(_ context.Context, _ string) (*entities.Customer, error) {
-			return existing, nil
-		},
-		createFn: func(_ context.Context, _ *entities.Customer) error {
-			t.Fatal("Create nao deveria ser chamado quando documento ja existe")
-			return nil
-		},
-	}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	existing := entities.ReconstituteCustomer("id-1", "Outro", "52998224725", "outro@email.com", "", time.Now(), time.Now())
+
+	repo := mocks.NewMockCustomerRepository(ctrl)
+	repo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(existing, nil)
+	// Create NAO deve ser chamado
 
 	uc := NewCreateCustomer(repo)
 	customer, _ := entities.NewCustomer("Diego", "52998224725", "diego@email.com", "")
 
 	err := uc.Execute(context.Background(), customer)
-	if err == nil {
-		t.Fatal("esperava erro de duplicidade")
-	}
 	if !errors.Is(err, domainerrors.ErrAlreadyExists) {
-		t.Errorf("erro = %v, esperava ErrAlreadyExists", err)
+		t.Fatalf("erro = %v, esperava ErrAlreadyExists", err)
 	}
 }
 
 func TestCreateCustomer_ErroNoPersistir(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
 	dbErr := errors.New("connection refused")
-	repo := &mockCustomerRepo{
-		findByDocumentFn: func(_ context.Context, _ string) (*entities.Customer, error) {
-			return nil, domainerrors.ErrNotFound
-		},
-		createFn: func(_ context.Context, _ *entities.Customer) error {
-			return dbErr
-		},
-	}
+
+	repo := mocks.NewMockCustomerRepository(ctrl)
+	repo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(nil, domainerrors.ErrNotFound)
+	repo.EXPECT().Create(gomock.Any(), gomock.Any()).Return(dbErr)
 
 	uc := NewCreateCustomer(repo)
 	customer, _ := entities.NewCustomer("Diego", "52998224725", "diego@email.com", "")
 
 	err := uc.Execute(context.Background(), customer)
-	if err == nil {
-		t.Fatal("esperava erro do banco")
-	}
 	if !errors.Is(err, dbErr) {
-		t.Errorf("erro = %v, esperava %v", err, dbErr)
+		t.Fatalf("erro = %v, esperava %v", err, dbErr)
+	}
+}
+
+func TestCreateCustomer_ErroInfraNoFindByDocument(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	infraErr := errors.New("timeout")
+
+	repo := mocks.NewMockCustomerRepository(ctrl)
+	repo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(nil, infraErr)
+	// Create NAO deve ser chamado
+
+	uc := NewCreateCustomer(repo)
+	customer, _ := entities.NewCustomer("Diego", "52998224725", "diego@email.com", "")
+
+	err := uc.Execute(context.Background(), customer)
+	if !errors.Is(err, infraErr) {
+		t.Fatalf("erro = %v, esperava %v (erro de infra propagado)", err, infraErr)
 	}
 }
