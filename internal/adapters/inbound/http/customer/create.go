@@ -24,7 +24,11 @@ func (h *CustomerHandler) Create(c *gin.Context) {
 		return
 	}
 
-	customer := req.ToDomain()
+	customer, err := req.ToDomain()
+	if err != nil {
+		httputil.HandleBadRequest(c, err)
+		return
+	}
 	if err := h.create.Execute(c.Request.Context(), customer); err != nil {
 		httputil.HandleError(c, err, msgAlreadyExists)
 		return
