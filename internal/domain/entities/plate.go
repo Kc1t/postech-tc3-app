@@ -15,10 +15,15 @@ const (
 	PlateFormatMercosul PlateFormat = "mercosul"
 )
 
-var (
-	oldPlateRegex      = regexp.MustCompile(`^[A-Z]{3}[0-9]{4}$`)
-	mercosulPlateRegex = regexp.MustCompile(`^[A-Z]{3}[0-9][A-Z][0-9]{2}$`)
-)
+// plateFormats mapeia cada formato de placa ao seu regex de validacao.
+// Para suportar novos formatos, basta adicionar uma entrada aqui.
+var plateFormats = []struct {
+	format PlateFormat
+	regex  *regexp.Regexp
+}{
+	{PlateFormatOld, regexp.MustCompile(`^[A-Z]{3}[0-9]{4}$`)},
+	{PlateFormatMercosul, regexp.MustCompile(`^[A-Z]{3}[0-9][A-Z][0-9]{2}$`)},
+}
 
 // Plate e um Value Object que representa uma placa veicular brasileira valida.
 type Plate struct {
@@ -34,24 +39,24 @@ func NewPlate(raw string) (Plate, error) {
 		return Plate{}, domainerrors.ErrInvalidPlate
 	}
 
-	switch {
-	case oldPlateRegex.MatchString(normalized):
-		return Plate{value: normalized, format: PlateFormatOld}, nil
-	case mercosulPlateRegex.MatchString(normalized):
-		return Plate{value: normalized, format: PlateFormatMercosul}, nil
-	default:
-		return Plate{}, domainerrors.ErrInvalidPlate
+	for _, pf := range plateFormats {
+		if pf.regex.MatchString(normalized) {
+			return Plate{value: normalized, format: pf.format}, nil
+		}
 	}
+
+	return Plate{}, domainerrors.ErrInvalidPlate
 }
 
 // ReconstitutePlate restaura uma Plate a partir de dados persistidos (sem revalidar).
 func ReconstitutePlate(value string) Plate {
 	normalized := strings.ToUpper(strings.ReplaceAll(value, "-", ""))
-	format := PlateFormatOld
-	if mercosulPlateRegex.MatchString(normalized) {
-		format = PlateFormatMercosul
+	for _, pf := range plateFormats {
+		if pf.regex.MatchString(normalized) {
+			return Plate{value: normalized, format: pf.format}
+		}
 	}
-	return Plate{value: normalized, format: format}
+	return Plate{value: normalized, format: PlateFormatOld}
 }
 
 func (p Plate) Value() string       { return p.value }
