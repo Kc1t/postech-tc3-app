@@ -38,8 +38,8 @@ func TestCustomerRepository_Create_DuplicateDocument(t *testing.T) {
 
 	err := repo.Create(context.Background(), c2)
 	if err == nil {
-		t.Fatal("expected error for duplicate document")
 		t.Cleanup(func() { testDB.Delete(&pgmodel.Customer{}, "id = ?", c2.ID()) })
+		t.Fatal("expected error for duplicate document")
 	}
 	if !isAlreadyExists(err) {
 		t.Fatalf("expected ErrAlreadyExists, got %v", err)
