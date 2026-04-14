@@ -2,6 +2,7 @@ package serviceorderuc
 
 import (
 	"context"
+	"errors"
 
 	"github.com/fiap/postech-tc1/internal/domain/entities"
 	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
@@ -36,13 +37,19 @@ func (uc *CreateServiceOrder) Execute(ctx context.Context, so *entities.ServiceO
 	// Validar existencia do cliente
 	_, err := uc.customerRepo.FindByID(ctx, so.CustomerID())
 	if err != nil {
-		return domainerrors.ErrNotFound
+		if errors.Is(err, domainerrors.ErrNotFound) {
+			return domainerrors.ErrNotFound
+		}
+		return err
 	}
 
 	// Validar existencia do veiculo e vinculo com o cliente
 	vehicle, err := uc.vehicleRepo.FindByID(ctx, so.VehicleID())
 	if err != nil {
-		return domainerrors.ErrNotFound
+		if errors.Is(err, domainerrors.ErrNotFound) {
+			return domainerrors.ErrNotFound
+		}
+		return err
 	}
 	if vehicle.CustomerID() != so.CustomerID() {
 		return domainerrors.ErrVehicleNotFromCustomer

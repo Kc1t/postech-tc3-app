@@ -2,6 +2,7 @@ package customeruc
 
 import (
 	"context"
+	"errors"
 
 	"github.com/fiap/postech-tc1/internal/domain/entities"
 	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
@@ -21,7 +22,10 @@ func (uc *CreateCustomer) Execute(ctx context.Context, c *entities.Customer) err
 
 	// Verificar duplicidade de documento
 	existing, err := uc.repo.FindByDocument(ctx, c.Document())
-	if err == nil && existing != nil {
+	if err != nil && !errors.Is(err, domainerrors.ErrNotFound) {
+		return err
+	}
+	if existing != nil {
 		return domainerrors.ErrAlreadyExists
 	}
 

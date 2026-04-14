@@ -2,6 +2,7 @@ package vehicleuc
 
 import (
 	"context"
+	"errors"
 
 	"github.com/fiap/postech-tc1/internal/domain/entities"
 	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
@@ -23,7 +24,10 @@ func (uc *CreateVehicle) Execute(ctx context.Context, v *entities.Vehicle) error
 	// Verificar se o cliente existe
 	_, err := uc.customerRepo.FindByID(ctx, v.CustomerID())
 	if err != nil {
-		return domainerrors.ErrNotFound
+		if errors.Is(err, domainerrors.ErrNotFound) {
+			return domainerrors.ErrNotFound
+		}
+		return err
 	}
 
 	return uc.repo.Create(ctx, v)
