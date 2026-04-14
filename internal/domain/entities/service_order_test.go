@@ -140,8 +140,12 @@ func TestFluxoRecusa_VoltaParaReceived(t *testing.T) {
 	so := NewServiceOrder("cust-1", "veh-1")
 
 	// received -> in_diagnosis -> awaiting_approval -> received (recusa)
-	so.UpdateStatus(StatusInDiagnosis)
-	so.UpdateStatus(StatusAwaitingApproval)
+	if err := so.UpdateStatus(StatusInDiagnosis); err != nil {
+		t.Fatalf("transicao para in_diagnosis falhou: %v", err)
+	}
+	if err := so.UpdateStatus(StatusAwaitingApproval); err != nil {
+		t.Fatalf("transicao para awaiting_approval falhou: %v", err)
+	}
 
 	if err := so.UpdateStatus(StatusReceived); err != nil {
 		t.Fatalf("recusa deveria ser permitida: %v", err)
