@@ -26,7 +26,7 @@ func Setup(router *gin.Engine, c *bootstrap.Container) {
 	v1 := router.Group("/api/v1")
 
 	protected := v1.Group("/")
-	// protected.Use(middleware.Auth(c.Config.JWTSecret))
+	protected.Use(middleware.Auth(c.Config.JWTSecret))
 
 	c.CustomerHandler.SetupRoutes(protected)
 	c.VehicleHandler.SetupRoutes(protected)
