@@ -53,8 +53,8 @@ func TestVehicleRepository_Create_DuplicatePlate(t *testing.T) {
 
 	err := repo.Create(context.Background(), v2)
 	if err == nil {
-		t.Fatal("expected error for duplicate plate")
 		t.Cleanup(func() { testDB.Delete(&pgmodel.Vehicle{}, "id = ?", v2.ID()) })
+		t.Fatal("expected error for duplicate plate")
 	}
 	if !isAlreadyExists(err) {
 		t.Fatalf("expected ErrAlreadyExists, got %v", err)
