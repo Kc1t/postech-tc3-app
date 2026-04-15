@@ -25,6 +25,9 @@ func Setup(router *gin.Engine, c *bootstrap.Container) {
 
 	v1 := router.Group("/api/v1")
 
+	// Rotas publicas do cliente (sem JWT)
+	c.ServiceOrderHandler.SetupPublicRoutes(v1)
+
 	protected := v1.Group("/")
 	protected.Use(middleware.Auth(c.Config.JWTSecret))
 
