@@ -7,6 +7,7 @@ import (
 )
 
 type CreateServiceRequest struct {
+	Code        int     `json:"code"         binding:"required,gt=0"`
 	Name        string  `json:"name"         binding:"required"`
 	Description string  `json:"description"`
 	Price       float64 `json:"price"        binding:"required,gt=0"`
@@ -14,6 +15,7 @@ type CreateServiceRequest struct {
 }
 
 type UpdateServiceRequest struct {
+	Code        int     `json:"code"         binding:"omitempty,gt=0"`
 	Name        string  `json:"name"`
 	Description string  `json:"description"`
 	Price       float64 `json:"price"        binding:"omitempty,gt=0"`
@@ -22,6 +24,7 @@ type UpdateServiceRequest struct {
 
 type ServiceResponse struct {
 	ID          string  `json:"id"`
+	Code        int     `json:"code"`
 	Name        string  `json:"name"`
 	Description string  `json:"description"`
 	Price       float64 `json:"price"`
@@ -31,12 +34,13 @@ type ServiceResponse struct {
 }
 
 func (r *CreateServiceRequest) ToDomain() *entities.Service {
-	return entities.NewService(r.Name, r.Description, r.Price, r.DurationMin)
+	return entities.NewService(r.Code, r.Name, r.Description, r.Price, r.DurationMin)
 }
 
 func ToServiceResponse(s *entities.Service) ServiceResponse {
 	return ServiceResponse{
 		ID:          s.ID(),
+		Code:        s.Code(),
 		Name:        s.Name(),
 		Description: s.Description(),
 		Price:       s.Price(),
