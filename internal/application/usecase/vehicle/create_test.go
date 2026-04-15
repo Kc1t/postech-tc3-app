@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/fiap/postech-tc1/internal/domain/entities"
 	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
@@ -11,60 +12,62 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func TestCreateVehicle_Execute_Success(t *testing.T) {
+func TestCreateVehicle_Sucesso(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	customer := entities.NewCustomer("João", "12345678901", "j@j.com", "11999")
-	customer.SetID("cust-1")
+	now := time.Now()
+	customer := entities.ReconstituteCustomer("cust-1", "Diego", "52998224725", "d@e.com", "", now, now)
 
 	vehicleRepo := mocks.NewMockVehicleRepository(ctrl)
 	customerRepo := mocks.NewMockCustomerRepository(ctrl)
-	customerRepo.EXPECT().FindByDocument(gomock.Any(), "12345678901").Return(customer, nil)
+	customerRepo.EXPECT().FindByID(gomock.Any(), "cust-1").Return(customer, nil)
 	vehicleRepo.EXPECT().Create(gomock.Any(), gomock.Any()).Return(nil)
 
-	v := entities.NewVehicle("", "ABC1234", "Toyota", "Corolla", 2020)
 	uc := NewCreateVehicle(vehicleRepo, customerRepo)
-	if err := uc.Execute(context.Background(), "12345678901", v); err != nil {
-		t.Fatalf("expected nil error, got %v", err)
+	vehicle, err := entities.NewVehicle("cust-1", "ABC-1234", "Fiat", "Uno", 2020)
+	if err != nil {
+		t.Fatalf("erro ao criar vehicle: %v", err)
 	}
-	if v.CustomerID() != "cust-1" {
-		t.Errorf("expected customerID %q, got %q", "cust-1", v.CustomerID())
+
+	if err := uc.Execute(context.Background(), vehicle); err != nil {
+		t.Fatalf("esperava sucesso, obteve: %v", err)
 	}
 }
 
-func TestCreateVehicle_Execute_CustomerNotFound(t *testing.T) {
+func TestCreateVehicle_ClienteNaoExiste(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	vehicleRepo := mocks.NewMockVehicleRepository(ctrl)
 	customerRepo := mocks.NewMockCustomerRepository(ctrl)
-	customerRepo.EXPECT().FindByDocument(gomock.Any(), "00000000000").Return(nil, domainerrors.ErrNotFound)
+	customerRepo.EXPECT().FindByID(gomock.Any(), "cust-inexistente").Return(nil, domainerrors.ErrNotFound)
+	// Create NAO deve ser chamado
 
-	v := entities.NewVehicle("", "ABC1234", "Toyota", "Corolla", 2020)
 	uc := NewCreateVehicle(vehicleRepo, customerRepo)
-	err := uc.Execute(context.Background(), "00000000000", v)
+	vehicle, _ := entities.NewVehicle("cust-inexistente", "ABC-1234", "Fiat", "Uno", 2020)
+
+	err := uc.Execute(context.Background(), vehicle)
 	if !errors.Is(err, domainerrors.ErrNotFound) {
-		t.Fatalf("expected ErrNotFound, got %v", err)
+		t.Fatalf("erro = %v, esperava ErrNotFound", err)
 	}
 }
 
-func TestCreateVehicle_Execute_RepoError(t *testing.T) {
+func TestCreateVehicle_ErroInfraNoFindByID(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	customer := entities.NewCustomer("João", "12345678901", "j@j.com", "11999")
-	customer.SetID("cust-1")
-	repoErr := errors.New("db error")
+	infraErr := errors.New("timeout")
 
 	vehicleRepo := mocks.NewMockVehicleRepository(ctrl)
 	customerRepo := mocks.NewMockCustomerRepository(ctrl)
-	customerRepo.EXPECT().FindByDocument(gomock.Any(), "12345678901").Return(customer, nil)
-	vehicleRepo.EXPECT().Create(gomock.Any(), gomock.Any()).Return(repoErr)
+	customerRepo.EXPECT().FindByID(gomock.Any(), "cust-1").Return(nil, infraErr)
 
-	v := entities.NewVehicle("", "ABC1234", "Toyota", "Corolla", 2020)
 	uc := NewCreateVehicle(vehicleRepo, customerRepo)
-	if err := uc.Execute(context.Background(), "12345678901", v); !errors.Is(err, repoErr) {
-		t.Fatalf("expected %v, got %v", repoErr, err)
+	vehicle, _ := entities.NewVehicle("cust-1", "ABC-1234", "Fiat", "Uno", 2020)
+
+	err := uc.Execute(context.Background(), vehicle)
+	if !errors.Is(err, infraErr) {
+		t.Fatalf("erro = %v, esperava %v (erro de infra propagado)", err, infraErr)
 	}
 }

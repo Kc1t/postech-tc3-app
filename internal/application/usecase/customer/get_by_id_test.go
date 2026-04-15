@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/fiap/postech-tc1/internal/domain/entities"
 	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
@@ -15,7 +16,7 @@ func TestGetCustomer_Execute_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	expected := entities.NewCustomer("João", "123", "j@j.com", "11999")
+	expected := entities.ReconstituteCustomer("", "João", "123", "j@j.com", "11999", time.Now(), time.Now())
 	repo := mocks.NewMockCustomerRepository(ctrl)
 	repo.EXPECT().FindByID(gomock.Any(), "cust-1").Return(expected, nil)
 

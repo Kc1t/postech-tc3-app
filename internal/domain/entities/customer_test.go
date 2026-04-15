@@ -7,14 +7,17 @@ import (
 
 func TestNewCustomer(t *testing.T) {
 	before := time.Now()
-	c := NewCustomer("João Silva", "12345678901", "joao@email.com", "11999990000")
+	c, err := NewCustomer("João Silva", "52998224725", "joao@email.com", "11999990000")
+	if err != nil {
+		t.Fatalf("expected nil error, got %v", err)
+	}
 	after := time.Now()
 
 	if c.Name() != "João Silva" {
 		t.Errorf("expected name %q, got %q", "João Silva", c.Name())
 	}
-	if c.Document() != "12345678901" {
-		t.Errorf("expected document %q, got %q", "12345678901", c.Document())
+	if c.Document() != "52998224725" {
+		t.Errorf("expected document %q, got %q", "52998224725", c.Document())
 	}
 	if c.Email() != "joao@email.com" {
 		t.Errorf("expected email %q, got %q", "joao@email.com", c.Email())
@@ -30,6 +33,13 @@ func TestNewCustomer(t *testing.T) {
 	}
 	if c.UpdatedAt().Before(before) || c.UpdatedAt().After(after) {
 		t.Error("UpdatedAt out of expected range")
+	}
+}
+
+func TestNewCustomer_InvalidDocument(t *testing.T) {
+	_, err := NewCustomer("João", "123", "j@j.com", "11999")
+	if err == nil {
+		t.Fatal("expected error for invalid document, got nil")
 	}
 }
 
@@ -54,7 +64,10 @@ func TestReconstituteCustomer(t *testing.T) {
 }
 
 func TestCustomer_SetID(t *testing.T) {
-	c := NewCustomer("João", "123", "j@j.com", "11999")
+	c, err := NewCustomer("João", "52998224725", "j@j.com", "11999")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 	c.SetID("new-id")
 	if c.ID() != "new-id" {
 		t.Errorf("expected ID %q, got %q", "new-id", c.ID())
@@ -62,7 +75,10 @@ func TestCustomer_SetID(t *testing.T) {
 }
 
 func TestCustomer_SetName_TouchesUpdatedAt(t *testing.T) {
-	c := NewCustomer("João", "123", "j@j.com", "11999")
+	c, err := NewCustomer("João", "52998224725", "j@j.com", "11999")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 	before := c.UpdatedAt()
 	time.Sleep(time.Millisecond)
 	c.SetName("Pedro")
@@ -76,7 +92,10 @@ func TestCustomer_SetName_TouchesUpdatedAt(t *testing.T) {
 }
 
 func TestCustomer_SetEmail_TouchesUpdatedAt(t *testing.T) {
-	c := NewCustomer("João", "123", "j@j.com", "11999")
+	c, err := NewCustomer("João", "52998224725", "j@j.com", "11999")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 	before := c.UpdatedAt()
 	time.Sleep(time.Millisecond)
 	c.SetEmail("novo@email.com")
@@ -90,7 +109,10 @@ func TestCustomer_SetEmail_TouchesUpdatedAt(t *testing.T) {
 }
 
 func TestCustomer_SetPhone_TouchesUpdatedAt(t *testing.T) {
-	c := NewCustomer("João", "123", "j@j.com", "11999")
+	c, err := NewCustomer("João", "52998224725", "j@j.com", "11999")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 	before := c.UpdatedAt()
 	time.Sleep(time.Millisecond)
 	c.SetPhone("11888880000")

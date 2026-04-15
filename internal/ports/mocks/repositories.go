@@ -446,6 +446,21 @@ func (mr *MockServiceRepositoryMockRecorder) FindByID(ctx, id any) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByID", reflect.TypeOf((*MockServiceRepository)(nil).FindByID), ctx, id)
 }
 
+// FindByIDs mocks base method.
+func (m *MockServiceRepository) FindByIDs(ctx context.Context, ids []string) ([]*entities.Service, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindByIDs", ctx, ids)
+	ret0, _ := ret[0].([]*entities.Service)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindByIDs indicates an expected call of FindByIDs.
+func (mr *MockServiceRepositoryMockRecorder) FindByIDs(ctx, ids any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByIDs", reflect.TypeOf((*MockServiceRepository)(nil).FindByIDs), ctx, ids)
+}
+
 // Update mocks base method.
 func (m *MockServiceRepository) Update(ctx context.Context, s *entities.Service) error {
 	m.ctrl.T.Helper()
@@ -540,6 +555,21 @@ func (m *MockPartRepository) FindByID(ctx context.Context, id string) (*entities
 func (mr *MockPartRepositoryMockRecorder) FindByID(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByID", reflect.TypeOf((*MockPartRepository)(nil).FindByID), ctx, id)
+}
+
+// FindByIDs mocks base method.
+func (m *MockPartRepository) FindByIDs(ctx context.Context, ids []string) ([]*entities.Part, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindByIDs", ctx, ids)
+	ret0, _ := ret[0].([]*entities.Part)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindByIDs indicates an expected call of FindByIDs.
+func (mr *MockPartRepositoryMockRecorder) FindByIDs(ctx, ids any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByIDs", reflect.TypeOf((*MockPartRepository)(nil).FindByIDs), ctx, ids)
 }
 
 // Update mocks base method.

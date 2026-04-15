@@ -7,7 +7,10 @@ import (
 
 func TestNewVehicle(t *testing.T) {
 	before := time.Now()
-	v := NewVehicle("cust-1", "ABC1234", "Toyota", "Corolla", 2020)
+	v, err := NewVehicle("cust-1", "ABC1234", "Toyota", "Corolla", 2020)
+	if err != nil {
+		t.Fatalf("expected nil error, got %v", err)
+	}
 	after := time.Now()
 
 	if v.CustomerID() != "cust-1" {
@@ -33,6 +36,13 @@ func TestNewVehicle(t *testing.T) {
 	}
 }
 
+func TestNewVehicle_InvalidPlate(t *testing.T) {
+	_, err := NewVehicle("cust-1", "INVALID", "Toyota", "Corolla", 2020)
+	if err == nil {
+		t.Fatal("expected error for invalid plate, got nil")
+	}
+}
+
 func TestReconstituteVehicle(t *testing.T) {
 	createdAt := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
 	updatedAt := time.Date(2024, 6, 1, 0, 0, 0, 0, time.UTC)
@@ -51,7 +61,10 @@ func TestReconstituteVehicle(t *testing.T) {
 }
 
 func TestVehicle_SetID(t *testing.T) {
-	v := NewVehicle("cust-1", "ABC1234", "Toyota", "Corolla", 2020)
+	v, err := NewVehicle("cust-1", "ABC1234", "Toyota", "Corolla", 2020)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 	v.SetID("vid-1")
 	if v.ID() != "vid-1" {
 		t.Errorf("expected ID %q, got %q", "vid-1", v.ID())
@@ -59,7 +72,10 @@ func TestVehicle_SetID(t *testing.T) {
 }
 
 func TestVehicle_SetCustomerID(t *testing.T) {
-	v := NewVehicle("cust-1", "ABC1234", "Toyota", "Corolla", 2020)
+	v, err := NewVehicle("cust-1", "ABC1234", "Toyota", "Corolla", 2020)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 	v.SetCustomerID("cust-2")
 	if v.CustomerID() != "cust-2" {
 		t.Errorf("expected customerID %q, got %q", "cust-2", v.CustomerID())
@@ -67,13 +83,18 @@ func TestVehicle_SetCustomerID(t *testing.T) {
 }
 
 func TestVehicle_SetPlate_TouchesUpdatedAt(t *testing.T) {
-	v := NewVehicle("cust-1", "ABC1234", "Toyota", "Corolla", 2020)
+	v, err := NewVehicle("cust-1", "ABC1234", "Toyota", "Corolla", 2020)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 	before := v.UpdatedAt()
 	time.Sleep(time.Millisecond)
-	v.SetPlate("NEW1234")
+	if err := v.SetPlate("XYZ5678"); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 
-	if v.Plate() != "NEW1234" {
-		t.Errorf("expected plate %q, got %q", "NEW1234", v.Plate())
+	if v.Plate() != "XYZ5678" {
+		t.Errorf("expected plate %q, got %q", "XYZ5678", v.Plate())
 	}
 	if !v.UpdatedAt().After(before) {
 		t.Error("expected UpdatedAt to be updated after SetPlate")
@@ -81,7 +102,10 @@ func TestVehicle_SetPlate_TouchesUpdatedAt(t *testing.T) {
 }
 
 func TestVehicle_SetBrand_TouchesUpdatedAt(t *testing.T) {
-	v := NewVehicle("cust-1", "ABC1234", "Toyota", "Corolla", 2020)
+	v, err := NewVehicle("cust-1", "ABC1234", "Toyota", "Corolla", 2020)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 	before := v.UpdatedAt()
 	time.Sleep(time.Millisecond)
 	v.SetBrand("Honda")
@@ -95,7 +119,10 @@ func TestVehicle_SetBrand_TouchesUpdatedAt(t *testing.T) {
 }
 
 func TestVehicle_SetModel_TouchesUpdatedAt(t *testing.T) {
-	v := NewVehicle("cust-1", "ABC1234", "Toyota", "Corolla", 2020)
+	v, err := NewVehicle("cust-1", "ABC1234", "Toyota", "Corolla", 2020)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 	before := v.UpdatedAt()
 	time.Sleep(time.Millisecond)
 	v.SetModel("Fit")
@@ -109,7 +136,10 @@ func TestVehicle_SetModel_TouchesUpdatedAt(t *testing.T) {
 }
 
 func TestVehicle_SetYear_TouchesUpdatedAt(t *testing.T) {
-	v := NewVehicle("cust-1", "ABC1234", "Toyota", "Corolla", 2020)
+	v, err := NewVehicle("cust-1", "ABC1234", "Toyota", "Corolla", 2020)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 	before := v.UpdatedAt()
 	time.Sleep(time.Millisecond)
 	v.SetYear(2022)

@@ -32,7 +32,10 @@ func (h *VehicleHandler) Update(c *gin.Context) {
 	}
 
 	if req.Plate != "" {
-		vehicle.SetPlate(req.Plate)
+		if err := vehicle.SetPlate(req.Plate); err != nil {
+			httputil.HandleBadRequest(c, err)
+			return
+		}
 	}
 	if req.Brand != "" {
 		vehicle.SetBrand(req.Brand)

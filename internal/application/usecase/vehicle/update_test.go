@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/fiap/postech-tc1/internal/domain/entities"
 	"github.com/fiap/postech-tc1/internal/ports/mocks"
@@ -14,7 +15,7 @@ func TestUpdateVehicle_Execute_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	v := entities.NewVehicle("cust-1", "ABC1234", "Toyota", "Corolla", 2020)
+	v := entities.ReconstituteVehicle("", "cust-1", "ABC1234", "Toyota", "Corolla", 2020, time.Now(), time.Now())
 	repo := mocks.NewMockVehicleRepository(ctrl)
 	repo.EXPECT().Update(gomock.Any(), v).Return(nil)
 
@@ -29,7 +30,7 @@ func TestUpdateVehicle_Execute_RepoError(t *testing.T) {
 	defer ctrl.Finish()
 
 	repoErr := errors.New("db error")
-	v := entities.NewVehicle("cust-1", "ABC1234", "Toyota", "Corolla", 2020)
+	v := entities.ReconstituteVehicle("", "cust-1", "ABC1234", "Toyota", "Corolla", 2020, time.Now(), time.Now())
 	repo := mocks.NewMockVehicleRepository(ctrl)
 	repo.EXPECT().Update(gomock.Any(), v).Return(repoErr)
 

@@ -26,8 +26,12 @@ func (h *VehicleHandler) Create(c *gin.Context) {
 		return
 	}
 
-	vehicle := req.ToDomain()
-	if err := h.create.Execute(c.Request.Context(), req.CustomerDocument, vehicle); err != nil {
+	vehicle, err := req.ToDomain()
+	if err != nil {
+		httputil.HandleBadRequest(c, err)
+		return
+	}
+	if err := h.create.Execute(c.Request.Context(), vehicle); err != nil {
 		switch {
 		case errors.Is(err, domainerrors.ErrNotFound):
 			httputil.HandleError(c, err, msgCustomerNotFound)
