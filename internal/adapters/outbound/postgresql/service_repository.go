@@ -46,6 +46,18 @@ func (r *serviceRepository) FindByIDs(ctx context.Context, ids []string) ([]*ent
 	return services, nil
 }
 
+func (r *serviceRepository) FindByCodes(ctx context.Context, codes []int) ([]*entities.Service, error) {
+	var docs []pgmodel.Service
+	if err := r.db.WithContext(ctx).Where("code IN ?", codes).Find(&docs).Error; err != nil {
+		return nil, mapError(err)
+	}
+	services := make([]*entities.Service, 0, len(docs))
+	for i := range docs {
+		services = append(services, docs[i].ToDomain())
+	}
+	return services, nil
+}
+
 func (r *serviceRepository) FindAll(ctx context.Context) ([]*entities.Service, error) {
 	var docs []pgmodel.Service
 	if err := r.db.WithContext(ctx).Find(&docs).Error; err != nil {
