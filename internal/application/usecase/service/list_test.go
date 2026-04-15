@@ -15,7 +15,7 @@ func TestListServices_Execute_Success(t *testing.T) {
 	defer ctrl.Finish()
 
 	expected := []*entities.Service{
-		entities.NewService("Troca de óleo", "Desc", 150.0, 60),
+		entities.NewService(1, "Troca de óleo", "Desc", 150.0, 60),
 	}
 	repo := mocks.NewMockServiceRepository(ctrl)
 	repo.EXPECT().FindAll(gomock.Any()).Return(expected, nil)

@@ -10,7 +10,7 @@ import (
 
 func TestPartRepository_Create(t *testing.T) {
 	repo := NewPartRepository(testDB)
-	p := entities.NewPart("Filtro de óleo", "Filtro para motor", "unidade", 49.90, 10)
+	p := entities.NewPart("FAB-001", "Filtro de óleo", "Filtro para motor", "unidade", 49.90, 10)
 
 	if err := repo.Create(context.Background(), p); err != nil {
 		t.Fatalf("expected no error, got %v", err)
@@ -23,7 +23,7 @@ func TestPartRepository_Create(t *testing.T) {
 
 func TestPartRepository_FindByID(t *testing.T) {
 	repo := NewPartRepository(testDB)
-	p := entities.NewPart("Vela de ignição", "Vela NGK", "unidade", 25.00, 8)
+	p := entities.NewPart("FAB-002", "Vela de ignição", "Vela NGK", "unidade", 25.00, 8)
 	if err := repo.Create(context.Background(), p); err != nil {
 		t.Fatalf("setup failed: %v", err)
 	}
@@ -49,7 +49,7 @@ func TestPartRepository_FindByID_NotFound(t *testing.T) {
 
 func TestPartRepository_FindAll(t *testing.T) {
 	repo := NewPartRepository(testDB)
-	p := entities.NewPart("Correia dentada", "Correia Gates", "unidade", 120.00, 3)
+	p := entities.NewPart("FAB-003", "Correia dentada", "Correia Gates", "unidade", 120.00, 3)
 	if err := repo.Create(context.Background(), p); err != nil {
 		t.Fatalf("setup failed: %v", err)
 	}
@@ -66,7 +66,7 @@ func TestPartRepository_FindAll(t *testing.T) {
 
 func TestPartRepository_Update(t *testing.T) {
 	repo := NewPartRepository(testDB)
-	p := entities.NewPart("Amortecedor", "Amortecedor Cofap", "unidade", 250.00, 4)
+	p := entities.NewPart("FAB-004", "Amortecedor", "Amortecedor Cofap", "unidade", 250.00, 4)
 	if err := repo.Create(context.Background(), p); err != nil {
 		t.Fatalf("setup failed: %v", err)
 	}
@@ -85,7 +85,7 @@ func TestPartRepository_Update(t *testing.T) {
 
 func TestPartRepository_Delete(t *testing.T) {
 	repo := NewPartRepository(testDB)
-	p := entities.NewPart("Palheta do limpador", "Bosch 21", "unidade", 35.00, 6)
+	p := entities.NewPart("FAB-005", "Palheta do limpador", "Bosch 21", "unidade", 35.00, 6)
 	if err := repo.Create(context.Background(), p); err != nil {
 		t.Fatalf("setup failed: %v", err)
 	}
@@ -102,7 +102,7 @@ func TestPartRepository_Delete(t *testing.T) {
 
 func TestPartRepository_UpdateStock(t *testing.T) {
 	repo := NewPartRepository(testDB)
-	p := entities.NewPart("Pastilha de freio", "Fremax", "jogo", 180.00, 5)
+	p := entities.NewPart("FAB-006", "Pastilha de freio", "Fremax", "jogo", 180.00, 5)
 	if err := repo.Create(context.Background(), p); err != nil {
 		t.Fatalf("setup failed: %v", err)
 	}

@@ -14,7 +14,7 @@ func TestUpdatePart_Execute_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	p := entities.NewPart("Filtro", "Desc", "unidade", 49.90, 10)
+	p := entities.NewPart("FAB-001", "Filtro", "Desc", "unidade", 49.90, 10)
 	repo := mocks.NewMockPartRepository(ctrl)
 	repo.EXPECT().Update(gomock.Any(), p).Return(nil)
 
@@ -29,7 +29,7 @@ func TestUpdatePart_Execute_RepoError(t *testing.T) {
 	defer ctrl.Finish()
 
 	repoErr := errors.New("db error")
-	p := entities.NewPart("Filtro", "Desc", "unidade", 49.90, 10)
+	p := entities.NewPart("FAB-001", "Filtro", "Desc", "unidade", 49.90, 10)
 	repo := mocks.NewMockPartRepository(ctrl)
 	repo.EXPECT().Update(gomock.Any(), p).Return(repoErr)
 

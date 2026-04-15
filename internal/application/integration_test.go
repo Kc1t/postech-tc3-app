@@ -3,12 +3,14 @@ package application
 import (
 	"context"
 	"fmt"
+	"strings"
 	"sync"
 	"testing"
-	"time"
+
 
 	"github.com/fiap/postech-tc1/internal/domain/entities"
 	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
+	"github.com/fiap/postech-tc1/internal/ports"
 
 	customeruc "github.com/fiap/postech-tc1/internal/application/usecase/customer"
 	serviceorderuc "github.com/fiap/postech-tc1/internal/application/usecase/service_order"
@@ -96,6 +98,18 @@ func (r *inMemoryVehicleRepo) FindByID(_ context.Context, id string) (*entities.
 	return nil, domainerrors.ErrNotFound
 }
 
+func (r *inMemoryVehicleRepo) FindByPlate(_ context.Context, plate string) (*entities.Vehicle, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	normalized := strings.ToUpper(strings.ReplaceAll(strings.TrimSpace(plate), "-", ""))
+	for _, v := range r.data {
+		if v.Plate() == normalized {
+			return v, nil
+		}
+	}
+	return nil, domainerrors.ErrNotFound
+}
+
 func (r *inMemoryVehicleRepo) FindByCustomerID(_ context.Context, customerID string) ([]*entities.Vehicle, error) {
 	return nil, nil
 }
@@ -147,6 +161,21 @@ func (r *inMemoryServiceRepo) FindByIDs(_ context.Context, ids []string) ([]*ent
 	return result, nil
 }
 
+func (r *inMemoryServiceRepo) FindByCodes(_ context.Context, codes []int) ([]*entities.Service, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	result := make([]*entities.Service, 0, len(codes))
+	for _, s := range r.data {
+		for _, code := range codes {
+			if s.Code() == code {
+				result = append(result, s)
+				break
+			}
+		}
+	}
+	return result, nil
+}
+
 func (r *inMemoryServiceRepo) FindAll(_ context.Context) ([]*entities.Service, error) {
 	return nil, nil
 }
@@ -190,6 +219,21 @@ func (r *inMemoryPartRepo) FindByIDs(_ context.Context, ids []string) ([]*entiti
 	for _, id := range ids {
 		if p, ok := r.data[id]; ok {
 			result = append(result, p)
+		}
+	}
+	return result, nil
+}
+
+func (r *inMemoryPartRepo) FindByManufacturerCodes(_ context.Context, codes []string) ([]*entities.Part, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	result := make([]*entities.Part, 0, len(codes))
+	for _, p := range r.data {
+		for _, code := range codes {
+			if p.ManufacturerCode() == code {
+				result = append(result, p)
+				break
+			}
 		}
 	}
 	return result, nil
@@ -244,6 +288,17 @@ func (r *inMemoryServiceOrderRepo) UpdateStatus(_ context.Context, id string, st
 	return domainerrors.ErrNotFound
 }
 
+func (r *inMemoryServiceOrderRepo) FindByCode(_ context.Context, code int) (*entities.ServiceOrder, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	for _, so := range r.data {
+		if so.Code() == code {
+			return so, nil
+		}
+	}
+	return nil, domainerrors.ErrNotFound
+}
+
 func (r *inMemoryServiceOrderRepo) FindAll(_ context.Context) ([]*entities.ServiceOrder, error) {
 	return nil, nil
 }
@@ -271,6 +326,8 @@ type testEnv struct {
 	createVehicle  *vehicleuc.CreateVehicle
 	createOrder    *serviceorderuc.CreateServiceOrder
 	updateStatus   *serviceorderuc.UpdateServiceOrderStatus
+	approve        *serviceorderuc.ApproveServiceOrder
+	reject         *serviceorderuc.RejectServiceOrder
 }
 
 func setupTestEnv() *testEnv {
@@ -289,8 +346,10 @@ func setupTestEnv() *testEnv {
 
 		createCustomer: customeruc.NewCreateCustomer(custRepo),
 		createVehicle:  vehicleuc.NewCreateVehicle(vehRepo, custRepo),
-		createOrder:    serviceorderuc.NewCreateServiceOrder(soRepo, custRepo, vehRepo, svcRepo, partRepo),
-		updateStatus:   serviceorderuc.NewUpdateServiceOrderStatus(soRepo),
+		createOrder:    serviceorderuc.NewCreateServiceOrder(soRepo, custRepo, vehRepo),
+		updateStatus:   serviceorderuc.NewUpdateServiceOrderStatus(soRepo, svcRepo, partRepo),
+		approve:        serviceorderuc.NewApproveServiceOrder(soRepo, custRepo),
+		reject:         serviceorderuc.NewRejectServiceOrder(soRepo, custRepo),
 	}
 }
 
@@ -449,47 +508,71 @@ func TestIntegracao_CriarOS_OrcamentoAutomatico(t *testing.T) {
 	env := setupTestEnv()
 	ctx := context.Background()
 
-	customer, vehicle := setupCustomerAndVehicle(t, env, ctx)
+	customer, _ := setupCustomerAndVehicle(t, env, ctx)
 
-	svc1 := entities.NewService("Troca de oleo", "Troca completa de oleo", 150.00, 30)
+	svc1 := entities.NewService(1, "Troca de oleo", "Troca completa de oleo", 150.00, 30)
 	if err := env.serviceRepo.Create(ctx, svc1); err != nil {
 		t.Fatalf("setup svc1 falhou: %v", err)
 	}
 
-	svc2 := entities.NewService("Alinhamento", "Alinhamento e balanceamento", 120.00, 45)
+	svc2 := entities.NewService(2, "Alinhamento", "Alinhamento e balanceamento", 120.00, 45)
 	if err := env.serviceRepo.Create(ctx, svc2); err != nil {
 		t.Fatalf("setup svc2 falhou: %v", err)
 	}
 
-	part1 := entities.NewPart("Filtro de oleo", "Filtro WIX", "un", 35.00, 50)
+	part1 := entities.NewPart("FAB-001", "Filtro de oleo", "Filtro WIX", "un", 35.00, 50)
 	if err := env.partRepo.Create(ctx, part1); err != nil {
 		t.Fatalf("setup part1 falhou: %v", err)
 	}
 
-	part2 := entities.NewPart("Oleo 5W30", "Oleo sintetico 1L", "litro", 45.00, 100)
+	part2 := entities.NewPart("FAB-002", "Oleo 5W30", "Oleo sintetico 1L", "litro", 45.00, 100)
 	if err := env.partRepo.Create(ctx, part2); err != nil {
 		t.Fatalf("setup part2 falhou: %v", err)
 	}
 
-	so := entities.NewServiceOrder(customer.ID(), vehicle.ID())
-	so.AddService(entities.ServiceItem{ServiceID: svc1.ID(), Description: "qualquer", Price: 999.99})
-	so.AddService(entities.ServiceItem{ServiceID: svc2.ID(), Description: "qualquer", Price: 999.99})
-	so.AddPart(entities.PartItem{PartID: part1.ID(), Description: "qualquer", Quantity: 2, UnitPrice: 999.99})
-	so.AddPart(entities.PartItem{PartID: part2.ID(), Description: "qualquer", Quantity: 4, UnitPrice: 999.99})
+	input := ports.CreateServiceOrderInput{
+		CustomerCPF:  customer.Document(),
+		VehiclePlate: "ABC-1234",
+	}
 
-	if err := env.createOrder.Execute(ctx, so); err != nil {
+	so, err := env.createOrder.Execute(ctx, input)
+	if err != nil {
 		t.Fatalf("criar OS deveria ter sucesso: %v", err)
 	}
 
+	// Transicionar para in_diagnosis
+	err = env.updateStatus.Execute(ctx, ports.UpdateStatusInput{
+		ID:     so.ID(),
+		Status: entities.StatusInDiagnosis,
+	})
+	if err != nil {
+		t.Fatalf("transicao para in_diagnosis falhou: %v", err)
+	}
+
+	// Transicionar para awaiting_approval com servicos e pecas
+	err = env.updateStatus.Execute(ctx, ports.UpdateStatusInput{
+		ID:           so.ID(),
+		Status:       entities.StatusAwaitingApproval,
+		ServiceCodes: []int{1, 2},
+		Parts: []ports.UpdateStatusPartInput{
+			{ManufacturerCode: "FAB-001", Quantity: 2},
+			{ManufacturerCode: "FAB-002", Quantity: 4},
+		},
+	})
+	if err != nil {
+		t.Fatalf("transicao para awaiting_approval falhou: %v", err)
+	}
+
+	found, _ := env.serviceOrderRepo.FindByID(ctx, so.ID())
 	expectedTotal := 520.00
-	if so.TotalAmount() != expectedTotal {
-		t.Errorf("TotalAmount = %.2f, esperava %.2f", so.TotalAmount(), expectedTotal)
+	if found.TotalAmount() != expectedTotal {
+		t.Errorf("TotalAmount = %.2f, esperava %.2f", found.TotalAmount(), expectedTotal)
 	}
-	if so.Services()[0].Description != "Troca de oleo" {
-		t.Errorf("Descricao do servico deveria vir do cadastro, veio: %q", so.Services()[0].Description)
+	if found.Services()[0].Description != "Troca de oleo" {
+		t.Errorf("Descricao do servico deveria vir do cadastro, veio: %q", found.Services()[0].Description)
 	}
-	if so.Services()[0].Price != 150.00 {
-		t.Errorf("Preco deveria ser 150.00 (do cadastro), veio: %.2f", so.Services()[0].Price)
+	if found.Services()[0].Price != 150.00 {
+		t.Errorf("Preco deveria ser 150.00 (do cadastro), veio: %.2f", found.Services()[0].Price)
 	}
 }
 
@@ -512,8 +595,11 @@ func TestIntegracao_CriarOS_VeiculoDeOutroCliente(t *testing.T) {
 		t.Fatalf("setup vehicle falhou: %v", err)
 	}
 
-	so := entities.NewServiceOrder(c2.ID(), vehicle.ID())
-	err := env.createOrder.Execute(ctx, so)
+	input := ports.CreateServiceOrderInput{
+		CustomerCPF:  c2.Document(),
+		VehiclePlate: "ABC-1234",
+	}
+	_, err := env.createOrder.Execute(ctx, input)
 	if err == nil {
 		t.Fatal("deveria rejeitar OS com veiculo de outro cliente")
 	}
@@ -524,17 +610,41 @@ func TestIntegracao_CriarOS_EstoqueInsuficiente(t *testing.T) {
 	env := setupTestEnv()
 	ctx := context.Background()
 
-	customer, vehicle := setupCustomerAndVehicle(t, env, ctx)
+	customer, _ := setupCustomerAndVehicle(t, env, ctx)
 
-	part := entities.NewPart("Filtro raro", "Filtro especial", "un", 100.00, 2)
+	part := entities.NewPart("FAB-001", "Filtro raro", "Filtro especial", "un", 100.00, 2)
 	if err := env.partRepo.Create(ctx, part); err != nil {
 		t.Fatalf("setup part falhou: %v", err)
 	}
 
-	so := entities.NewServiceOrder(customer.ID(), vehicle.ID())
-	so.AddPart(entities.PartItem{PartID: part.ID(), Quantity: 10})
+	// Criar OS sem pecas
+	input := ports.CreateServiceOrderInput{
+		CustomerCPF:  customer.Document(),
+		VehiclePlate: "ABC-1234",
+	}
 
-	err := env.createOrder.Execute(ctx, so)
+	so, err := env.createOrder.Execute(ctx, input)
+	if err != nil {
+		t.Fatalf("criar OS falhou: %v", err)
+	}
+
+	// Transicionar para in_diagnosis
+	err = env.updateStatus.Execute(ctx, ports.UpdateStatusInput{
+		ID:     so.ID(),
+		Status: entities.StatusInDiagnosis,
+	})
+	if err != nil {
+		t.Fatalf("transicao para in_diagnosis falhou: %v", err)
+	}
+
+	// Tentar transicionar para awaiting_approval com estoque insuficiente
+	err = env.updateStatus.Execute(ctx, ports.UpdateStatusInput{
+		ID:     so.ID(),
+		Status: entities.StatusAwaitingApproval,
+		Parts: []ports.UpdateStatusPartInput{
+			{ManufacturerCode: "FAB-001", Quantity: 10}, // pede 10, tem 2
+		},
+	})
 	if err == nil {
 		t.Fatal("deveria rejeitar por estoque insuficiente")
 	}
@@ -549,10 +659,14 @@ func TestIntegracao_FluxoCompleto_StatusOS(t *testing.T) {
 	env := setupTestEnv()
 	ctx := context.Background()
 
-	customer, vehicle := setupCustomerAndVehicle(t, env, ctx)
+	customer, _ := setupCustomerAndVehicle(t, env, ctx)
 
-	so := entities.NewServiceOrder(customer.ID(), vehicle.ID())
-	if err := env.createOrder.Execute(ctx, so); err != nil {
+	input := ports.CreateServiceOrderInput{
+		CustomerCPF: customer.Document(),
+		VehiclePlate: "ABC-1234",
+	}
+	so, err := env.createOrder.Execute(ctx, input)
+	if err != nil {
 		t.Fatalf("criar OS falhou: %v", err)
 	}
 
@@ -568,7 +682,7 @@ func TestIntegracao_FluxoCompleto_StatusOS(t *testing.T) {
 	}
 
 	for _, tr := range transicoes {
-		if err := env.updateStatus.Execute(ctx, so.ID(), tr.para); err != nil {
+		if err := env.updateStatus.Execute(ctx, ports.UpdateStatusInput{ID: so.ID(), Status: tr.para}); err != nil {
 			t.Fatalf("transicao para %q falhou: %v", tr.para, err)
 		}
 		found, _ := env.serviceOrderRepo.FindByID(ctx, so.ID())
@@ -580,14 +694,18 @@ func TestIntegracao_StatusOS_TransicaoInvalida_PularEtapa(t *testing.T) {
 	env := setupTestEnv()
 	ctx := context.Background()
 
-	customer, vehicle := setupCustomerAndVehicle(t, env, ctx)
+	customer, _ := setupCustomerAndVehicle(t, env, ctx)
 
-	so := entities.NewServiceOrder(customer.ID(), vehicle.ID())
-	if err := env.createOrder.Execute(ctx, so); err != nil {
+	input := ports.CreateServiceOrderInput{
+		CustomerCPF: customer.Document(),
+		VehiclePlate: "ABC-1234",
+	}
+	so, err := env.createOrder.Execute(ctx, input)
+	if err != nil {
 		t.Fatalf("criar OS falhou: %v", err)
 	}
 
-	err := env.updateStatus.Execute(ctx, so.ID(), entities.StatusFinished)
+	err = env.updateStatus.Execute(ctx, ports.UpdateStatusInput{ID: so.ID(), Status: entities.StatusFinished})
 	if err == nil {
 		t.Fatal("nao deveria permitir pular de received para finished")
 	}
@@ -602,28 +720,32 @@ func TestIntegracao_StatusOS_RecusaDoCliente(t *testing.T) {
 	env := setupTestEnv()
 	ctx := context.Background()
 
-	customer, vehicle := setupCustomerAndVehicle(t, env, ctx)
+	customer, _ := setupCustomerAndVehicle(t, env, ctx)
 
-	so := entities.NewServiceOrder(customer.ID(), vehicle.ID())
-	if err := env.createOrder.Execute(ctx, so); err != nil {
+	input := ports.CreateServiceOrderInput{
+		CustomerCPF: customer.Document(),
+		VehiclePlate: "ABC-1234",
+	}
+	so, err := env.createOrder.Execute(ctx, input)
+	if err != nil {
 		t.Fatalf("criar OS falhou: %v", err)
 	}
 
-	if err := env.updateStatus.Execute(ctx, so.ID(), entities.StatusInDiagnosis); err != nil {
+	if err := env.updateStatus.Execute(ctx, ports.UpdateStatusInput{ID: so.ID(), Status: entities.StatusInDiagnosis}); err != nil {
 		t.Fatalf("transicao para in_diagnosis falhou: %v", err)
 	}
-	if err := env.updateStatus.Execute(ctx, so.ID(), entities.StatusAwaitingApproval); err != nil {
+	if err := env.updateStatus.Execute(ctx, ports.UpdateStatusInput{ID: so.ID(), Status: entities.StatusAwaitingApproval}); err != nil {
 		t.Fatalf("transicao para awaiting_approval falhou: %v", err)
 	}
 
-	if err := env.updateStatus.Execute(ctx, so.ID(), entities.StatusReceived); err != nil {
+	if err := env.updateStatus.Execute(ctx, ports.UpdateStatusInput{ID: so.ID(), Status: entities.StatusReceived}); err != nil {
 		t.Fatalf("recusa deveria ser permitida: %v", err)
 	}
 
 	found, _ := env.serviceOrderRepo.FindByID(ctx, so.ID())
 	t.Logf("Cliente recusou orcamento: status voltou para %s", found.Status())
 
-	if err := env.updateStatus.Execute(ctx, so.ID(), entities.StatusInDiagnosis); err != nil {
+	if err := env.updateStatus.Execute(ctx, ports.UpdateStatusInput{ID: so.ID(), Status: entities.StatusInDiagnosis}); err != nil {
 		t.Fatalf("reinicio do fluxo deveria ser permitido: %v", err)
 	}
 }
@@ -632,10 +754,14 @@ func TestIntegracao_StatusOS_EstadoTerminal(t *testing.T) {
 	env := setupTestEnv()
 	ctx := context.Background()
 
-	customer, vehicle := setupCustomerAndVehicle(t, env, ctx)
+	customer, _ := setupCustomerAndVehicle(t, env, ctx)
 
-	so := entities.NewServiceOrder(customer.ID(), vehicle.ID())
-	if err := env.createOrder.Execute(ctx, so); err != nil {
+	input := ports.CreateServiceOrderInput{
+		CustomerCPF: customer.Document(),
+		VehiclePlate: "ABC-1234",
+	}
+	so, err := env.createOrder.Execute(ctx, input)
+	if err != nil {
 		t.Fatalf("criar OS falhou: %v", err)
 	}
 
@@ -647,12 +773,12 @@ func TestIntegracao_StatusOS_EstadoTerminal(t *testing.T) {
 		entities.StatusDelivered,
 	}
 	for _, status := range fluxo {
-		if err := env.updateStatus.Execute(ctx, so.ID(), status); err != nil {
+		if err := env.updateStatus.Execute(ctx, ports.UpdateStatusInput{ID: so.ID(), Status: status}); err != nil {
 			t.Fatalf("transicao para %q falhou: %v", status, err)
 		}
 	}
 
-	err := env.updateStatus.Execute(ctx, so.ID(), entities.StatusReceived)
+	err = env.updateStatus.Execute(ctx, ports.UpdateStatusInput{ID: so.ID(), Status: entities.StatusReceived})
 	if err == nil {
 		t.Fatal("delivered e estado terminal, nao deveria aceitar transicao")
 	}
@@ -689,71 +815,100 @@ func TestIntegracao_FluxoCompletoOficina(t *testing.T) {
 	t.Logf("2. Veiculo cadastrado: %s %s %d (Placa: %s - %s)", vehicle.Brand(), vehicle.Model(), vehicle.Year(), vehicle.PlateVO().String(), vehicle.PlateVO().Format())
 
 	// 3. Cadastrar servicos e pecas
-	svcRevisao := entities.NewService("Revisao completa", "Revisao dos 30.000km", 450.00, 120)
+	svcRevisao := entities.NewService(1, "Revisao completa", "Revisao dos 30.000km", 450.00, 120)
 	if err := env.serviceRepo.Create(ctx, svcRevisao); err != nil {
 		t.Fatalf("setup svcRevisao falhou: %v", err)
 	}
 
-	svcFreio := entities.NewService("Troca de pastilha", "Troca pastilha de freio dianteira", 180.00, 60)
+	svcFreio := entities.NewService(2, "Troca de pastilha", "Troca pastilha de freio dianteira", 180.00, 60)
 	if err := env.serviceRepo.Create(ctx, svcFreio); err != nil {
 		t.Fatalf("setup svcFreio falhou: %v", err)
 	}
 
-	partPastilha := entities.NewPart("Pastilha Bosch", "Pastilha de freio dianteira", "jogo", 189.90, 15)
+	partPastilha := entities.NewPart("FAB-001", "Pastilha Bosch", "Pastilha de freio dianteira", "jogo", 189.90, 15)
 	if err := env.partRepo.Create(ctx, partPastilha); err != nil {
 		t.Fatalf("setup partPastilha falhou: %v", err)
 	}
 
-	partOleo := entities.NewPart("Oleo Mobil 5W30", "Oleo sintetico 1L", "litro", 52.90, 200)
+	partOleo := entities.NewPart("FAB-002", "Oleo Mobil 5W30", "Oleo sintetico 1L", "litro", 52.90, 200)
 	if err := env.partRepo.Create(ctx, partOleo); err != nil {
 		t.Fatalf("setup partOleo falhou: %v", err)
 	}
 
-	partFiltro := entities.NewPart("Filtro de oleo", "Filtro Tecfil", "un", 38.50, 30)
+	partFiltro := entities.NewPart("FAB-003", "Filtro de oleo", "Filtro Tecfil", "un", 38.50, 30)
 	if err := env.partRepo.Create(ctx, partFiltro); err != nil {
 		t.Fatalf("setup partFiltro falhou: %v", err)
 	}
 
-	// 4. Criar OS com orcamento automatico
-	so := entities.NewServiceOrder(customer.ID(), vehicle.ID())
-	so.SetNotes("Cliente relata barulho no freio e revisao preventiva")
-	so.AddService(entities.ServiceItem{ServiceID: svcRevisao.ID()})
-	so.AddService(entities.ServiceItem{ServiceID: svcFreio.ID()})
-	so.AddPart(entities.PartItem{PartID: partPastilha.ID(), Quantity: 1})
-	so.AddPart(entities.PartItem{PartID: partOleo.ID(), Quantity: 4})
-	so.AddPart(entities.PartItem{PartID: partFiltro.ID(), Quantity: 1})
+	// 4. Criar OS (sem servicos/pecas — serao adicionados na transicao para awaiting_approval)
+	soInput := ports.CreateServiceOrderInput{
+		CustomerCPF:  customer.Document(),
+		VehiclePlate: "BRA0S18",
+		Notes:        "Cliente relata barulho no freio e revisao preventiva",
+	}
 
-	if err := env.createOrder.Execute(ctx, so); err != nil {
+	so, err := env.createOrder.Execute(ctx, soInput)
+	if err != nil {
 		t.Fatalf("criar OS falhou: %v", err)
 	}
 
-	t.Logf("4. OS criada: #%s (Total: R$ %.2f)", so.ID(), so.TotalAmount())
-
-	expectedTotal := 1070.00
-	if so.TotalAmount() != expectedTotal {
-		t.Errorf("Total esperado: %.2f, obtido: %.2f", expectedTotal, so.TotalAmount())
-	}
+	t.Logf("4. OS criada: codigo #%d (status: %s)", so.Code(), so.Status())
 
 	// 5. Fluxo de status
-	steps := []struct {
-		status entities.OrderStatus
-		msg    string
-	}{
-		{entities.StatusInDiagnosis, "Mecanico inicia diagnostico"},
-		{entities.StatusAwaitingApproval, "Orcamento enviado ao cliente"},
-		{entities.StatusInExecution, "Cliente aprovou — execucao iniciada"},
-		{entities.StatusFinished, "Servicos concluidos"},
-		{entities.StatusDelivered, "Veiculo entregue ao cliente"},
+
+	// 5.1 Mecanico inicia diagnostico (received → in_diagnosis)
+	err = env.updateStatus.Execute(ctx, ports.UpdateStatusInput{ID: so.ID(), Status: entities.StatusInDiagnosis})
+	if err != nil {
+		t.Fatalf("passo 5.1 falhou: %v", err)
+	}
+	t.Logf("5.1 Mecanico inicia diagnostico -> [%s]", entities.StatusInDiagnosis)
+
+	// 5.2 Diagnostico concluido, mecanico monta orcamento (in_diagnosis → awaiting_approval)
+	err = env.updateStatus.Execute(ctx, ports.UpdateStatusInput{
+		ID:           so.ID(),
+		Status:       entities.StatusAwaitingApproval,
+		ServiceCodes: []int{1, 2},
+		Parts: []ports.UpdateStatusPartInput{
+			{ManufacturerCode: "FAB-001", Quantity: 1},
+			{ManufacturerCode: "FAB-002", Quantity: 4},
+			{ManufacturerCode: "FAB-003", Quantity: 1},
+		},
+	})
+	if err != nil {
+		t.Fatalf("passo 5.2 falhou: %v", err)
 	}
 
-	for i, step := range steps {
-		if err := env.updateStatus.Execute(ctx, so.ID(), step.status); err != nil {
-			t.Fatalf("passo %d falhou: %v", i+1, err)
-		}
-		found, _ := env.serviceOrderRepo.FindByID(ctx, so.ID())
-		t.Logf("5.%d %s -> [%s]", i+1, step.msg, found.Status())
+	found, _ := env.serviceOrderRepo.FindByID(ctx, so.ID())
+	t.Logf("5.2 Orcamento enviado ao cliente -> [%s] (total: R$ %.2f)", found.Status(), found.TotalAmount())
+
+	expectedTotal := 1070.00
+	if found.TotalAmount() != expectedTotal {
+		t.Errorf("Total esperado: %.2f, obtido: %.2f", expectedTotal, found.TotalAmount())
 	}
+
+	// 5.3 Cliente aprova a OS pelo codigo + CPF (awaiting_approval → in_execution)
+	err = env.approve.Execute(ctx, so.Code(), customer.Document())
+	if err != nil {
+		t.Fatalf("passo 5.3 falhou: %v", err)
+	}
+	found, _ = env.serviceOrderRepo.FindByID(ctx, so.ID())
+	t.Logf("5.3 Cliente aprovou OS #%d via CPF -> [%s]", so.Code(), found.Status())
+
+	// 5.4 Mecanico conclui os servicos (in_execution → finished)
+	err = env.updateStatus.Execute(ctx, ports.UpdateStatusInput{ID: so.ID(), Status: entities.StatusFinished})
+	if err != nil {
+		t.Fatalf("passo 5.4 falhou: %v", err)
+	}
+	found, _ = env.serviceOrderRepo.FindByID(ctx, so.ID())
+	t.Logf("5.4 Servicos concluidos -> [%s]", found.Status())
+
+	// 5.5 Cliente retira o veiculo (finished → delivered)
+	err = env.updateStatus.Execute(ctx, ports.UpdateStatusInput{ID: so.ID(), Status: entities.StatusDelivered})
+	if err != nil {
+		t.Fatalf("passo 5.5 falhou: %v", err)
+	}
+	found, _ = env.serviceOrderRepo.FindByID(ctx, so.ID())
+	t.Logf("5.5 Veiculo entregue ao cliente -> [%s]", found.Status())
 
 	t.Logf("FLUXO COMPLETO CONCLUIDO COM SUCESSO")
-	t.Logf("   Tempo do teste: %s", time.Since(time.Now().Add(-time.Millisecond)).Round(time.Millisecond))
 }

@@ -15,7 +15,7 @@ func TestGetService_Execute_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	expected := entities.NewService("Troca de óleo", "Desc", 150.0, 60)
+	expected := entities.NewService(1, "Troca de óleo", "Desc", 150.0, 60)
 	repo := mocks.NewMockServiceRepository(ctrl)
 	repo.EXPECT().FindByID(gomock.Any(), "svc-1").Return(expected, nil)
 

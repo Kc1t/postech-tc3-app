@@ -15,7 +15,7 @@ func TestGetPart_Execute_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	expected := entities.NewPart("Filtro", "Desc", "unidade", 49.90, 10)
+	expected := entities.NewPart("FAB-001", "Filtro", "Desc", "unidade", 49.90, 10)
 	repo := mocks.NewMockPartRepository(ctrl)
 	repo.EXPECT().FindByID(gomock.Any(), "part-1").Return(expected, nil)
 

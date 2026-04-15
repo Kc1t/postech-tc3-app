@@ -210,7 +210,7 @@ func TestSetParts_SubstituiERecalcula(t *testing.T) {
 func newServiceOrderWithStatus(status OrderStatus) *ServiceOrder {
 	t := time.Now()
 	return ReconstituteServiceOrder(
-		"order-1", "cust-1", "veh-1",
+		"order-1", 0, "cust-1", "veh-1",
 		status,
 		nil, nil, 0, "",
 		t, t,
