@@ -14,6 +14,7 @@ import (
 	reflect "reflect"
 
 	entities "github.com/fiap/postech-tc1/internal/domain/entities"
+	ports "github.com/fiap/postech-tc1/internal/ports"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -504,17 +505,18 @@ func (m *MockCreateServiceOrderUseCase) EXPECT() *MockCreateServiceOrderUseCaseM
 }
 
 // Execute mocks base method.
-func (m *MockCreateServiceOrderUseCase) Execute(ctx context.Context, so *entities.ServiceOrder) error {
+func (m *MockCreateServiceOrderUseCase) Execute(ctx context.Context, input ports.CreateServiceOrderInput) (*entities.ServiceOrder, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Execute", ctx, so)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret := m.ctrl.Call(m, "Execute", ctx, input)
+	ret0, _ := ret[0].(*entities.ServiceOrder)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Execute indicates an expected call of Execute.
-func (mr *MockCreateServiceOrderUseCaseMockRecorder) Execute(ctx, so any) *gomock.Call {
+func (mr *MockCreateServiceOrderUseCaseMockRecorder) Execute(ctx, input any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockCreateServiceOrderUseCase)(nil).Execute), ctx, so)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockCreateServiceOrderUseCase)(nil).Execute), ctx, input)
 }
 
 // MockGetServiceOrderUseCase is a mock of GetServiceOrderUseCase interface.
@@ -659,17 +661,171 @@ func (m *MockUpdateServiceOrderStatusUseCase) EXPECT() *MockUpdateServiceOrderSt
 }
 
 // Execute mocks base method.
-func (m *MockUpdateServiceOrderStatusUseCase) Execute(ctx context.Context, id string, status entities.OrderStatus) error {
+func (m *MockUpdateServiceOrderStatusUseCase) Execute(ctx context.Context, input ports.UpdateStatusInput) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Execute", ctx, id, status)
+	ret := m.ctrl.Call(m, "Execute", ctx, input)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Execute indicates an expected call of Execute.
-func (mr *MockUpdateServiceOrderStatusUseCaseMockRecorder) Execute(ctx, id, status any) *gomock.Call {
+func (mr *MockUpdateServiceOrderStatusUseCaseMockRecorder) Execute(ctx, input any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockUpdateServiceOrderStatusUseCase)(nil).Execute), ctx, id, status)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockUpdateServiceOrderStatusUseCase)(nil).Execute), ctx, input)
+}
+
+// MockGetServiceOrderByCodeUseCase is a mock of GetServiceOrderByCodeUseCase interface.
+type MockGetServiceOrderByCodeUseCase struct {
+	ctrl     *gomock.Controller
+	recorder *MockGetServiceOrderByCodeUseCaseMockRecorder
+	isgomock struct{}
+}
+
+// MockGetServiceOrderByCodeUseCaseMockRecorder is the mock recorder for MockGetServiceOrderByCodeUseCase.
+type MockGetServiceOrderByCodeUseCaseMockRecorder struct {
+	mock *MockGetServiceOrderByCodeUseCase
+}
+
+// NewMockGetServiceOrderByCodeUseCase creates a new mock instance.
+func NewMockGetServiceOrderByCodeUseCase(ctrl *gomock.Controller) *MockGetServiceOrderByCodeUseCase {
+	mock := &MockGetServiceOrderByCodeUseCase{ctrl: ctrl}
+	mock.recorder = &MockGetServiceOrderByCodeUseCaseMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockGetServiceOrderByCodeUseCase) EXPECT() *MockGetServiceOrderByCodeUseCaseMockRecorder {
+	return m.recorder
+}
+
+// Execute mocks base method.
+func (m *MockGetServiceOrderByCodeUseCase) Execute(ctx context.Context, code int, customerCPF string) (*entities.ServiceOrder, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Execute", ctx, code, customerCPF)
+	ret0, _ := ret[0].(*entities.ServiceOrder)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Execute indicates an expected call of Execute.
+func (mr *MockGetServiceOrderByCodeUseCaseMockRecorder) Execute(ctx, code, customerCPF any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockGetServiceOrderByCodeUseCase)(nil).Execute), ctx, code, customerCPF)
+}
+
+// MockListServiceOrdersByCPFUseCase is a mock of ListServiceOrdersByCPFUseCase interface.
+type MockListServiceOrdersByCPFUseCase struct {
+	ctrl     *gomock.Controller
+	recorder *MockListServiceOrdersByCPFUseCaseMockRecorder
+	isgomock struct{}
+}
+
+// MockListServiceOrdersByCPFUseCaseMockRecorder is the mock recorder for MockListServiceOrdersByCPFUseCase.
+type MockListServiceOrdersByCPFUseCaseMockRecorder struct {
+	mock *MockListServiceOrdersByCPFUseCase
+}
+
+// NewMockListServiceOrdersByCPFUseCase creates a new mock instance.
+func NewMockListServiceOrdersByCPFUseCase(ctrl *gomock.Controller) *MockListServiceOrdersByCPFUseCase {
+	mock := &MockListServiceOrdersByCPFUseCase{ctrl: ctrl}
+	mock.recorder = &MockListServiceOrdersByCPFUseCaseMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockListServiceOrdersByCPFUseCase) EXPECT() *MockListServiceOrdersByCPFUseCaseMockRecorder {
+	return m.recorder
+}
+
+// Execute mocks base method.
+func (m *MockListServiceOrdersByCPFUseCase) Execute(ctx context.Context, cpf string) ([]*entities.ServiceOrder, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Execute", ctx, cpf)
+	ret0, _ := ret[0].([]*entities.ServiceOrder)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Execute indicates an expected call of Execute.
+func (mr *MockListServiceOrdersByCPFUseCaseMockRecorder) Execute(ctx, cpf any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockListServiceOrdersByCPFUseCase)(nil).Execute), ctx, cpf)
+}
+
+// MockApproveServiceOrderUseCase is a mock of ApproveServiceOrderUseCase interface.
+type MockApproveServiceOrderUseCase struct {
+	ctrl     *gomock.Controller
+	recorder *MockApproveServiceOrderUseCaseMockRecorder
+	isgomock struct{}
+}
+
+// MockApproveServiceOrderUseCaseMockRecorder is the mock recorder for MockApproveServiceOrderUseCase.
+type MockApproveServiceOrderUseCaseMockRecorder struct {
+	mock *MockApproveServiceOrderUseCase
+}
+
+// NewMockApproveServiceOrderUseCase creates a new mock instance.
+func NewMockApproveServiceOrderUseCase(ctrl *gomock.Controller) *MockApproveServiceOrderUseCase {
+	mock := &MockApproveServiceOrderUseCase{ctrl: ctrl}
+	mock.recorder = &MockApproveServiceOrderUseCaseMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockApproveServiceOrderUseCase) EXPECT() *MockApproveServiceOrderUseCaseMockRecorder {
+	return m.recorder
+}
+
+// Execute mocks base method.
+func (m *MockApproveServiceOrderUseCase) Execute(ctx context.Context, code int, customerCPF string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Execute", ctx, code, customerCPF)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Execute indicates an expected call of Execute.
+func (mr *MockApproveServiceOrderUseCaseMockRecorder) Execute(ctx, code, customerCPF any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockApproveServiceOrderUseCase)(nil).Execute), ctx, code, customerCPF)
+}
+
+// MockRejectServiceOrderUseCase is a mock of RejectServiceOrderUseCase interface.
+type MockRejectServiceOrderUseCase struct {
+	ctrl     *gomock.Controller
+	recorder *MockRejectServiceOrderUseCaseMockRecorder
+	isgomock struct{}
+}
+
+// MockRejectServiceOrderUseCaseMockRecorder is the mock recorder for MockRejectServiceOrderUseCase.
+type MockRejectServiceOrderUseCaseMockRecorder struct {
+	mock *MockRejectServiceOrderUseCase
+}
+
+// NewMockRejectServiceOrderUseCase creates a new mock instance.
+func NewMockRejectServiceOrderUseCase(ctrl *gomock.Controller) *MockRejectServiceOrderUseCase {
+	mock := &MockRejectServiceOrderUseCase{ctrl: ctrl}
+	mock.recorder = &MockRejectServiceOrderUseCaseMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockRejectServiceOrderUseCase) EXPECT() *MockRejectServiceOrderUseCaseMockRecorder {
+	return m.recorder
+}
+
+// Execute mocks base method.
+func (m *MockRejectServiceOrderUseCase) Execute(ctx context.Context, code int, customerCPF string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Execute", ctx, code, customerCPF)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Execute indicates an expected call of Execute.
+func (mr *MockRejectServiceOrderUseCaseMockRecorder) Execute(ctx, code, customerCPF any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockRejectServiceOrderUseCase)(nil).Execute), ctx, code, customerCPF)
 }
 
 // MockUpdateServiceOrderUseCase is a mock of UpdateServiceOrderUseCase interface.
