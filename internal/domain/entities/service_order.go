@@ -58,6 +58,7 @@ type PartItem struct {
 
 type ServiceOrder struct {
 	id          string
+	code        int
 	customerID  string
 	vehicleID   string
 	status      OrderStatus
@@ -84,7 +85,8 @@ func NewServiceOrder(customerID, vehicleID string) *ServiceOrder {
 
 // ReconstituteServiceOrder restaura uma entidade a partir de dados persistidos (uso exclusivo de repositories).
 func ReconstituteServiceOrder(
-	id, customerID, vehicleID string,
+	id string, code int,
+	customerID, vehicleID string,
 	status OrderStatus,
 	services []ServiceItem,
 	parts []PartItem,
@@ -94,6 +96,7 @@ func ReconstituteServiceOrder(
 ) *ServiceOrder {
 	return &ServiceOrder{
 		id:          id,
+		code:        code,
 		customerID:  customerID,
 		vehicleID:   vehicleID,
 		status:      status,
@@ -107,6 +110,7 @@ func ReconstituteServiceOrder(
 }
 
 func (so *ServiceOrder) ID() string              { return so.id }
+func (so *ServiceOrder) Code() int               { return so.code }
 func (so *ServiceOrder) CustomerID() string      { return so.customerID }
 func (so *ServiceOrder) VehicleID() string       { return so.vehicleID }
 func (so *ServiceOrder) Status() OrderStatus     { return so.status }
@@ -117,7 +121,8 @@ func (so *ServiceOrder) Notes() string           { return so.notes }
 func (so *ServiceOrder) CreatedAt() time.Time    { return so.createdAt }
 func (so *ServiceOrder) UpdatedAt() time.Time    { return so.updatedAt }
 
-func (so *ServiceOrder) SetID(id string)   { so.id = id }
+func (so *ServiceOrder) SetID(id string)     { so.id = id }
+func (so *ServiceOrder) SetCode(code int)    { so.code = code }
 func (so *ServiceOrder) SetNotes(n string) { so.notes = n; so.touch() }
 
 // UpdateStatus valida a transicao de status antes de aplicar.
