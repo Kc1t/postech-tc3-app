@@ -47,20 +47,19 @@ func TestCreateServiceOrder_Sucesso(t *testing.T) {
 	}
 }
 
-func TestCreateServiceOrder_SemItens(t *testing.T) {
+func TestCreateServiceOrder_ErroInfraNoVeiculo(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	customer := entities.ReconstituteCustomer("cust-1", "Diego", "52998224725", "d@e.com", "", ft(), ft())
-	vehicle := entities.ReconstituteVehicle("veh-1", "cust-1", "ABC1234", "Fiat", "Uno", 2020, ft(), ft())
+	infraErr := errors.New("timeout")
 
 	soRepo := mocks.NewMockServiceOrderRepository(ctrl)
 	custRepo := mocks.NewMockCustomerRepository(ctrl)
 	vehRepo := mocks.NewMockVehicleRepository(ctrl)
 
 	custRepo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(customer, nil)
-	vehRepo.EXPECT().FindByPlate(gomock.Any(), "ABC1234").Return(vehicle, nil)
-	soRepo.EXPECT().Create(gomock.Any(), gomock.Any()).Return(nil)
+	vehRepo.EXPECT().FindByPlate(gomock.Any(), "ABC1234").Return(nil, infraErr)
 
 	uc := NewCreateServiceOrder(soRepo, custRepo, vehRepo)
 	input := ports.CreateServiceOrderInput{
@@ -68,12 +67,62 @@ func TestCreateServiceOrder_SemItens(t *testing.T) {
 		VehiclePlate: "ABC1234",
 	}
 
-	so, err := uc.Execute(context.Background(), input)
-	if err != nil {
-		t.Fatalf("OS sem itens deveria ser permitida: %v", err)
+	_, err := uc.Execute(context.Background(), input)
+	if !errors.Is(err, infraErr) {
+		t.Fatalf("erro = %v, esperava %v (erro de infra propagado)", err, infraErr)
 	}
-	if so.TotalAmount() != 0 {
-		t.Errorf("TotalAmount() = %.2f, esperava 0.00", so.TotalAmount())
+}
+
+func TestCreateServiceOrder_VeiculoNaoEncontrado(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	customer := entities.ReconstituteCustomer("cust-1", "Diego", "52998224725", "d@e.com", "", ft(), ft())
+
+	soRepo := mocks.NewMockServiceOrderRepository(ctrl)
+	custRepo := mocks.NewMockCustomerRepository(ctrl)
+	vehRepo := mocks.NewMockVehicleRepository(ctrl)
+
+	custRepo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(customer, nil)
+	vehRepo.EXPECT().FindByPlate(gomock.Any(), "XXX0000").Return(nil, domainerrors.ErrNotFound)
+
+	uc := NewCreateServiceOrder(soRepo, custRepo, vehRepo)
+	input := ports.CreateServiceOrderInput{
+		CustomerCPF:  "52998224725",
+		VehiclePlate: "XXX0000",
+	}
+
+	_, err := uc.Execute(context.Background(), input)
+	if !errors.Is(err, domainerrors.ErrNotFound) {
+		t.Fatalf("erro = %v, esperava ErrNotFound", err)
+	}
+}
+
+func TestCreateServiceOrder_ErroNaPersistencia(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	customer := entities.ReconstituteCustomer("cust-1", "Diego", "52998224725", "d@e.com", "", ft(), ft())
+	vehicle := entities.ReconstituteVehicle("veh-1", "cust-1", "ABC1234", "Fiat", "Uno", 2020, ft(), ft())
+	infraErr := errors.New("db write error")
+
+	soRepo := mocks.NewMockServiceOrderRepository(ctrl)
+	custRepo := mocks.NewMockCustomerRepository(ctrl)
+	vehRepo := mocks.NewMockVehicleRepository(ctrl)
+
+	custRepo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(customer, nil)
+	vehRepo.EXPECT().FindByPlate(gomock.Any(), "ABC1234").Return(vehicle, nil)
+	soRepo.EXPECT().Create(gomock.Any(), gomock.Any()).Return(infraErr)
+
+	uc := NewCreateServiceOrder(soRepo, custRepo, vehRepo)
+	input := ports.CreateServiceOrderInput{
+		CustomerCPF:  "52998224725",
+		VehiclePlate: "ABC1234",
+	}
+
+	_, err := uc.Execute(context.Background(), input)
+	if !errors.Is(err, infraErr) {
+		t.Fatalf("erro = %v, esperava %v (erro de persistencia propagado)", err, infraErr)
 	}
 }
 
