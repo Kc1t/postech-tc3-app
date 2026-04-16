@@ -17,7 +17,7 @@ import (
 // @Router      /service-orders/{id} [delete]
 func (h *ServiceOrderHandler) Delete(c *gin.Context) {
 	if err := h.delete.Execute(c.Request.Context(), c.Param("id")); err != nil {
-		httputil.HandleError(c, err)
+		httputil.HandleError(c, err, msgNotFound)
 		return
 	}
 	c.Status(http.StatusNoContent)

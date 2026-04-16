@@ -1,6 +1,7 @@
 package serviceorderhandler
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -26,10 +27,7 @@ func (h *ServiceOrderHandler) FindByCode(c *gin.Context) {
 
 	cpf := c.Query("cpf")
 	if cpf == "" {
-		c.JSON(http.StatusBadRequest, httputil.ErrorResponse{
-			Status:  http.StatusText(http.StatusBadRequest),
-			Message: "query parameter 'cpf' is required",
-		})
+		httputil.HandleBadRequest(c, fmt.Errorf("query parameter 'cpf' is required"))
 		return
 	}
 

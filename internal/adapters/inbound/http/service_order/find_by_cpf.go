@@ -1,6 +1,7 @@
 package serviceorderhandler
 
 import (
+	"fmt"
 	"net/http"
 
 	httputil "github.com/fiap/postech-tc1/internal/adapters/inbound/http"
@@ -18,10 +19,7 @@ import (
 func (h *ServiceOrderHandler) FindByCPF(c *gin.Context) {
 	cpf := c.Query("cpf")
 	if cpf == "" {
-		c.JSON(http.StatusBadRequest, httputil.ErrorResponse{
-			Status:  http.StatusText(http.StatusBadRequest),
-			Message: "query parameter 'cpf' is required",
-		})
+		httputil.HandleBadRequest(c, fmt.Errorf("query parameter 'cpf' is required"))
 		return
 	}
 
