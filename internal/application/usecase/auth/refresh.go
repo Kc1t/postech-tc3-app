@@ -5,27 +5,23 @@ import (
 	"errors"
 	"time"
 
-	"github.com/fiap/postech-tc1/config"
 	"github.com/fiap/postech-tc1/internal/domain/entities"
 	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
 	"github.com/fiap/postech-tc1/internal/ports"
-	"github.com/fiap/postech-tc1/pkg/token"
 )
 
 type Refresh struct {
 	userRepo    ports.UserRepository
 	refreshRepo ports.RefreshTokenRepository
-	tokenSvc    token.Service
-	cfg         *config.Config
+	tokenSvc    ports.TokenService
 }
 
 func NewRefresh(
 	userRepo ports.UserRepository,
 	refreshRepo ports.RefreshTokenRepository,
-	tokenSvc token.Service,
-	cfg *config.Config,
+	tokenSvc ports.TokenService,
 ) *Refresh {
-	return &Refresh{userRepo: userRepo, refreshRepo: refreshRepo, tokenSvc: tokenSvc, cfg: cfg}
+	return &Refresh{userRepo: userRepo, refreshRepo: refreshRepo, tokenSvc: tokenSvc}
 }
 
 func (uc *Refresh) Execute(ctx context.Context, rawRefreshToken string) (string, string, error) {
@@ -52,7 +48,7 @@ func (uc *Refresh) Execute(ctx context.Context, rawRefreshToken string) (string,
 	}
 
 	// 4. Gerar novo access token
-	accessToken, err := uc.tokenSvc.GenerateAccessToken(u, time.Duration(uc.cfg.AccessTokenExpMin)*time.Minute)
+	accessToken, err := uc.tokenSvc.GenerateAccessToken(u)
 	if err != nil {
 		return "", "", err
 	}
@@ -63,14 +59,11 @@ func (uc *Refresh) Execute(ctx context.Context, rawRefreshToken string) (string,
 		return "", "", err
 	}
 
-	expiresAt := time.Now().Add(time.Duration(uc.cfg.RefreshTokenExpDays) * 24 * time.Hour)
+	expiresAt := time.Now().Add(uc.tokenSvc.RefreshTokenExpiration())
 	newRT := entities.NewRefreshToken(u.ID(), hash, expiresAt)
 
-	// 6. Revogar o token antigo e persistir o novo atomicamente.
-	// O repositorio garante single-use real com WHERE revoked = false e
-	// verifica RowsAffected, prevenindo double-spend em chamadas concorrentes.
-	_, err = uc.refreshRepo.RotateToken(ctx, rt.ID(), newRT)
-	if err != nil {
+	// 6. Revogar o token antigo e persistir o novo atomicamente
+	if err := uc.refreshRepo.RotateToken(ctx, rt.ID(), newRT); err != nil {
 		if errors.Is(err, domainerrors.ErrNotFound) {
 			return "", "", domainerrors.ErrInvalidRefreshToken
 		}

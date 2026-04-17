@@ -1,4 +1,4 @@
-package authuc
+	package authuc
 
 import (
 	"context"
@@ -7,20 +7,18 @@ import (
 	"github.com/fiap/postech-tc1/internal/domain/entities"
 	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
 	"github.com/fiap/postech-tc1/internal/ports"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type Register struct {
-	userRepo   ports.UserRepository
-	bcryptCost int
+	userRepo ports.UserRepository
+	hasher   ports.PasswordHasher
 }
 
-func NewRegister(userRepo ports.UserRepository, bcryptCost int) *Register {
-	return &Register{userRepo: userRepo, bcryptCost: bcryptCost}
+func NewRegister(userRepo ports.UserRepository, hasher ports.PasswordHasher) *Register {
+	return &Register{userRepo: userRepo, hasher: hasher}
 }
 
 func (uc *Register) Execute(ctx context.Context, name, email, rawPassword string, role entities.Role) error {
-	// 1. Verificar se email ja existe
 	existing, err := uc.userRepo.FindByEmail(ctx, email)
 	if err != nil && !errors.Is(err, domainerrors.ErrNotFound) {
 		return err
@@ -29,13 +27,11 @@ func (uc *Register) Execute(ctx context.Context, name, email, rawPassword string
 		return domainerrors.ErrAlreadyExists
 	}
 
-	// 2. Hash da senha (logica de aplicacao, nao de handler)
-	hash, err := bcrypt.GenerateFromPassword([]byte(rawPassword), uc.bcryptCost)
+	hash, err := uc.hasher.Hash(rawPassword)
 	if err != nil {
 		return err
 	}
 
-	// 3. Criar e persistir
-	u := entities.NewUser(name, email, string(hash), role)
+	u := entities.NewUser(name, email, hash, role)
 	return uc.userRepo.Create(ctx, u)
 }

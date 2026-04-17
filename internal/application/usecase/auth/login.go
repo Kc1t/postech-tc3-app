@@ -5,32 +5,40 @@ import (
 	"errors"
 	"time"
 
-	"github.com/fiap/postech-tc1/config"
 	"github.com/fiap/postech-tc1/internal/domain/entities"
 	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
 	"github.com/fiap/postech-tc1/internal/ports"
-	"github.com/fiap/postech-tc1/pkg/token"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type Login struct {
-	userRepo    ports.UserRepository
-	refreshRepo ports.RefreshTokenRepository
-	tokenSvc    token.Service
-	cfg         *config.Config
-	// dummyHash gerado com o MESMO bcrypt cost do config pra manter tempo
+	userRepo        ports.UserRepository
+	refreshRepo     ports.RefreshTokenRepository
+	tokenSvc        ports.TokenService
+	hasher          ports.PasswordHasher
+	maxFailedLogins int
+	lockDurationMin int
+	// dummyHash gerado com o MESMO algoritmo e custo pra manter tempo
 	// constante quando o usuario nao existe (timing attack / user enumeration).
-	dummyHash []byte
+	dummyHash string
 }
 
-func NewLogin(userRepo ports.UserRepository, refreshRepo ports.RefreshTokenRepository, tokenSvc token.Service, cfg *config.Config) *Login {
-	dummy, _ := bcrypt.GenerateFromPassword([]byte("timing-safe-dummy"), cfg.BcryptCost)
+func NewLogin(
+	userRepo ports.UserRepository,
+	refreshRepo ports.RefreshTokenRepository,
+	tokenSvc ports.TokenService,
+	hasher ports.PasswordHasher,
+	maxFailedLogins int,
+	lockDurationMin int,
+) *Login {
+	dummy, _ := hasher.Hash("timing-safe-dummy")
 	return &Login{
-		userRepo:    userRepo,
-		refreshRepo: refreshRepo,
-		tokenSvc:    tokenSvc,
-		cfg:         cfg,
-		dummyHash:   dummy,
+		userRepo:        userRepo,
+		refreshRepo:     refreshRepo,
+		tokenSvc:        tokenSvc,
+		hasher:          hasher,
+		maxFailedLogins: maxFailedLogins,
+		lockDurationMin: lockDurationMin,
+		dummyHash:       dummy,
 	}
 }
 
@@ -38,33 +46,31 @@ func (uc *Login) Execute(ctx context.Context, email, password string) (string, s
 	// 1. Buscar usuario por email
 	u, err := uc.userRepo.FindByEmail(ctx, email)
 	if err != nil && !errors.Is(err, domainerrors.ErrNotFound) {
-		// Erro de infraestrutura — propaga pra 500
 		return "", "", err
 	}
 
-	// 2. Comparar senha com bcrypt — SEMPRE, mesmo se user nao existe.
+	// 2. Comparar senha — SEMPRE, mesmo se user nao existe.
 	// Mantem tempo constante e previne user enumeration via timing.
 	hashToCompare := uc.dummyHash
 	if u != nil {
-		hashToCompare = []byte(u.PasswordHash())
+		hashToCompare = u.PasswordHash()
 	}
-	bcryptErr := bcrypt.CompareHashAndPassword(hashToCompare, []byte(password))
+	compareErr := uc.hasher.Compare(hashToCompare, password)
 
 	// 3. User nao existe → erro generico
 	if u == nil {
 		return "", "", domainerrors.ErrInvalidCredentials
 	}
 
-	// 4. Conta bloqueada → erro generico (nao revelamos estado de bloqueio
-	// pra prevenir enumeration/reconhaissance)
+	// 4. Conta bloqueada → erro generico (nao revelamos estado de bloqueio)
 	if u.IsLocked() {
 		return "", "", domainerrors.ErrInvalidCredentials
 	}
 
 	// 5. Senha errada → incrementa contador e bloqueia se atingir limite
-	if bcryptErr != nil {
-		lockDuration := time.Duration(uc.cfg.LoginLockMin) * time.Minute
-		u.RegisterFailedLogin(uc.cfg.MaxFailedLogins, lockDuration)
+	if compareErr != nil {
+		lockDuration := time.Duration(uc.lockDurationMin) * time.Minute
+		u.RegisterFailedLogin(uc.maxFailedLogins, lockDuration)
 		_ = uc.userRepo.Update(ctx, u)
 		return "", "", domainerrors.ErrInvalidCredentials
 	}
@@ -76,7 +82,7 @@ func (uc *Login) Execute(ctx context.Context, email, password string) (string, s
 	}
 
 	// 7. Gerar access token
-	accessToken, err := uc.tokenSvc.GenerateAccessToken(u, time.Duration(uc.cfg.AccessTokenExpMin)*time.Minute)
+	accessToken, err := uc.tokenSvc.GenerateAccessToken(u)
 	if err != nil {
 		return "", "", err
 	}
@@ -88,7 +94,7 @@ func (uc *Login) Execute(ctx context.Context, email, password string) (string, s
 	}
 
 	// 9. Persistir refresh token
-	expiresAt := time.Now().Add(time.Duration(uc.cfg.RefreshTokenExpDays) * 24 * time.Hour)
+	expiresAt := time.Now().Add(uc.tokenSvc.RefreshTokenExpiration())
 	rt := entities.NewRefreshToken(u.ID(), hashRefresh, expiresAt)
 	if err := uc.refreshRepo.Create(ctx, rt); err != nil {
 		return "", "", err

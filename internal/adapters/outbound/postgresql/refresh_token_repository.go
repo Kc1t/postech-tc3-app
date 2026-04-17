@@ -65,8 +65,8 @@ func (r *refreshTokenRepository) RevokeByUserID(ctx context.Context, userID stri
 // RotateToken revoga o token antigo e persiste o novo em uma unica transacao.
 // Usa WHERE revoked = false com verificacao de RowsAffected para garantir
 // single-use real em cenarios de concorrencia.
-func (r *refreshTokenRepository) RotateToken(ctx context.Context, oldID string, newRT *entities.RefreshToken) (*entities.RefreshToken, error) {
-	err := r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+func (r *refreshTokenRepository) RotateToken(ctx context.Context, oldID string, newRT *entities.RefreshToken) error {
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		result := tx.Model(&pgmodel.RefreshToken{}).
 			Where("id = ? AND revoked = false", oldID).
 			Update("revoked", true)
@@ -84,8 +84,4 @@ func (r *refreshTokenRepository) RotateToken(ctx context.Context, oldID string, 
 		newRT.SetID(m.ID)
 		return nil
 	})
-	if err != nil {
-		return nil, err
-	}
-	return newRT, nil
 }

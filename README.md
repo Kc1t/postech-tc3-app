@@ -128,7 +128,7 @@ go run ./cmd/api
 | PUT    | `/api/v1/service-orders/:id`            | Atualizar OS                     |
 | DELETE | `/api/v1/service-orders/:id`            | Deletar OS                       |
 
-As rotas `/api/v1/auth/register`, `/login` e `/refresh` sao publicas (com rate limit). Todas as demais rotas `/api/v1/*` requerem header `Authorization: Bearer <token>`. Rotas administrativas exigem `role=admin` nas claims do JWT.
+As rotas `/api/v1/auth/register`, `/login` e `/refresh` sao publicas. Protecao contra brute force e feita via account lockout no dominio (5 tentativas falhas bloqueiam a conta por 15min). Todas as demais rotas `/api/v1/*` requerem header `Authorization: Bearer <token>`. Rotas administrativas exigem `role=admin` nas claims do JWT.
 
 ## Gerando o Swagger
 

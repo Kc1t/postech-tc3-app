@@ -11,6 +11,7 @@ import (
 	pgmodel "github.com/fiap/postech-tc1/internal/adapters/outbound/postgresql/model"
 	"github.com/fiap/postech-tc1/internal/domain/entities"
 	"github.com/fiap/postech-tc1/internal/ports"
+	"github.com/fiap/postech-tc1/pkg/hasher"
 	"github.com/fiap/postech-tc1/pkg/token"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -153,13 +154,17 @@ func (c *Container) setupRepositories() {
 }
 
 func (c *Container) setupUseCases() {
-	// Servico de tokens JWT (desacoplado dos use cases via interface)
-	tokenSvc := token.New(c.Config.JWTSecret)
+	// Servicos de infraestrutura (desacoplados via interface nos ports)
+	tokenSvc := token.New(c.Config.JWTSecret, c.Config.AccessTokenExpMin, c.Config.RefreshTokenExpDays)
+	pwdHasher := hasher.NewBcrypt(c.Config.BcryptCost)
 
 	// Auth
-	c.RegisterUseCase = authuc.NewRegister(c.UserRepo, c.Config.BcryptCost)
-	c.LoginUseCase = authuc.NewLogin(c.UserRepo, c.RefreshTokenRepo, tokenSvc, c.Config)
-	c.RefreshTokenUseCase = authuc.NewRefresh(c.UserRepo, c.RefreshTokenRepo, tokenSvc, c.Config)
+	c.RegisterUseCase = authuc.NewRegister(c.UserRepo, pwdHasher)
+	c.LoginUseCase = authuc.NewLogin(
+		c.UserRepo, c.RefreshTokenRepo, tokenSvc, pwdHasher,
+		c.Config.MaxFailedLogins, c.Config.LoginLockMin,
+	)
+	c.RefreshTokenUseCase = authuc.NewRefresh(c.UserRepo, c.RefreshTokenRepo, tokenSvc)
 	c.LogoutUseCase = authuc.NewLogout(c.RefreshTokenRepo)
 
 	// Customer
