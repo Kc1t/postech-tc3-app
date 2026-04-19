@@ -20,7 +20,7 @@ func NewCustomerRepository(db *gorm.DB) ports.CustomerRepository {
 func (r *customerRepository) Create(ctx context.Context, c *entities.Customer) error {
 	m := pgmodel.FromCustomer(c)
 	if err := r.db.WithContext(ctx).Create(m).Error; err != nil {
-		return err
+		return mapError(err)
 	}
 	c.SetID(m.ID)
 	return nil
@@ -29,7 +29,7 @@ func (r *customerRepository) Create(ctx context.Context, c *entities.Customer) e
 func (r *customerRepository) FindByID(ctx context.Context, id string) (*entities.Customer, error) {
 	var m pgmodel.Customer
 	if err := r.db.WithContext(ctx).First(&m, "id = ?", id).Error; err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 	return m.ToDomain(), nil
 }
@@ -37,7 +37,7 @@ func (r *customerRepository) FindByID(ctx context.Context, id string) (*entities
 func (r *customerRepository) FindByDocument(ctx context.Context, document string) (*entities.Customer, error) {
 	var m pgmodel.Customer
 	if err := r.db.WithContext(ctx).First(&m, "document = ?", document).Error; err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 	return m.ToDomain(), nil
 }
@@ -45,7 +45,7 @@ func (r *customerRepository) FindByDocument(ctx context.Context, document string
 func (r *customerRepository) FindAll(ctx context.Context) ([]*entities.Customer, error) {
 	var docs []pgmodel.Customer
 	if err := r.db.WithContext(ctx).Find(&docs).Error; err != nil {
-		return nil, err
+		return nil, mapError(err)
 	}
 	customers := make([]*entities.Customer, 0, len(docs))
 	for i := range docs {
@@ -56,9 +56,9 @@ func (r *customerRepository) FindAll(ctx context.Context) ([]*entities.Customer,
 
 func (r *customerRepository) Update(ctx context.Context, c *entities.Customer) error {
 	m := pgmodel.FromCustomer(c)
-	return r.db.WithContext(ctx).Save(m).Error
+	return mapError(r.db.WithContext(ctx).Save(m).Error)
 }
 
 func (r *customerRepository) Delete(ctx context.Context, id string) error {
-	return r.db.WithContext(ctx).Delete(&pgmodel.Customer{}, "id = ?", id).Error
+	return mapError(r.db.WithContext(ctx).Delete(&pgmodel.Customer{}, "id = ?", id).Error)
 }

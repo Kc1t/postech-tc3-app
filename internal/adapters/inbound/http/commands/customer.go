@@ -29,7 +29,7 @@ type CustomerResponse struct {
 	UpdatedAt string `json:"updated_at"`
 }
 
-func (r *CreateCustomerRequest) ToDomain() *entities.Customer {
+func (r *CreateCustomerRequest) ToDomain() (*entities.Customer, error) {
 	return entities.NewCustomer(r.Name, r.Document, r.Email, r.Phone)
 }
 

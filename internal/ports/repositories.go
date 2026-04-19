@@ -44,6 +44,7 @@ type ServiceOrderRepository interface {
 type ServiceRepository interface {
 	Create(ctx context.Context, s *entities.Service) error
 	FindByID(ctx context.Context, id string) (*entities.Service, error)
+	FindByIDs(ctx context.Context, ids []string) ([]*entities.Service, error)
 	FindAll(ctx context.Context) ([]*entities.Service, error)
 	Update(ctx context.Context, s *entities.Service) error
 	Delete(ctx context.Context, id string) error
@@ -53,6 +54,7 @@ type ServiceRepository interface {
 type PartRepository interface {
 	Create(ctx context.Context, p *entities.Part) error
 	FindByID(ctx context.Context, id string) (*entities.Part, error)
+	FindByIDs(ctx context.Context, ids []string) ([]*entities.Part, error)
 	FindAll(ctx context.Context) ([]*entities.Part, error)
 	Update(ctx context.Context, p *entities.Part) error
 	Delete(ctx context.Context, id string) error

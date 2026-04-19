@@ -1,6 +1,10 @@
 package entities
 
-import "time"
+import (
+	"time"
+
+	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
+)
 
 type Part struct {
 	id          string
@@ -55,5 +59,16 @@ func (p *Part) SetDescription(d string)  { p.description = d; p.touch() }
 func (p *Part) SetUnit(u string)         { p.unit = u; p.touch() }
 func (p *Part) SetPrice(pr float64)      { p.price = pr; p.touch() }
 func (p *Part) SetStock(s int)           { p.stock = s; p.touch() }
+
+// AdjustStock aplica um delta (positivo = entrada, negativo = saida)
+// e falha se o estoque resultante ficaria negativo.
+func (p *Part) AdjustStock(delta int) error {
+	if p.stock+delta < 0 {
+		return domainerrors.ErrInsufficientStock
+	}
+	p.stock += delta
+	p.touch()
+	return nil
+}
 
 func (p *Part) touch() { p.updatedAt = time.Now() }

@@ -6,32 +6,29 @@ import (
 )
 
 type ServiceOrderHandler struct {
-	create             ports.CreateServiceOrderUseCase
-	getByID            ports.GetServiceOrderUseCase
-	listAll            ports.ListServiceOrdersUseCase
-	listByCustomer     ports.ListServiceOrdersByCustomerUseCase
-	updateStatus       ports.UpdateServiceOrderStatusUseCase
-	update             ports.UpdateServiceOrderUseCase
-	delete             ports.DeleteServiceOrderUseCase
+	create       ports.CreateServiceOrderUseCase
+	getByID      ports.GetServiceOrderUseCase
+	listAll      ports.ListServiceOrdersUseCase
+	updateStatus ports.UpdateServiceOrderStatusUseCase
+	update       ports.UpdateServiceOrderUseCase
+	delete       ports.DeleteServiceOrderUseCase
 }
 
 func NewServiceOrderHandler(
 	create ports.CreateServiceOrderUseCase,
 	getByID ports.GetServiceOrderUseCase,
 	listAll ports.ListServiceOrdersUseCase,
-	listByCustomer ports.ListServiceOrdersByCustomerUseCase,
 	updateStatus ports.UpdateServiceOrderStatusUseCase,
 	update ports.UpdateServiceOrderUseCase,
 	delete ports.DeleteServiceOrderUseCase,
 ) *ServiceOrderHandler {
 	return &ServiceOrderHandler{
-		create:         create,
-		getByID:        getByID,
-		listAll:        listAll,
-		listByCustomer: listByCustomer,
-		updateStatus:   updateStatus,
-		update:         update,
-		delete:         delete,
+		create:       create,
+		getByID:      getByID,
+		listAll:      listAll,
+		updateStatus: updateStatus,
+		update:       update,
+		delete:       delete,
 	}
 }
 
@@ -43,6 +40,4 @@ func (h *ServiceOrderHandler) SetupRoutes(rg *gin.RouterGroup) {
 	g.PUT("/:id/status", h.UpdateStatus)
 	g.PUT("/:id", h.Update)
 	g.DELETE("/:id", h.Delete)
-
-	rg.GET("/customers/:id/service-orders", h.ListByCustomer)
 }

@@ -1,0 +1,90 @@
+// Modelo de dados - postech-tc1
+// https://dbdiagram.io/d para visualizar
+
+Table users {
+  id uuid [pk, default: `gen_random_uuid()`]
+  name varchar [not null]
+  email varchar [not null, unique]
+  password_hash varchar [not null]
+  role varchar [not null, default: 'client', note: 'admin | client']
+  failed_attempts int [not null, default: 0]
+  locked_until timestamp [null]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table refresh_tokens {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id uuid [not null, ref: > users.id]
+  token_hash varchar [not null, unique]
+  expires_at timestamp [not null]
+  revoked boolean [not null, default: false]
+  created_at timestamp
+
+  indexes {
+    user_id
+  }
+}
+
+Table customers {
+  id uuid [pk, default: `gen_random_uuid()`]
+  name varchar [not null]
+  document varchar [not null, unique]
+  email varchar [not null]
+  phone varchar [not null]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table vehicles {
+  id uuid [pk, default: `gen_random_uuid()`]
+  customer_id uuid [not null, ref: > customers.id, note: 'ON DELETE RESTRICT']
+  plate varchar [not null, unique]
+  brand varchar [not null]
+  model varchar [not null]
+  year int [not null]
+  created_at timestamp
+  updated_at timestamp
+
+  indexes {
+    customer_id
+  }
+}
+
+Table parts {
+  id uuid [pk, default: `gen_random_uuid()`]
+  name varchar [not null]
+  description text
+  unit varchar [not null]
+  price numeric [not null]
+  stock int [not null, default: 0]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table services {
+  id uuid [pk, default: `gen_random_uuid()`]
+  name varchar [not null]
+  description text
+  price numeric [not null]
+  duration_min int [not null]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table service_orders {
+  id uuid [pk, default: `gen_random_uuid()`]
+  customer_id uuid [not null, ref: > customers.id, note: 'ON DELETE RESTRICT']
+  vehicle_id uuid [not null, ref: > vehicles.id, note: 'ON DELETE RESTRICT']
+  status varchar [not null, note: 'received | in_diagnosis | awaiting_approval | in_progress | completed | delivered | cancelled']
+  services jsonb [note: 'snapshot: [{service_id, description, price}]']
+  parts jsonb [note: 'snapshot: [{part_id, description, quantity, unit_price}]']
+  total_amount numeric [not null]
+  notes text
+  created_at timestamp
+  updated_at timestamp
+
+  indexes {
+    customer_id
+  }
+}

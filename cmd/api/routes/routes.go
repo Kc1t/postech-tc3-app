@@ -62,5 +62,4 @@ func Setup(router *gin.Engine, c *bootstrap.Container) {
 	orders.PUT("/:id/status", c.ServiceOrderHandler.UpdateStatus)
 	orders.PUT("/:id", c.ServiceOrderHandler.Update)
 	orders.DELETE("/:id", c.ServiceOrderHandler.Delete)
-	admin.GET("/customers/:id/service-orders", c.ServiceOrderHandler.ListByCustomer)
 }

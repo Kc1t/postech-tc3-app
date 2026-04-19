@@ -32,7 +32,7 @@ type VehicleResponse struct {
 	UpdatedAt  string `json:"updated_at"`
 }
 
-func (r *CreateVehicleRequest) ToDomain() *entities.Vehicle {
+func (r *CreateVehicleRequest) ToDomain() (*entities.Vehicle, error) {
 	return entities.NewVehicle(r.CustomerID, r.Plate, r.Brand, r.Model, r.Year)
 }
 
