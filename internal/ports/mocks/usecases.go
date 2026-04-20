@@ -14,7 +14,6 @@ import (
 	reflect "reflect"
 
 	entities "github.com/fiap/postech-tc1/internal/domain/entities"
-	ports "github.com/fiap/postech-tc1/internal/ports"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -505,7 +504,7 @@ func (m *MockCreateServiceOrderUseCase) EXPECT() *MockCreateServiceOrderUseCaseM
 }
 
 // Execute mocks base method.
-func (m *MockCreateServiceOrderUseCase) Execute(ctx context.Context, input ports.CreateServiceOrderInput) (*entities.ServiceOrder, error) {
+func (m *MockCreateServiceOrderUseCase) Execute(ctx context.Context, input entities.ServiceOrderInput) (*entities.ServiceOrder, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Execute", ctx, input)
 	ret0, _ := ret[0].(*entities.ServiceOrder)
@@ -661,7 +660,7 @@ func (m *MockUpdateServiceOrderStatusUseCase) EXPECT() *MockUpdateServiceOrderSt
 }
 
 // Execute mocks base method.
-func (m *MockUpdateServiceOrderStatusUseCase) Execute(ctx context.Context, input ports.UpdateStatusInput) error {
+func (m *MockUpdateServiceOrderStatusUseCase) Execute(ctx context.Context, input entities.StatusUpdate) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Execute", ctx, input)
 	ret0, _ := ret[0].(error)

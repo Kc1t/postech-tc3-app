@@ -26,7 +26,7 @@ func NewCreateServiceOrder(
 	}
 }
 
-func (uc *CreateServiceOrder) Execute(ctx context.Context, input ports.CreateServiceOrderInput) (*entities.ServiceOrder, error) {
+func (uc *CreateServiceOrder) Execute(ctx context.Context, input entities.ServiceOrderInput) (*entities.ServiceOrder, error) {
 	customer, err := uc.customerRepo.FindByDocument(ctx, input.CustomerDocument)
 	if err != nil {
 		return nil, err

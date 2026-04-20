@@ -7,7 +7,6 @@ import (
 
 	"github.com/fiap/postech-tc1/internal/domain/entities"
 	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
-	"github.com/fiap/postech-tc1/internal/ports"
 	"github.com/fiap/postech-tc1/internal/ports/mocks"
 	"go.uber.org/mock/gomock"
 )
@@ -25,7 +24,7 @@ func TestUpdateStatus_TransicaoValida(t *testing.T) {
 	repo.EXPECT().UpdateStatus(gomock.Any(), "order-1", entities.StatusInDiagnosis).Return(nil)
 
 	uc := NewUpdateServiceOrderStatus(repo, svcRepo, partRepo)
-	input := ports.UpdateStatusInput{
+	input := entities.StatusUpdate{
 		ID:     "order-1",
 		Status: entities.StatusInDiagnosis,
 	}
@@ -47,7 +46,7 @@ func TestUpdateStatus_TransicaoInvalida(t *testing.T) {
 	// UpdateStatus NAO deve ser chamado
 
 	uc := NewUpdateServiceOrderStatus(repo, svcRepo, partRepo)
-	input := ports.UpdateStatusInput{
+	input := entities.StatusUpdate{
 		ID:     "order-1",
 		Status: entities.StatusFinished,
 	}
@@ -67,7 +66,7 @@ func TestUpdateStatus_OSNaoEncontrada(t *testing.T) {
 	repo.EXPECT().FindByID(gomock.Any(), "inexistente").Return(nil, domainerrors.ErrNotFound)
 
 	uc := NewUpdateServiceOrderStatus(repo, svcRepo, partRepo)
-	input := ports.UpdateStatusInput{
+	input := entities.StatusUpdate{
 		ID:     "inexistente",
 		Status: entities.StatusInDiagnosis,
 	}
@@ -90,7 +89,7 @@ func TestUpdateStatus_StatusDesconhecido(t *testing.T) {
 	// UpdateStatus NAO deve ser chamado
 
 	uc := NewUpdateServiceOrderStatus(repo, svcRepo, partRepo)
-	input := ports.UpdateStatusInput{
+	input := entities.StatusUpdate{
 		ID:     "order-1",
 		Status: entities.OrderStatus("invalido"),
 	}
@@ -124,11 +123,11 @@ func TestUpdateStatus_AwaitingApproval_ComServicosEPecas(t *testing.T) {
 	repo.EXPECT().Update(gomock.Any(), gomock.Any()).Return(nil)
 
 	uc := NewUpdateServiceOrderStatus(repo, svcRepo, partRepo)
-	input := ports.UpdateStatusInput{
+	input := entities.StatusUpdate{
 		ID:           "order-1",
 		Status:       entities.StatusAwaitingApproval,
 		ServiceCodes: []int{1, 2},
-		Parts: []ports.UpdateStatusPartInput{
+		Parts: []entities.OrderPartItem{
 			{ManufacturerCode: "FAB-001", Quantity: 2},
 		},
 	}
@@ -162,7 +161,7 @@ func TestUpdateStatus_AwaitingApproval_SemServicosNemPecas(t *testing.T) {
 	repo.EXPECT().Update(gomock.Any(), gomock.Any()).Return(nil)
 
 	uc := NewUpdateServiceOrderStatus(repo, svcRepo, partRepo)
-	input := ports.UpdateStatusInput{
+	input := entities.StatusUpdate{
 		ID:     "order-1",
 		Status: entities.StatusAwaitingApproval,
 	}
@@ -186,7 +185,7 @@ func TestUpdateStatus_AwaitingApproval_ServicoInexistente(t *testing.T) {
 	svcRepo.EXPECT().FindByCodes(gomock.Any(), []int{999}).Return([]*entities.Service{}, nil)
 
 	uc := NewUpdateServiceOrderStatus(repo, svcRepo, partRepo)
-	input := ports.UpdateStatusInput{
+	input := entities.StatusUpdate{
 		ID:           "order-1",
 		Status:       entities.StatusAwaitingApproval,
 		ServiceCodes: []int{999},
@@ -212,10 +211,10 @@ func TestUpdateStatus_AwaitingApproval_PecaInexistente(t *testing.T) {
 	partRepo.EXPECT().FindByManufacturerCodes(gomock.Any(), []string{"INEXISTENTE"}).Return([]*entities.Part{}, nil)
 
 	uc := NewUpdateServiceOrderStatus(repo, svcRepo, partRepo)
-	input := ports.UpdateStatusInput{
+	input := entities.StatusUpdate{
 		ID:     "order-1",
 		Status: entities.StatusAwaitingApproval,
-		Parts: []ports.UpdateStatusPartInput{
+		Parts: []entities.OrderPartItem{
 			{ManufacturerCode: "INEXISTENTE", Quantity: 1},
 		},
 	}
@@ -240,10 +239,10 @@ func TestUpdateStatus_AwaitingApproval_EstoqueInsuficiente(t *testing.T) {
 	partRepo.EXPECT().FindByManufacturerCodes(gomock.Any(), []string{"FAB-001"}).Return([]*entities.Part{part}, nil)
 
 	uc := NewUpdateServiceOrderStatus(repo, svcRepo, partRepo)
-	input := ports.UpdateStatusInput{
+	input := entities.StatusUpdate{
 		ID:     "order-1",
 		Status: entities.StatusAwaitingApproval,
-		Parts: []ports.UpdateStatusPartInput{
+		Parts: []entities.OrderPartItem{
 			{ManufacturerCode: "FAB-001", Quantity: 10}, // pede 10, tem 2
 		},
 	}
@@ -268,7 +267,7 @@ func TestUpdateStatus_AwaitingApproval_ErroInfraServiceRepo(t *testing.T) {
 	svcRepo.EXPECT().FindByCodes(gomock.Any(), []int{1}).Return(nil, infraErr)
 
 	uc := NewUpdateServiceOrderStatus(repo, svcRepo, partRepo)
-	input := ports.UpdateStatusInput{
+	input := entities.StatusUpdate{
 		ID:           "order-1",
 		Status:       entities.StatusAwaitingApproval,
 		ServiceCodes: []int{1},
@@ -294,10 +293,10 @@ func TestUpdateStatus_AwaitingApproval_ErroInfraPartRepo(t *testing.T) {
 	partRepo.EXPECT().FindByManufacturerCodes(gomock.Any(), []string{"FAB-001"}).Return(nil, infraErr)
 
 	uc := NewUpdateServiceOrderStatus(repo, svcRepo, partRepo)
-	input := ports.UpdateStatusInput{
+	input := entities.StatusUpdate{
 		ID:     "order-1",
 		Status: entities.StatusAwaitingApproval,
-		Parts: []ports.UpdateStatusPartInput{
+		Parts: []entities.OrderPartItem{
 			{ManufacturerCode: "FAB-001", Quantity: 1},
 		},
 	}
@@ -322,7 +321,7 @@ func TestUpdateStatus_AwaitingApproval_ErroRepoUpdate(t *testing.T) {
 	repo.EXPECT().Update(gomock.Any(), gomock.Any()).Return(infraErr)
 
 	uc := NewUpdateServiceOrderStatus(repo, svcRepo, partRepo)
-	input := ports.UpdateStatusInput{
+	input := entities.StatusUpdate{
 		ID:     "order-1",
 		Status: entities.StatusAwaitingApproval,
 	}
@@ -347,7 +346,7 @@ func TestUpdateStatus_ErroRepoUpdateStatus(t *testing.T) {
 	repo.EXPECT().UpdateStatus(gomock.Any(), "order-1", entities.StatusInDiagnosis).Return(infraErr)
 
 	uc := NewUpdateServiceOrderStatus(repo, svcRepo, partRepo)
-	input := ports.UpdateStatusInput{
+	input := entities.StatusUpdate{
 		ID:     "order-1",
 		Status: entities.StatusInDiagnosis,
 	}

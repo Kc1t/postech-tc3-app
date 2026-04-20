@@ -8,7 +8,6 @@ import (
 
 	"github.com/fiap/postech-tc1/internal/domain/entities"
 	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
-	"github.com/fiap/postech-tc1/internal/ports"
 	"github.com/fiap/postech-tc1/internal/ports/mocks"
 	"go.uber.org/mock/gomock"
 )
@@ -32,7 +31,7 @@ func TestCreateServiceOrder_Sucesso(t *testing.T) {
 
 	uc := NewCreateServiceOrder(soRepo, custRepo, vehRepo)
 
-	input := ports.CreateServiceOrderInput{
+	input := entities.ServiceOrderInput{
 		CustomerDocument:  "52998224725",
 		VehiclePlate: "ABC1234",
 	}
@@ -62,7 +61,7 @@ func TestCreateServiceOrder_ErroInfraNoVeiculo(t *testing.T) {
 	vehRepo.EXPECT().FindByPlate(gomock.Any(), "ABC1234").Return(nil, infraErr)
 
 	uc := NewCreateServiceOrder(soRepo, custRepo, vehRepo)
-	input := ports.CreateServiceOrderInput{
+	input := entities.ServiceOrderInput{
 		CustomerDocument:  "52998224725",
 		VehiclePlate: "ABC1234",
 	}
@@ -87,7 +86,7 @@ func TestCreateServiceOrder_VeiculoNaoEncontrado(t *testing.T) {
 	vehRepo.EXPECT().FindByPlate(gomock.Any(), "XXX0000").Return(nil, domainerrors.ErrNotFound)
 
 	uc := NewCreateServiceOrder(soRepo, custRepo, vehRepo)
-	input := ports.CreateServiceOrderInput{
+	input := entities.ServiceOrderInput{
 		CustomerDocument:  "52998224725",
 		VehiclePlate: "XXX0000",
 	}
@@ -115,7 +114,7 @@ func TestCreateServiceOrder_ErroNaPersistencia(t *testing.T) {
 	soRepo.EXPECT().Create(gomock.Any(), gomock.Any()).Return(infraErr)
 
 	uc := NewCreateServiceOrder(soRepo, custRepo, vehRepo)
-	input := ports.CreateServiceOrderInput{
+	input := entities.ServiceOrderInput{
 		CustomerDocument:  "52998224725",
 		VehiclePlate: "ABC1234",
 	}
@@ -137,7 +136,7 @@ func TestCreateServiceOrder_ClienteNaoExiste(t *testing.T) {
 	custRepo.EXPECT().FindByDocument(gomock.Any(), "00000000000").Return(nil, domainerrors.ErrNotFound)
 
 	uc := NewCreateServiceOrder(soRepo, custRepo, vehRepo)
-	input := ports.CreateServiceOrderInput{
+	input := entities.ServiceOrderInput{
 		CustomerDocument:  "00000000000",
 		VehiclePlate: "ABC1234",
 	}
@@ -163,7 +162,7 @@ func TestCreateServiceOrder_VeiculoNaoPertenceAoCliente(t *testing.T) {
 	vehRepo.EXPECT().FindByPlate(gomock.Any(), "ABC1234").Return(vehicle, nil)
 
 	uc := NewCreateServiceOrder(soRepo, custRepo, vehRepo)
-	input := ports.CreateServiceOrderInput{
+	input := entities.ServiceOrderInput{
 		CustomerDocument:  "52998224725",
 		VehiclePlate: "ABC1234",
 	}
@@ -187,7 +186,7 @@ func TestCreateServiceOrder_ErroInfraNoCliente(t *testing.T) {
 	custRepo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(nil, infraErr)
 
 	uc := NewCreateServiceOrder(soRepo, custRepo, vehRepo)
-	input := ports.CreateServiceOrderInput{
+	input := entities.ServiceOrderInput{
 		CustomerDocument:  "52998224725",
 		VehiclePlate: "ABC1234",
 	}

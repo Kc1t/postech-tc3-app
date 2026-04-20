@@ -42,6 +42,27 @@ func IsValidStatus(s OrderStatus) bool {
 	return allStatuses[s]
 }
 
+// ServiceOrderInput carrega os dados necessarios para abrir uma nova OS.
+type ServiceOrderInput struct {
+	CustomerDocument string
+	VehiclePlate     string
+	Notes            string
+}
+
+// OrderPartItem representa uma peca e sua quantidade dentro de uma transicao de status.
+type OrderPartItem struct {
+	ManufacturerCode string
+	Quantity         int
+}
+
+// StatusUpdate carrega os dados necessarios para transicionar o status de uma OS.
+type StatusUpdate struct {
+	ID           string
+	Status       OrderStatus
+	ServiceCodes []int
+	Parts        []OrderPartItem
+}
+
 // ServiceItem e PartItem sao value objects — identificados por valor, sem identidade propria.
 type ServiceItem struct {
 	ServiceID   string

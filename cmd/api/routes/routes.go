@@ -23,12 +23,12 @@ func Setup(router *gin.Engine, c *bootstrap.Container) {
 		ctx.JSON(http.StatusOK, gin.H{"status": "ok"})
 	})
 
-	v1 := router.Group("/api/v1")
+	prefix := router.Group("/api/v1")
 
 	// Rotas publicas do cliente (sem JWT)
-	c.ServiceOrderHandler.SetupPublicRoutes(v1)
+	c.ServiceOrderHandler.SetupPublicRoutes(prefix)
 
-	protected := v1.Group("/")
+	protected := prefix.Group("/")
 	protected.Use(middleware.Auth(c.Config.JWTSecret))
 
 	c.CustomerHandler.SetupRoutes(protected)

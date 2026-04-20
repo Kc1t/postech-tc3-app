@@ -26,7 +26,7 @@ func NewUpdateServiceOrderStatus(
 	}
 }
 
-func (uc *UpdateServiceOrderStatus) Execute(ctx context.Context, input ports.UpdateStatusInput) error {
+func (uc *UpdateServiceOrderStatus) Execute(ctx context.Context, input entities.StatusUpdate) error {
 	so, err := uc.repo.FindByID(ctx, input.ID)
 	if err != nil {
 		return err
@@ -83,7 +83,7 @@ func (uc *UpdateServiceOrderStatus) buildServices(ctx context.Context, so *entit
 	return nil
 }
 
-func (uc *UpdateServiceOrderStatus) buildParts(ctx context.Context, so *entities.ServiceOrder, partInputs []ports.UpdateStatusPartInput) error {
+func (uc *UpdateServiceOrderStatus) buildParts(ctx context.Context, so *entities.ServiceOrder, partInputs []entities.OrderPartItem) error {
 	if len(partInputs) == 0 {
 		return nil
 	}
