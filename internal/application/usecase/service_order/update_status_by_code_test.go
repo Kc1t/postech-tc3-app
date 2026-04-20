@@ -11,7 +11,28 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func TestRejectServiceOrder_Sucesso(t *testing.T) {
+func TestUpdateStatusByCode_Aprovacao_Sucesso(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	customer := entities.ReconstituteCustomer("cust-1", "Diego", "52998224725", "d@e.com", "", ft(), ft())
+	so := entities.ReconstituteServiceOrder("order-1", 100, "cust-1", "veh-1",
+		entities.StatusAwaitingApproval, nil, nil, 0, "", ft(), ft())
+
+	soRepo := mocks.NewMockServiceOrderRepository(ctrl)
+	custRepo := mocks.NewMockCustomerRepository(ctrl)
+
+	custRepo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(customer, nil)
+	soRepo.EXPECT().FindByCode(gomock.Any(), 100).Return(so, nil)
+	soRepo.EXPECT().UpdateStatus(gomock.Any(), "order-1", entities.StatusInExecution).Return(nil)
+
+	uc := NewUpdateServiceOrderStatusByCode(soRepo, custRepo)
+	if err := uc.Execute(context.Background(), 100, "52998224725", entities.StatusInExecution); err != nil {
+		t.Fatalf("esperava sucesso, obteve: %v", err)
+	}
+}
+
+func TestUpdateStatusByCode_Rejeicao_Sucesso(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -26,49 +47,47 @@ func TestRejectServiceOrder_Sucesso(t *testing.T) {
 	soRepo.EXPECT().FindByCode(gomock.Any(), 100).Return(so, nil)
 	soRepo.EXPECT().UpdateStatus(gomock.Any(), "order-1", entities.StatusReceived).Return(nil)
 
-	uc := NewRejectServiceOrder(soRepo, custRepo)
-	err := uc.Execute(context.Background(), 100, "52998224725")
-	if err != nil {
+	uc := NewUpdateServiceOrderStatusByCode(soRepo, custRepo)
+	if err := uc.Execute(context.Background(), 100, "52998224725", entities.StatusReceived); err != nil {
 		t.Fatalf("esperava sucesso, obteve: %v", err)
 	}
 }
 
-func TestRejectServiceOrder_ClienteNaoEncontrado(t *testing.T) {
+func TestUpdateStatusByCode_ClienteNaoEncontrado(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	soRepo := mocks.NewMockServiceOrderRepository(ctrl)
 	custRepo := mocks.NewMockCustomerRepository(ctrl)
 
-	custRepo.EXPECT().FindByDocument(gomock.Any(), "00000000000").Return(nil, domainerrors.ErrNotFound)
+	custRepo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(nil, domainerrors.ErrNotFound)
 
-	uc := NewRejectServiceOrder(soRepo, custRepo)
-	err := uc.Execute(context.Background(), 100, "00000000000")
+	uc := NewUpdateServiceOrderStatusByCode(soRepo, custRepo)
+	err := uc.Execute(context.Background(), 100, "52998224725", entities.StatusInExecution)
 	if !errors.Is(err, domainerrors.ErrNotFound) {
 		t.Fatalf("erro = %v, esperava ErrNotFound", err)
 	}
 }
 
-func TestRejectServiceOrder_OSNaoEncontrada(t *testing.T) {
+func TestUpdateStatusByCode_OSNaoEncontrada(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	customer := entities.ReconstituteCustomer("cust-1", "Diego", "52998224725", "d@e.com", "", ft(), ft())
-
 	soRepo := mocks.NewMockServiceOrderRepository(ctrl)
 	custRepo := mocks.NewMockCustomerRepository(ctrl)
 
 	custRepo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(customer, nil)
 	soRepo.EXPECT().FindByCode(gomock.Any(), 999).Return(nil, domainerrors.ErrNotFound)
 
-	uc := NewRejectServiceOrder(soRepo, custRepo)
-	err := uc.Execute(context.Background(), 999, "52998224725")
+	uc := NewUpdateServiceOrderStatusByCode(soRepo, custRepo)
+	err := uc.Execute(context.Background(), 999, "52998224725", entities.StatusInExecution)
 	if !errors.Is(err, domainerrors.ErrNotFound) {
 		t.Fatalf("erro = %v, esperava ErrNotFound", err)
 	}
 }
 
-func TestRejectServiceOrder_OSDeOutroCliente(t *testing.T) {
+func TestUpdateStatusByCode_OSDeOutroCliente(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -82,21 +101,20 @@ func TestRejectServiceOrder_OSDeOutroCliente(t *testing.T) {
 	custRepo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(customer, nil)
 	soRepo.EXPECT().FindByCode(gomock.Any(), 100).Return(so, nil)
 
-	uc := NewRejectServiceOrder(soRepo, custRepo)
-	err := uc.Execute(context.Background(), 100, "52998224725")
+	uc := NewUpdateServiceOrderStatusByCode(soRepo, custRepo)
+	err := uc.Execute(context.Background(), 100, "52998224725", entities.StatusInExecution)
 	if !errors.Is(err, domainerrors.ErrNotFound) {
 		t.Fatalf("erro = %v, esperava ErrNotFound (ownership)", err)
 	}
 }
 
-func TestRejectServiceOrder_StatusInvalido(t *testing.T) {
+func TestUpdateStatusByCode_TransicaoInvalida(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	customer := entities.ReconstituteCustomer("cust-1", "Diego", "52998224725", "d@e.com", "", ft(), ft())
-	// OS em status received — nao pode transicionar para received (ja esta em received)
 	so := entities.ReconstituteServiceOrder("order-1", 100, "cust-1", "veh-1",
-		entities.StatusInExecution, nil, nil, 0, "", ft(), ft())
+		entities.StatusReceived, nil, nil, 0, "", ft(), ft())
 
 	soRepo := mocks.NewMockServiceOrderRepository(ctrl)
 	custRepo := mocks.NewMockCustomerRepository(ctrl)
@@ -104,26 +122,25 @@ func TestRejectServiceOrder_StatusInvalido(t *testing.T) {
 	custRepo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(customer, nil)
 	soRepo.EXPECT().FindByCode(gomock.Any(), 100).Return(so, nil)
 
-	uc := NewRejectServiceOrder(soRepo, custRepo)
-	err := uc.Execute(context.Background(), 100, "52998224725")
+	uc := NewUpdateServiceOrderStatusByCode(soRepo, custRepo)
+	err := uc.Execute(context.Background(), 100, "52998224725", entities.StatusInExecution)
 	if !errors.Is(err, domainerrors.ErrInvalidStatus) {
 		t.Fatalf("erro = %v, esperava ErrInvalidStatus", err)
 	}
 }
 
-func TestRejectServiceOrder_ErroInfraCliente(t *testing.T) {
+func TestUpdateStatusByCode_ErroInfraCliente(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	infraErr := errors.New("timeout")
-
 	soRepo := mocks.NewMockServiceOrderRepository(ctrl)
 	custRepo := mocks.NewMockCustomerRepository(ctrl)
 
 	custRepo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(nil, infraErr)
 
-	uc := NewRejectServiceOrder(soRepo, custRepo)
-	err := uc.Execute(context.Background(), 100, "52998224725")
+	uc := NewUpdateServiceOrderStatusByCode(soRepo, custRepo)
+	err := uc.Execute(context.Background(), 100, "52998224725", entities.StatusInExecution)
 	if !errors.Is(err, infraErr) {
 		t.Fatalf("erro = %v, esperava erro de infra propagado", err)
 	}

@@ -33,7 +33,7 @@ func TestCreateServiceOrder_Sucesso(t *testing.T) {
 	uc := NewCreateServiceOrder(soRepo, custRepo, vehRepo)
 
 	input := ports.CreateServiceOrderInput{
-		CustomerCPF:  "52998224725",
+		CustomerDocument:  "52998224725",
 		VehiclePlate: "ABC1234",
 	}
 
@@ -63,7 +63,7 @@ func TestCreateServiceOrder_ErroInfraNoVeiculo(t *testing.T) {
 
 	uc := NewCreateServiceOrder(soRepo, custRepo, vehRepo)
 	input := ports.CreateServiceOrderInput{
-		CustomerCPF:  "52998224725",
+		CustomerDocument:  "52998224725",
 		VehiclePlate: "ABC1234",
 	}
 
@@ -88,7 +88,7 @@ func TestCreateServiceOrder_VeiculoNaoEncontrado(t *testing.T) {
 
 	uc := NewCreateServiceOrder(soRepo, custRepo, vehRepo)
 	input := ports.CreateServiceOrderInput{
-		CustomerCPF:  "52998224725",
+		CustomerDocument:  "52998224725",
 		VehiclePlate: "XXX0000",
 	}
 
@@ -116,7 +116,7 @@ func TestCreateServiceOrder_ErroNaPersistencia(t *testing.T) {
 
 	uc := NewCreateServiceOrder(soRepo, custRepo, vehRepo)
 	input := ports.CreateServiceOrderInput{
-		CustomerCPF:  "52998224725",
+		CustomerDocument:  "52998224725",
 		VehiclePlate: "ABC1234",
 	}
 
@@ -138,7 +138,7 @@ func TestCreateServiceOrder_ClienteNaoExiste(t *testing.T) {
 
 	uc := NewCreateServiceOrder(soRepo, custRepo, vehRepo)
 	input := ports.CreateServiceOrderInput{
-		CustomerCPF:  "00000000000",
+		CustomerDocument:  "00000000000",
 		VehiclePlate: "ABC1234",
 	}
 
@@ -164,7 +164,7 @@ func TestCreateServiceOrder_VeiculoNaoPertenceAoCliente(t *testing.T) {
 
 	uc := NewCreateServiceOrder(soRepo, custRepo, vehRepo)
 	input := ports.CreateServiceOrderInput{
-		CustomerCPF:  "52998224725",
+		CustomerDocument:  "52998224725",
 		VehiclePlate: "ABC1234",
 	}
 
@@ -188,7 +188,7 @@ func TestCreateServiceOrder_ErroInfraNoCliente(t *testing.T) {
 
 	uc := NewCreateServiceOrder(soRepo, custRepo, vehRepo)
 	input := ports.CreateServiceOrderInput{
-		CustomerCPF:  "52998224725",
+		CustomerDocument:  "52998224725",
 		VehiclePlate: "ABC1234",
 	}
 

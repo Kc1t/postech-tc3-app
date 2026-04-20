@@ -63,9 +63,9 @@ type DeleteVehicleUseCase interface {
 // --- ServiceOrder ---
 
 type CreateServiceOrderInput struct {
-	CustomerCPF  string
-	VehiclePlate string
-	Notes        string
+	CustomerDocument string
+	VehiclePlate     string
+	Notes            string
 }
 
 type CreateServiceOrderUseCase interface {
@@ -87,8 +87,8 @@ type ListServiceOrdersByCustomerUseCase interface {
 type UpdateStatusInput struct {
 	ID           string
 	Status       entities.OrderStatus
-	ServiceCodes []int                    // obrigatorio quando status = awaiting_approval
-	Parts        []UpdateStatusPartInput  // obrigatorio quando status = awaiting_approval
+	ServiceCodes []int                   // obrigatorio quando status = awaiting_approval
+	Parts        []UpdateStatusPartInput // obrigatorio quando status = awaiting_approval
 }
 
 type UpdateStatusPartInput struct {
@@ -101,19 +101,15 @@ type UpdateServiceOrderStatusUseCase interface {
 }
 
 type GetServiceOrderByCodeUseCase interface {
-	Execute(ctx context.Context, code int, customerCPF string) (*entities.ServiceOrder, error)
+	Execute(ctx context.Context, code int, customerDocument string) (*entities.ServiceOrder, error)
 }
 
-type ListServiceOrdersByCPFUseCase interface {
-	Execute(ctx context.Context, cpf string) ([]*entities.ServiceOrder, error)
+type ListServiceOrdersByDocumentUseCase interface {
+	Execute(ctx context.Context, document string) ([]*entities.ServiceOrder, error)
 }
 
-type ApproveServiceOrderUseCase interface {
-	Execute(ctx context.Context, code int, customerCPF string) error
-}
-
-type RejectServiceOrderUseCase interface {
-	Execute(ctx context.Context, code int, customerCPF string) error
+type UpdateServiceOrderStatusByCodeUseCase interface {
+	Execute(ctx context.Context, code int, customerDocument string, newStatus entities.OrderStatus) error
 }
 
 type UpdateServiceOrderUseCase interface {
