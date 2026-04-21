@@ -17,7 +17,7 @@ func TestGetServiceOrderByCode_Sucesso(t *testing.T) {
 
 	customer := entities.ReconstituteCustomer("cust-1", "Diego", "52998224725", "d@e.com", "", ft(), ft())
 	expected := entities.ReconstituteServiceOrder("order-1", 100, "cust-1", "veh-1",
-		entities.StatusReceived, nil, nil, 0, "", ft(), ft())
+		entities.StatusReceived, nil, nil, 0, "", ft(), ft(), nil, nil)
 
 	soRepo := mocks.NewMockServiceOrderRepository(ctrl)
 	custRepo := mocks.NewMockCustomerRepository(ctrl)
@@ -76,7 +76,7 @@ func TestGetServiceOrderByCode_OSDeOutroCliente(t *testing.T) {
 
 	customer := entities.ReconstituteCustomer("cust-1", "Diego", "52998224725", "d@e.com", "", ft(), ft())
 	so := entities.ReconstituteServiceOrder("order-1", 100, "outro-cliente", "veh-1",
-		entities.StatusReceived, nil, nil, 0, "", ft(), ft())
+		entities.StatusReceived, nil, nil, 0, "", ft(), ft(), nil, nil)
 
 	soRepo := mocks.NewMockServiceOrderRepository(ctrl)
 	custRepo := mocks.NewMockCustomerRepository(ctrl)

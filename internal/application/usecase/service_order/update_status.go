@@ -37,8 +37,9 @@ func (uc *UpdateServiceOrderStatus) Execute(ctx context.Context, input entities.
 		return err
 	}
 
-	// Quando transita para awaiting_approval, montar o orcamento com servicos e pecas
-	if input.Status == entities.StatusAwaitingApproval {
+	switch input.Status {
+	case entities.StatusAwaitingApproval:
+		// Monta o orcamento com servicos e pecas — precisa persistir o agregado completo.
 		if err := uc.buildServices(ctx, so, input.ServiceCodes); err != nil {
 			return err
 		}
@@ -46,9 +47,24 @@ func (uc *UpdateServiceOrderStatus) Execute(ctx context.Context, input entities.
 			return err
 		}
 		return uc.repo.Update(ctx, so)
-	}
 
-	return uc.repo.UpdateStatus(ctx, input.ID, input.Status)
+	case entities.StatusInExecution:
+		// Aprovacao do orcamento: baixa de estoque (atomica por peca, rollback
+		// entre pecas em caso de falha) seguida de persistencia do agregado
+		// completo — a entidade acabou de gravar startedAt no UpdateStatus.
+		if err := decrementStockForApproval(ctx, uc.partRepo, so.Parts()); err != nil {
+			return err
+		}
+		return uc.repo.Update(ctx, so)
+
+	case entities.StatusFinished:
+		// finishedAt foi gravado pela entidade — persistir agregado completo.
+		return uc.repo.Update(ctx, so)
+
+	default:
+		// Transicoes sem side-effect em timestamps ou itens — basta atualizar a coluna status.
+		return uc.repo.UpdateStatus(ctx, input.ID, input.Status)
+	}
 }
 
 func (uc *UpdateServiceOrderStatus) buildServices(ctx context.Context, so *entities.ServiceOrder, codes []int) error {
