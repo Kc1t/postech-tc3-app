@@ -68,6 +68,16 @@ func TestHandleError_InvalidRefreshToken(t *testing.T) {
 	}
 }
 
+func TestHandleError_StatusNotAllowedForCustomer(t *testing.T) {
+	w := httptest.NewRecorder()
+	c := newGinContext(w)
+	HandleError(c, domainerrors.ErrStatusNotAllowedForCustomer)
+
+	if w.Code != http.StatusForbidden {
+		t.Fatalf("expected 403, got %d", w.Code)
+	}
+}
+
 func TestHandleError_UnprocessableEntity_Errors(t *testing.T) {
 	unprocessable := []error{
 		domainerrors.ErrInvalidDocument,

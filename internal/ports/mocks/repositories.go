@@ -225,6 +225,21 @@ func (mr *MockVehicleRepositoryMockRecorder) FindByID(ctx, id any) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByID", reflect.TypeOf((*MockVehicleRepository)(nil).FindByID), ctx, id)
 }
 
+// FindByPlate mocks base method.
+func (m *MockVehicleRepository) FindByPlate(ctx context.Context, plate string) (*entities.Vehicle, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindByPlate", ctx, plate)
+	ret0, _ := ret[0].(*entities.Vehicle)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindByPlate indicates an expected call of FindByPlate.
+func (mr *MockVehicleRepositoryMockRecorder) FindByPlate(ctx, plate any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByPlate", reflect.TypeOf((*MockVehicleRepository)(nil).FindByPlate), ctx, plate)
+}
+
 // Update mocks base method.
 func (m *MockVehicleRepository) Update(ctx context.Context, v *entities.Vehicle) error {
 	m.ctrl.T.Helper()
@@ -304,6 +319,21 @@ func (m *MockServiceOrderRepository) FindAll(ctx context.Context) ([]*entities.S
 func (mr *MockServiceOrderRepositoryMockRecorder) FindAll(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindAll", reflect.TypeOf((*MockServiceOrderRepository)(nil).FindAll), ctx)
+}
+
+// FindByCode mocks base method.
+func (m *MockServiceOrderRepository) FindByCode(ctx context.Context, code int) (*entities.ServiceOrder, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindByCode", ctx, code)
+	ret0, _ := ret[0].(*entities.ServiceOrder)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindByCode indicates an expected call of FindByCode.
+func (mr *MockServiceOrderRepositoryMockRecorder) FindByCode(ctx, code any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByCode", reflect.TypeOf((*MockServiceOrderRepository)(nil).FindByCode), ctx, code)
 }
 
 // FindByCustomerID mocks base method.
@@ -429,6 +459,21 @@ func (m *MockServiceRepository) FindAll(ctx context.Context) ([]*entities.Servic
 func (mr *MockServiceRepositoryMockRecorder) FindAll(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindAll", reflect.TypeOf((*MockServiceRepository)(nil).FindAll), ctx)
+}
+
+// FindByCodes mocks base method.
+func (m *MockServiceRepository) FindByCodes(ctx context.Context, codes []int) ([]*entities.Service, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindByCodes", ctx, codes)
+	ret0, _ := ret[0].([]*entities.Service)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindByCodes indicates an expected call of FindByCodes.
+func (mr *MockServiceRepositoryMockRecorder) FindByCodes(ctx, codes any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByCodes", reflect.TypeOf((*MockServiceRepository)(nil).FindByCodes), ctx, codes)
 }
 
 // FindByID mocks base method.
@@ -570,6 +615,21 @@ func (m *MockPartRepository) FindByIDs(ctx context.Context, ids []string) ([]*en
 func (mr *MockPartRepositoryMockRecorder) FindByIDs(ctx, ids any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByIDs", reflect.TypeOf((*MockPartRepository)(nil).FindByIDs), ctx, ids)
+}
+
+// FindByManufacturerCodes mocks base method.
+func (m *MockPartRepository) FindByManufacturerCodes(ctx context.Context, codes []string) ([]*entities.Part, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindByManufacturerCodes", ctx, codes)
+	ret0, _ := ret[0].([]*entities.Part)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindByManufacturerCodes indicates an expected call of FindByManufacturerCodes.
+func (mr *MockPartRepositoryMockRecorder) FindByManufacturerCodes(ctx, codes any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByManufacturerCodes", reflect.TypeOf((*MockPartRepository)(nil).FindByManufacturerCodes), ctx, codes)
 }
 
 // Update mocks base method.

@@ -18,7 +18,7 @@ func TestCreatePart_Execute_Success(t *testing.T) {
 	repo.EXPECT().Create(gomock.Any(), gomock.Any()).Return(nil)
 
 	uc := NewCreatePart(repo)
-	err := uc.Execute(context.Background(), entities.NewPart("Filtro", "Desc", "unidade", 49.90, 10))
+	err := uc.Execute(context.Background(), entities.NewPart("FAB-001", "Filtro", "Desc", "unidade", 49.90, 10))
 	if err != nil {
 		t.Fatalf("expected nil error, got %v", err)
 	}
@@ -33,7 +33,7 @@ func TestCreatePart_Execute_RepoError(t *testing.T) {
 	repo.EXPECT().Create(gomock.Any(), gomock.Any()).Return(repoErr)
 
 	uc := NewCreatePart(repo)
-	if err := uc.Execute(context.Background(), entities.NewPart("Filtro", "Desc", "unidade", 49.90, 10)); !errors.Is(err, repoErr) {
+	if err := uc.Execute(context.Background(), entities.NewPart("FAB-001", "Filtro", "Desc", "unidade", 49.90, 10)); !errors.Is(err, repoErr) {
 		t.Fatalf("expected %v, got %v", repoErr, err)
 	}
 }

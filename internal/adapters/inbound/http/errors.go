@@ -50,11 +50,15 @@ func statusFor(err error) int {
 	case errors.Is(err, domainerrors.ErrInvalidCredentials),
 		errors.Is(err, domainerrors.ErrInvalidRefreshToken):
 		return http.StatusUnauthorized
+	case errors.Is(err, domainerrors.ErrStatusNotAllowedForCustomer):
+		return http.StatusForbidden
 	case errors.Is(err, domainerrors.ErrInvalidDocument),
 		errors.Is(err, domainerrors.ErrInvalidPlate),
 		errors.Is(err, domainerrors.ErrInvalidStatus),
+		errors.Is(err, domainerrors.ErrInvalidStatusValue),
 		errors.Is(err, domainerrors.ErrInsufficientStock),
-		errors.Is(err, domainerrors.ErrOrderNotCancellable):
+		errors.Is(err, domainerrors.ErrOrderNotCancellable),
+		errors.Is(err, domainerrors.ErrVehicleNotFromCustomer):
 		return http.StatusUnprocessableEntity
 	default:
 		return http.StatusInternalServerError

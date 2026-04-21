@@ -15,7 +15,7 @@ func TestListParts_Execute_Success(t *testing.T) {
 	defer ctrl.Finish()
 
 	expected := []*entities.Part{
-		entities.NewPart("Filtro", "Desc", "unidade", 49.90, 10),
+		entities.NewPart("FAB-001", "Filtro", "Desc", "unidade", 49.90, 10),
 	}
 	repo := mocks.NewMockPartRepository(ctrl)
 	repo.EXPECT().FindAll(gomock.Any()).Return(expected, nil)

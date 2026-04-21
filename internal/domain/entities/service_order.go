@@ -27,6 +27,15 @@ var validTransitions = map[OrderStatus][]OrderStatus{
 	StatusDelivered:        {},
 }
 
+// customerAllowedStatuses define os status cuja transicao pode ser iniciada
+// pelo cliente: aceitar o orcamento (in_execution) ou recusa-lo (received).
+// As demais transicoes pertencem ao fluxo operacional da oficina
+// (mecanico/atendente).
+var customerAllowedStatuses = map[OrderStatus]bool{
+	StatusInExecution: true,
+	StatusReceived:    true,
+}
+
 // allStatuses permite validar se um status informado e conhecido.
 var allStatuses = map[OrderStatus]bool{
 	StatusReceived:         true,
@@ -40,6 +49,27 @@ var allStatuses = map[OrderStatus]bool{
 // IsValidStatus verifica se o status informado e um valor conhecido.
 func IsValidStatus(s OrderStatus) bool {
 	return allStatuses[s]
+}
+
+// ServiceOrderInput carrega os dados necessarios para abrir uma nova OS.
+type ServiceOrderInput struct {
+	CustomerDocument string
+	VehiclePlate     string
+	Notes            string
+}
+
+// OrderPartItem representa uma peca e sua quantidade dentro de uma transicao de status.
+type OrderPartItem struct {
+	ManufacturerCode string
+	Quantity         int
+}
+
+// StatusUpdate carrega os dados necessarios para transicionar o status de uma OS.
+type StatusUpdate struct {
+	ID           string
+	Status       OrderStatus
+	ServiceCodes []int
+	Parts        []OrderPartItem
 }
 
 // ServiceItem e PartItem sao value objects — identificados por valor, sem identidade propria.
@@ -58,6 +88,7 @@ type PartItem struct {
 
 type ServiceOrder struct {
 	id          string
+	code        int
 	customerID  string
 	vehicleID   string
 	status      OrderStatus
@@ -84,7 +115,8 @@ func NewServiceOrder(customerID, vehicleID string) *ServiceOrder {
 
 // ReconstituteServiceOrder restaura uma entidade a partir de dados persistidos (uso exclusivo de repositories).
 func ReconstituteServiceOrder(
-	id, customerID, vehicleID string,
+	id string, code int,
+	customerID, vehicleID string,
 	status OrderStatus,
 	services []ServiceItem,
 	parts []PartItem,
@@ -94,6 +126,7 @@ func ReconstituteServiceOrder(
 ) *ServiceOrder {
 	return &ServiceOrder{
 		id:          id,
+		code:        code,
 		customerID:  customerID,
 		vehicleID:   vehicleID,
 		status:      status,
@@ -107,6 +140,7 @@ func ReconstituteServiceOrder(
 }
 
 func (so *ServiceOrder) ID() string              { return so.id }
+func (so *ServiceOrder) Code() int               { return so.code }
 func (so *ServiceOrder) CustomerID() string      { return so.customerID }
 func (so *ServiceOrder) VehicleID() string       { return so.vehicleID }
 func (so *ServiceOrder) Status() OrderStatus     { return so.status }
@@ -117,7 +151,8 @@ func (so *ServiceOrder) Notes() string           { return so.notes }
 func (so *ServiceOrder) CreatedAt() time.Time    { return so.createdAt }
 func (so *ServiceOrder) UpdatedAt() time.Time    { return so.updatedAt }
 
-func (so *ServiceOrder) SetID(id string)   { so.id = id }
+func (so *ServiceOrder) SetID(id string)     { so.id = id }
+func (so *ServiceOrder) SetCode(code int)    { so.code = code }
 func (so *ServiceOrder) SetNotes(n string) { so.notes = n; so.touch() }
 
 // UpdateStatus valida a transicao de status antes de aplicar.
@@ -137,6 +172,17 @@ func (so *ServiceOrder) UpdateStatus(s OrderStatus) error {
 		}
 	}
 	return domainerrors.ErrInvalidStatus
+}
+
+// AuthorizeCustomerTransition e um portao de autorizacao para transicoes
+// iniciadas pelo cliente: rejeita status fora da whitelist
+// (customerAllowedStatuses) e delega a validacao da transicao em si
+// para UpdateStatus/maquina de estados.
+func (so *ServiceOrder) AuthorizeCustomerTransition(s OrderStatus) error {
+	if !customerAllowedStatuses[s] {
+		return domainerrors.ErrStatusNotAllowedForCustomer
+	}
+	return so.UpdateStatus(s)
 }
 
 // SetServices substitui a lista de servicos e recalcula o total.

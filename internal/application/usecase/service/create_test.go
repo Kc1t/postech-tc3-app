@@ -18,7 +18,7 @@ func TestCreateService_Execute_Success(t *testing.T) {
 	repo.EXPECT().Create(gomock.Any(), gomock.Any()).Return(nil)
 
 	uc := NewCreateService(repo)
-	if err := uc.Execute(context.Background(), entities.NewService("Troca de óleo", "Desc", 150.0, 60)); err != nil {
+	if err := uc.Execute(context.Background(), entities.NewService(1, "Troca de óleo", "Desc", 150.0, 60)); err != nil {
 		t.Fatalf("expected nil error, got %v", err)
 	}
 }
@@ -32,7 +32,7 @@ func TestCreateService_Execute_RepoError(t *testing.T) {
 	repo.EXPECT().Create(gomock.Any(), gomock.Any()).Return(repoErr)
 
 	uc := NewCreateService(repo)
-	if err := uc.Execute(context.Background(), entities.NewService("Troca de óleo", "Desc", 150.0, 60)); !errors.Is(err, repoErr) {
+	if err := uc.Execute(context.Background(), entities.NewService(1, "Troca de óleo", "Desc", 150.0, 60)); !errors.Is(err, repoErr) {
 		t.Fatalf("expected %v, got %v", repoErr, err)
 	}
 }

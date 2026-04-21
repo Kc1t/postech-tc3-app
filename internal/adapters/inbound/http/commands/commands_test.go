@@ -83,17 +83,17 @@ func TestToVehicleListResponse(t *testing.T) {
 // --- Part ---
 
 func TestCreatePartRequest_ToDomain(t *testing.T) {
-	req := CreatePartRequest{Name: "Filtro", Unit: "unidade", Price: 49.90, Stock: 10}
+	req := CreatePartRequest{ManufacturerCode: "FAB-001", Name: "Filtro", Unit: "unidade", Price: 49.90, Stock: 10}
 	p := req.ToDomain()
-	if p.Name() != "Filtro" || p.Unit() != "unidade" || p.Price() != 49.90 || p.Stock() != 10 {
+	if p.ManufacturerCode() != "FAB-001" || p.Name() != "Filtro" || p.Unit() != "unidade" || p.Price() != 49.90 || p.Stock() != 10 {
 		t.Fatalf("unexpected domain part: %+v", p)
 	}
 }
 
 func TestToPartResponse(t *testing.T) {
-	p := entities.NewPart("Filtro", "Desc", "unidade", 49.90, 10)
+	p := entities.NewPart("FAB-001", "Filtro", "Desc", "unidade", 49.90, 10)
 	resp := ToPartResponse(p)
-	if resp.Name != "Filtro" || resp.Price != 49.90 || resp.Stock != 10 {
+	if resp.ManufacturerCode != "FAB-001" || resp.Name != "Filtro" || resp.Price != 49.90 || resp.Stock != 10 {
 		t.Fatalf("unexpected response: %+v", resp)
 	}
 	if _, err := time.Parse(time.RFC3339, resp.CreatedAt); err != nil {
@@ -102,7 +102,7 @@ func TestToPartResponse(t *testing.T) {
 }
 
 func TestToPartListResponse(t *testing.T) {
-	parts := []*entities.Part{entities.NewPart("Filtro", "Desc", "unidade", 49.90, 10)}
+	parts := []*entities.Part{entities.NewPart("FAB-001", "Filtro", "Desc", "unidade", 49.90, 10)}
 	resp := ToPartListResponse(parts)
 	if len(resp) != 1 {
 		t.Fatalf("expected 1, got %d", len(resp))
@@ -112,17 +112,17 @@ func TestToPartListResponse(t *testing.T) {
 // --- Service ---
 
 func TestCreateServiceRequest_ToDomain(t *testing.T) {
-	req := CreateServiceRequest{Name: "Troca de óleo", Price: 150.0, DurationMin: 60}
+	req := CreateServiceRequest{Code: 1, Name: "Troca de óleo", Price: 150.0, DurationMin: 60}
 	s := req.ToDomain()
-	if s.Name() != "Troca de óleo" || s.Price() != 150.0 || s.DurationMin() != 60 {
+	if s.Code() != 1 || s.Name() != "Troca de óleo" || s.Price() != 150.0 || s.DurationMin() != 60 {
 		t.Fatalf("unexpected domain service: %+v", s)
 	}
 }
 
 func TestToServiceResponse(t *testing.T) {
-	s := entities.NewService("Troca de óleo", "Desc", 150.0, 60)
+	s := entities.NewService(1, "Troca de óleo", "Desc", 150.0, 60)
 	resp := ToServiceResponse(s)
-	if resp.Name != "Troca de óleo" || resp.Price != 150.0 || resp.DurationMin != 60 {
+	if resp.Code != 1 || resp.Name != "Troca de óleo" || resp.Price != 150.0 || resp.DurationMin != 60 {
 		t.Fatalf("unexpected response: %+v", resp)
 	}
 	if _, err := time.Parse(time.RFC3339, resp.CreatedAt); err != nil {
@@ -131,7 +131,7 @@ func TestToServiceResponse(t *testing.T) {
 }
 
 func TestToServiceListResponse(t *testing.T) {
-	svcs := []*entities.Service{entities.NewService("Troca", "Desc", 100.0, 30)}
+	svcs := []*entities.Service{entities.NewService(1, "Troca", "Desc", 100.0, 30)}
 	resp := ToServiceListResponse(svcs)
 	if len(resp) != 1 {
 		t.Fatalf("expected 1, got %d", len(resp))
@@ -139,38 +139,6 @@ func TestToServiceListResponse(t *testing.T) {
 }
 
 // --- ServiceOrder ---
-
-func TestCreateServiceOrderRequest_ToDomain_WithItems(t *testing.T) {
-	req := CreateServiceOrderRequest{
-		CustomerID: "cust-1",
-		VehicleID:  "veh-1",
-		Notes:      "trocar pastilhas",
-		Services: []ServiceItemRequest{
-			{ServiceID: "s1", Description: "Troca", Price: 100.0},
-		},
-		Parts: []PartItemRequest{
-			{PartID: "p1", Description: "Filtro", Quantity: 2, UnitPrice: 50.0},
-		},
-	}
-	so := req.ToDomain()
-	if so.CustomerID() != "cust-1" || so.VehicleID() != "veh-1" {
-		t.Fatalf("unexpected customerID/vehicleID: %s/%s", so.CustomerID(), so.VehicleID())
-	}
-	if so.Notes() != "trocar pastilhas" {
-		t.Errorf("expected notes %q, got %q", "trocar pastilhas", so.Notes())
-	}
-	if len(so.Services()) != 1 || len(so.Parts()) != 1 {
-		t.Fatalf("expected 1 service and 1 part, got %d and %d", len(so.Services()), len(so.Parts()))
-	}
-}
-
-func TestCreateServiceOrderRequest_ToDomain_Empty(t *testing.T) {
-	req := CreateServiceOrderRequest{CustomerID: "cust-1", VehicleID: "veh-1"}
-	so := req.ToDomain()
-	if len(so.Services()) != 0 || len(so.Parts()) != 0 {
-		t.Fatalf("expected empty services/parts")
-	}
-}
 
 func TestToServiceOrderResponse(t *testing.T) {
 	so := entities.NewServiceOrder("cust-1", "veh-1")

@@ -31,6 +31,9 @@ func (h *ServiceHandler) Update(c *gin.Context) {
 		return
 	}
 
+	if req.Code > 0 {
+		service.SetCode(req.Code)
+	}
 	if req.Name != "" {
 		service.SetName(req.Name)
 	}

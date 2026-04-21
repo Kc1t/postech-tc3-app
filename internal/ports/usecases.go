@@ -63,7 +63,7 @@ type DeleteVehicleUseCase interface {
 // --- ServiceOrder ---
 
 type CreateServiceOrderUseCase interface {
-	Execute(ctx context.Context, so *entities.ServiceOrder) error
+	Execute(ctx context.Context, input entities.ServiceOrderInput) (*entities.ServiceOrder, error)
 }
 
 type GetServiceOrderUseCase interface {
@@ -79,7 +79,19 @@ type ListServiceOrdersByCustomerUseCase interface {
 }
 
 type UpdateServiceOrderStatusUseCase interface {
-	Execute(ctx context.Context, id string, status entities.OrderStatus) error
+	Execute(ctx context.Context, input entities.StatusUpdate) error
+}
+
+type GetServiceOrderByCodeUseCase interface {
+	Execute(ctx context.Context, code int, customerDocument string) (*entities.ServiceOrder, error)
+}
+
+type ListServiceOrdersByDocumentUseCase interface {
+	Execute(ctx context.Context, document string) ([]*entities.ServiceOrder, error)
+}
+
+type UpdateServiceOrderStatusByCodeUseCase interface {
+	Execute(ctx context.Context, code int, customerDocument string, newStatus entities.OrderStatus) error
 }
 
 type UpdateServiceOrderUseCase interface {

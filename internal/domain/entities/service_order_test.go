@@ -80,6 +80,68 @@ func TestUpdateStatus_StatusDesconhecido(t *testing.T) {
 	}
 }
 
+func TestAuthorizeCustomerTransition_StatusPermitidos(t *testing.T) {
+	tests := []struct {
+		name string
+		to   OrderStatus
+	}{
+		{"aprovar (awaiting_approval -> in_execution)", StatusInExecution},
+		{"rejeitar (awaiting_approval -> received)", StatusReceived},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			so := newServiceOrderWithStatus(StatusAwaitingApproval)
+			if err := so.AuthorizeCustomerTransition(tt.to); err != nil {
+				t.Fatalf("esperava sucesso, obteve erro: %v", err)
+			}
+			if so.Status() != tt.to {
+				t.Errorf("Status() = %q, esperava %q", so.Status(), tt.to)
+			}
+		})
+	}
+}
+
+func TestAuthorizeCustomerTransition_StatusProibidos(t *testing.T) {
+	// Status que so o mecanico/atendente (rota autenticada) pode disparar.
+	tests := []struct {
+		name string
+		from OrderStatus
+		to   OrderStatus
+	}{
+		{"received -> in_diagnosis", StatusReceived, StatusInDiagnosis},
+		{"in_diagnosis -> awaiting_approval", StatusInDiagnosis, StatusAwaitingApproval},
+		{"in_execution -> finished", StatusInExecution, StatusFinished},
+		{"finished -> delivered", StatusFinished, StatusDelivered},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			so := newServiceOrderWithStatus(tt.from)
+			err := so.AuthorizeCustomerTransition(tt.to)
+			if err != domainerrors.ErrStatusNotAllowedForCustomer {
+				t.Fatalf("erro = %v, esperava ErrStatusNotAllowedForCustomer", err)
+			}
+			if so.Status() != tt.from {
+				t.Errorf("Status() = %q, deveria permanecer %q", so.Status(), tt.from)
+			}
+		})
+	}
+}
+
+func TestAuthorizeCustomerTransition_WhitelistPassaMasMaquinaReprova(t *testing.T) {
+	// in_execution esta na whitelist, mas a transicao received -> in_execution
+	// nao existe na maquina de estados: deve retornar ErrInvalidStatus.
+	so := newServiceOrderWithStatus(StatusReceived)
+	err := so.AuthorizeCustomerTransition(StatusInExecution)
+	if err != domainerrors.ErrInvalidStatus {
+		t.Fatalf("erro = %v, esperava ErrInvalidStatus", err)
+	}
+	if so.Status() != StatusReceived {
+		t.Errorf("Status() = %q, deveria permanecer %q", so.Status(), StatusReceived)
+	}
+}
+
 func TestUpdateStatus_NaoAlteraQuandoInvalido(t *testing.T) {
 	so := NewServiceOrder("cust-1", "veh-1")
 	original := so.Status()
@@ -210,7 +272,7 @@ func TestSetParts_SubstituiERecalcula(t *testing.T) {
 func newServiceOrderWithStatus(status OrderStatus) *ServiceOrder {
 	t := time.Now()
 	return ReconstituteServiceOrder(
-		"order-1", "cust-1", "veh-1",
+		"order-1", 0, "cust-1", "veh-1",
 		status,
 		nil, nil, 0, "",
 		t, t,

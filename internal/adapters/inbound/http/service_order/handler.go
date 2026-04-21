@@ -6,32 +6,42 @@ import (
 )
 
 type ServiceOrderHandler struct {
-	create       ports.CreateServiceOrderUseCase
-	getByID      ports.GetServiceOrderUseCase
-	listAll      ports.ListServiceOrdersUseCase
-	updateStatus ports.UpdateServiceOrderStatusUseCase
-	update       ports.UpdateServiceOrderUseCase
-	delete       ports.DeleteServiceOrderUseCase
+	create             ports.CreateServiceOrderUseCase
+	getByID            ports.GetServiceOrderUseCase
+	getByCode          ports.GetServiceOrderByCodeUseCase
+	listAll            ports.ListServiceOrdersUseCase
+	listByDocument     ports.ListServiceOrdersByDocumentUseCase
+	updateStatus       ports.UpdateServiceOrderStatusUseCase
+	update             ports.UpdateServiceOrderUseCase
+	delete             ports.DeleteServiceOrderUseCase
+	updateStatusByCode ports.UpdateServiceOrderStatusByCodeUseCase
 }
 
 func NewServiceOrderHandler(
 	create ports.CreateServiceOrderUseCase,
 	getByID ports.GetServiceOrderUseCase,
+	getByCode ports.GetServiceOrderByCodeUseCase,
 	listAll ports.ListServiceOrdersUseCase,
+	listByDocument ports.ListServiceOrdersByDocumentUseCase,
 	updateStatus ports.UpdateServiceOrderStatusUseCase,
 	update ports.UpdateServiceOrderUseCase,
 	delete ports.DeleteServiceOrderUseCase,
+	updateStatusByCode ports.UpdateServiceOrderStatusByCodeUseCase,
 ) *ServiceOrderHandler {
 	return &ServiceOrderHandler{
-		create:       create,
-		getByID:      getByID,
-		listAll:      listAll,
-		updateStatus: updateStatus,
-		update:       update,
-		delete:       delete,
+		create:             create,
+		getByID:            getByID,
+		getByCode:          getByCode,
+		listAll:            listAll,
+		listByDocument:     listByDocument,
+		updateStatus:       updateStatus,
+		update:             update,
+		delete:             delete,
+		updateStatusByCode: updateStatusByCode,
 	}
 }
 
+// SetupRoutes registra as rotas administrativas (protegidas por JWT).
 func (h *ServiceOrderHandler) SetupRoutes(rg *gin.RouterGroup) {
 	g := rg.Group("/service-orders")
 	g.POST("", h.Create)
@@ -40,5 +50,12 @@ func (h *ServiceOrderHandler) SetupRoutes(rg *gin.RouterGroup) {
 	g.PUT("/:id/status", h.UpdateStatus)
 	g.PUT("/:id", h.Update)
 	g.DELETE("/:id", h.Delete)
+}
 
+// SetupPublicRoutes registra as rotas publicas do cliente (sem JWT).
+func (h *ServiceOrderHandler) SetupPublicRoutes(rg *gin.RouterGroup) {
+	g := rg.Group("/service-orders")
+	g.GET("/code/:code", h.FindByCode)
+	g.GET("/customer", h.FindByDocument)
+	g.PUT("/code/:code/status", h.UpdateStatusByCode)
 }
