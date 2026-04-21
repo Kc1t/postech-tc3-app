@@ -2,6 +2,7 @@ package postgresql
 
 import (
 	"context"
+	"time"
 
 	pgmodel "github.com/fiap/postech-tc1/internal/adapters/outbound/postgresql/model"
 	"github.com/fiap/postech-tc1/internal/domain/entities"
@@ -78,4 +79,21 @@ func (r *serviceOrderRepository) Update(ctx context.Context, so *entities.Servic
 
 func (r *serviceOrderRepository) Delete(ctx context.Context, id string) error {
 	return mapError(r.db.WithContext(ctx).Delete(&pgmodel.ServiceOrder{}, "id = ?", id).Error)
+}
+
+// AverageExecutionTime retorna a media global do intervalo entre startedAt
+// (momento da aprovacao) e finishedAt (momento da finalizacao). Considera
+// apenas OSs com ambos os timestamps gravados. COALESCE garante 0 quando
+// nao ha amostras (AVG de nenhum row retorna NULL no PostgreSQL).
+func (r *serviceOrderRepository) AverageExecutionTime(ctx context.Context) (time.Duration, error) {
+	var averageSeconds float64
+	err := r.db.WithContext(ctx).
+		Model(&pgmodel.ServiceOrder{}).
+		Where("started_at IS NOT NULL AND finished_at IS NOT NULL").
+		Select("COALESCE(EXTRACT(EPOCH FROM AVG(finished_at - started_at)), 0)").
+		Scan(&averageSeconds).Error
+	if err != nil {
+		return 0, mapError(err)
+	}
+	return time.Duration(averageSeconds * float64(time.Second)), nil
 }

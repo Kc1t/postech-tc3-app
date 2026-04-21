@@ -5,6 +5,7 @@ import (
 
 	pgmodel "github.com/fiap/postech-tc1/internal/adapters/outbound/postgresql/model"
 	"github.com/fiap/postech-tc1/internal/domain/entities"
+	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
 	"github.com/fiap/postech-tc1/internal/ports"
 	"gorm.io/gorm"
 )
@@ -79,6 +80,30 @@ func (r *partRepository) Delete(ctx context.Context, id string) error {
 	return mapError(r.db.WithContext(ctx).Delete(&pgmodel.Part{}, "id = ?", id).Error)
 }
 
+// UpdateStock aplica delta no estoque de forma atomica. A clausula
+// "stock + ? >= 0" impede que o estoque fique negativo sob concorrencia:
+// se o UPDATE nao afetar linhas, distingue peca inexistente (ErrNotFound)
+// de estoque insuficiente (ErrInsufficientStock).
 func (r *partRepository) UpdateStock(ctx context.Context, id string, delta int) error {
-	return mapError(r.db.WithContext(ctx).Model(&pgmodel.Part{}).Where("id = ?", id).UpdateColumn("stock", gorm.Expr("stock + ?", delta)).Error)
+	result := r.db.WithContext(ctx).
+		Model(&pgmodel.Part{}).
+		Where("id = ? AND stock + ? >= 0", id, delta).
+		UpdateColumn("stock", gorm.Expr("stock + ?", delta))
+	if result.Error != nil {
+		return mapError(result.Error)
+	}
+	if result.RowsAffected == 0 {
+		var count int64
+		if err := r.db.WithContext(ctx).
+			Model(&pgmodel.Part{}).
+			Where("id = ?", id).
+			Count(&count).Error; err != nil {
+			return mapError(err)
+		}
+		if count == 0 {
+			return domainerrors.ErrNotFound
+		}
+		return domainerrors.ErrInsufficientStock
+	}
+	return nil
 }

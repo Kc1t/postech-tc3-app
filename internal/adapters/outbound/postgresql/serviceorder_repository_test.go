@@ -174,3 +174,89 @@ func TestServiceOrderRepository_Delete(t *testing.T) {
 		t.Fatal("expected record to be deleted")
 	}
 }
+
+// AverageExecutionTime considera apenas OSs com ambos startedAt e finishedAt
+// preenchidos e ignora as demais.
+func TestServiceOrderRepository_AverageExecutionTime(t *testing.T) {
+	c, v := seedVehicle(t, "OS00008")
+	repo := NewServiceOrderRepository(testDB)
+
+	now := time.Now().UTC().Truncate(time.Second)
+	started1 := now.Add(-2 * time.Hour)
+	finished1 := now.Add(-1 * time.Hour) // duracao 1h
+	started2 := now.Add(-4 * time.Hour)
+	finished2 := now.Add(-1 * time.Hour) // duracao 3h
+
+	so1 := entities.ReconstituteServiceOrder("", 0, c.ID(), v.ID(),
+		entities.StatusFinished, nil, nil, 0, "", now, now, &started1, &finished1)
+	so2 := entities.ReconstituteServiceOrder("", 0, c.ID(), v.ID(),
+		entities.StatusFinished, nil, nil, 0, "", now, now, &started2, &finished2)
+	// OS sem timestamps — nao deve contar para a media.
+	so3 := entities.ReconstituteServiceOrder("", 0, c.ID(), v.ID(),
+		entities.StatusReceived, nil, nil, 0, "", now, now, nil, nil)
+
+	for _, so := range []*entities.ServiceOrder{so1, so2, so3} {
+		if err := repo.Create(context.Background(), so); err != nil {
+			t.Fatalf("setup failed: %v", err)
+		}
+		t.Cleanup(func() { testDB.Delete(&pgmodel.ServiceOrder{}, "id = ?", so.ID()) })
+	}
+
+	avg, err := repo.AverageExecutionTime(context.Background())
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+
+	// Media de 1h e 3h = 2h. Pequena tolerancia para lidar com arredondamentos
+	// da extracao de EPOCH no Postgres.
+	expected := 2 * time.Hour
+	delta := avg - expected
+	if delta < 0 {
+		delta = -delta
+	}
+	if delta > time.Second {
+		t.Errorf("media = %v, esperava ~%v (delta %v)", avg, expected, delta)
+	}
+}
+
+func TestServiceOrderRepository_FindByCode(t *testing.T) {
+	c, v := seedVehicle(t, "OS00010")
+	repo := NewServiceOrderRepository(testDB)
+	so := newTestOrder(c.ID(), v.ID())
+	if err := repo.Create(context.Background(), so); err != nil {
+		t.Fatalf("setup failed: %v", err)
+	}
+	t.Cleanup(func() { testDB.Delete(&pgmodel.ServiceOrder{}, "id = ?", so.ID()) })
+
+	found, err := repo.FindByCode(context.Background(), so.Code())
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+	if found.ID() != so.ID() {
+		t.Errorf("expected ID %s, got %s", so.ID(), found.ID())
+	}
+}
+
+func TestServiceOrderRepository_FindByCode_NotFound(t *testing.T) {
+	repo := NewServiceOrderRepository(testDB)
+	_, err := repo.FindByCode(context.Background(), 999999999)
+	if !isDomainNotFound(err) {
+		t.Fatalf("expected ErrNotFound, got %v", err)
+	}
+}
+
+// Sem OSs qualificadas (nenhuma com ambos timestamps), a media e 0 — sem erro.
+func TestServiceOrderRepository_AverageExecutionTime_SemAmostras(t *testing.T) {
+	repo := NewServiceOrderRepository(testDB)
+
+	// Limpa qualquer residuo de outros testes para garantir o cenario "sem amostras".
+	testDB.Exec("DELETE FROM service_orders WHERE started_at IS NOT NULL AND finished_at IS NOT NULL")
+
+	avg, err := repo.AverageExecutionTime(context.Background())
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+	if avg != 0 {
+		t.Errorf("esperava 0 sem amostras, obteve %v", avg)
+	}
+}
