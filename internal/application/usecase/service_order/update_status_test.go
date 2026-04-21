@@ -357,10 +357,12 @@ func TestUpdateStatus_ErroRepoUpdateStatus(t *testing.T) {
 }
 
 // =============================================================================
-// Testes da aprovacao (awaiting_approval -> in_execution) com baixa de estoque
+// Testes da aprovacao (awaiting_approval -> in_execution)
+// A atomicidade estoque+OS vive no repo (ApplyApprovalTransition) com tx DB;
+// aqui validamos apenas que o use case delega corretamente para esse metodo.
 // =============================================================================
 
-func TestUpdateStatus_InExecution_DecrementaEstoqueETransita(t *testing.T) {
+func TestUpdateStatus_InExecution_DelegaParaApplyApprovalTransition(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -377,10 +379,7 @@ func TestUpdateStatus_InExecution_DecrementaEstoqueETransita(t *testing.T) {
 
 	gomock.InOrder(
 		repo.EXPECT().FindByID(gomock.Any(), "order-1").Return(so, nil),
-		partRepo.EXPECT().UpdateStock(gomock.Any(), "part-1", -2).Return(nil),
-		partRepo.EXPECT().UpdateStock(gomock.Any(), "part-2", -4).Return(nil),
-		// Update (nao UpdateStatus) porque a entidade acabou de gravar startedAt.
-		repo.EXPECT().Update(gomock.Any(), gomock.Any()).DoAndReturn(func(_ context.Context, saved *entities.ServiceOrder) error {
+		repo.EXPECT().ApplyApprovalTransition(gomock.Any(), gomock.Any()).DoAndReturn(func(_ context.Context, saved *entities.ServiceOrder) error {
 			if saved.Status() != entities.StatusInExecution {
 				t.Errorf("Status persistido = %q, esperava in_execution", saved.Status())
 			}
@@ -398,94 +397,27 @@ func TestUpdateStatus_InExecution_DecrementaEstoqueETransita(t *testing.T) {
 	}
 }
 
-func TestUpdateStatus_InExecution_SemPecas_NaoTocaEstoque(t *testing.T) {
+func TestUpdateStatus_InExecution_PropagaErroDoRepo(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	// OS sem pecas (apenas servicos, por exemplo).
+	parts := []entities.PartItem{
+		{PartID: "part-1", Description: "Filtro", Quantity: 2, UnitPrice: 25.00},
+	}
 	so := entities.ReconstituteServiceOrder("order-1", 0, "c1", "v1",
-		entities.StatusAwaitingApproval, nil, nil, 0, "", ft(), ft(), nil, nil)
+		entities.StatusAwaitingApproval, nil, parts, 0, "", ft(), ft(), nil, nil)
 
 	repo := mocks.NewMockServiceOrderRepository(ctrl)
 	svcRepo := mocks.NewMockServiceRepository(ctrl)
 	partRepo := mocks.NewMockPartRepository(ctrl)
 
 	repo.EXPECT().FindByID(gomock.Any(), "order-1").Return(so, nil)
-	// partRepo.UpdateStock NAO deve ser chamado
-	repo.EXPECT().Update(gomock.Any(), gomock.Any()).Return(nil)
-
-	uc := NewUpdateServiceOrderStatus(repo, svcRepo, partRepo)
-	input := entities.StatusUpdate{ID: "order-1", Status: entities.StatusInExecution}
-	if err := uc.Execute(context.Background(), input); err != nil {
-		t.Fatalf("esperava sucesso, obteve: %v", err)
-	}
-}
-
-// Se a segunda peca falhar, a primeira (ja decrementada) deve ser revertida
-// e a transicao de status NAO pode ocorrer.
-func TestUpdateStatus_InExecution_EstoqueInsuficiente_FazRollback(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	parts := []entities.PartItem{
-		{PartID: "part-1", Description: "Filtro", Quantity: 2, UnitPrice: 25.00},
-		{PartID: "part-2", Description: "Oleo", Quantity: 5, UnitPrice: 40.00},
-		{PartID: "part-3", Description: "Pastilha", Quantity: 1, UnitPrice: 180.00},
-	}
-	so := entities.ReconstituteServiceOrder("order-1", 0, "c1", "v1",
-		entities.StatusAwaitingApproval, nil, parts, 0, "", ft(), ft(), nil, nil)
-
-	repo := mocks.NewMockServiceOrderRepository(ctrl)
-	svcRepo := mocks.NewMockServiceRepository(ctrl)
-	partRepo := mocks.NewMockPartRepository(ctrl)
-
-	gomock.InOrder(
-		repo.EXPECT().FindByID(gomock.Any(), "order-1").Return(so, nil),
-		partRepo.EXPECT().UpdateStock(gomock.Any(), "part-1", -2).Return(nil),
-		partRepo.EXPECT().UpdateStock(gomock.Any(), "part-2", -5).Return(domainerrors.ErrInsufficientStock),
-		// rollback da unica peca ja decrementada (part-1)
-		partRepo.EXPECT().UpdateStock(gomock.Any(), "part-1", 2).Return(nil),
-	)
-	// repo.UpdateStatus NAO deve ser chamado — transicao nao ocorre.
-	// UpdateStock de part-3 NAO deve ser chamado — fail-fast.
+	repo.EXPECT().ApplyApprovalTransition(gomock.Any(), gomock.Any()).Return(domainerrors.ErrInsufficientStock)
 
 	uc := NewUpdateServiceOrderStatus(repo, svcRepo, partRepo)
 	input := entities.StatusUpdate{ID: "order-1", Status: entities.StatusInExecution}
 	err := uc.Execute(context.Background(), input)
 	if !errors.Is(err, domainerrors.ErrInsufficientStock) {
 		t.Fatalf("erro = %v, esperava ErrInsufficientStock", err)
-	}
-}
-
-// Erro no rollback nao mascara o erro original — o use case retorna o erro
-// que causou a falha, nao o erro da reversao.
-func TestUpdateStatus_InExecution_FalhaNoRollback_PropagaErroOriginal(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	parts := []entities.PartItem{
-		{PartID: "part-1", Description: "Filtro", Quantity: 2, UnitPrice: 25.00},
-		{PartID: "part-2", Description: "Oleo", Quantity: 5, UnitPrice: 40.00},
-	}
-	so := entities.ReconstituteServiceOrder("order-1", 0, "c1", "v1",
-		entities.StatusAwaitingApproval, nil, parts, 0, "", ft(), ft(), nil, nil)
-
-	repo := mocks.NewMockServiceOrderRepository(ctrl)
-	svcRepo := mocks.NewMockServiceRepository(ctrl)
-	partRepo := mocks.NewMockPartRepository(ctrl)
-
-	rollbackErr := errors.New("db unavailable during rollback")
-	gomock.InOrder(
-		repo.EXPECT().FindByID(gomock.Any(), "order-1").Return(so, nil),
-		partRepo.EXPECT().UpdateStock(gomock.Any(), "part-1", -2).Return(nil),
-		partRepo.EXPECT().UpdateStock(gomock.Any(), "part-2", -5).Return(domainerrors.ErrInsufficientStock),
-		partRepo.EXPECT().UpdateStock(gomock.Any(), "part-1", 2).Return(rollbackErr),
-	)
-
-	uc := NewUpdateServiceOrderStatus(repo, svcRepo, partRepo)
-	input := entities.StatusUpdate{ID: "order-1", Status: entities.StatusInExecution}
-	err := uc.Execute(context.Background(), input)
-	if !errors.Is(err, domainerrors.ErrInsufficientStock) {
-		t.Fatalf("erro = %v, esperava ErrInsufficientStock (erro original, nao %v)", err, rollbackErr)
 	}
 }

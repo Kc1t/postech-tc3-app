@@ -11,15 +11,13 @@ import (
 type UpdateServiceOrderStatusByCode struct {
 	repo         ports.ServiceOrderRepository
 	customerRepo ports.CustomerRepository
-	partRepo     ports.PartRepository
 }
 
 func NewUpdateServiceOrderStatusByCode(
 	repo ports.ServiceOrderRepository,
 	customerRepo ports.CustomerRepository,
-	partRepo ports.PartRepository,
 ) *UpdateServiceOrderStatusByCode {
-	return &UpdateServiceOrderStatusByCode{repo: repo, customerRepo: customerRepo, partRepo: partRepo}
+	return &UpdateServiceOrderStatusByCode{repo: repo, customerRepo: customerRepo}
 }
 
 func (uc *UpdateServiceOrderStatusByCode) Execute(ctx context.Context, code int, customerDocument string, newStatus entities.OrderStatus) error {
@@ -41,14 +39,11 @@ func (uc *UpdateServiceOrderStatusByCode) Execute(ctx context.Context, code int,
 		return err
 	}
 
-	// Aprovacao pelo cliente (in_execution) baixa o estoque e persiste o
-	// agregado completo — startedAt foi gravado pela entidade em UpdateStatus.
-	// Recusa (received) nao toca timestamps, basta atualizar a coluna status.
+	// Aprovacao pelo cliente (in_execution): decremento de estoque + persistencia
+	// da OS numa unica transacao DB. Recusa (received) nao toca timestamps,
+	// basta atualizar a coluna status.
 	if newStatus == entities.StatusInExecution {
-		if err := decrementStockForApproval(ctx, uc.partRepo, so.Parts()); err != nil {
-			return err
-		}
-		return uc.repo.Update(ctx, so)
+		return uc.repo.ApplyApprovalTransition(ctx, so)
 	}
 
 	return uc.repo.UpdateStatus(ctx, so.ID(), newStatus)
