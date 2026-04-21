@@ -27,6 +27,15 @@ var validTransitions = map[OrderStatus][]OrderStatus{
 	StatusDelivered:        {},
 }
 
+// customerAllowedStatuses define os status cuja transicao pode ser iniciada
+// pelo cliente: aceitar o orcamento (in_execution) ou recusa-lo (received).
+// As demais transicoes pertencem ao fluxo operacional da oficina
+// (mecanico/atendente).
+var customerAllowedStatuses = map[OrderStatus]bool{
+	StatusInExecution: true,
+	StatusReceived:    true,
+}
+
 // allStatuses permite validar se um status informado e conhecido.
 var allStatuses = map[OrderStatus]bool{
 	StatusReceived:         true,
@@ -163,6 +172,17 @@ func (so *ServiceOrder) UpdateStatus(s OrderStatus) error {
 		}
 	}
 	return domainerrors.ErrInvalidStatus
+}
+
+// AuthorizeCustomerTransition e um portao de autorizacao para transicoes
+// iniciadas pelo cliente: rejeita status fora da whitelist
+// (customerAllowedStatuses) e delega a validacao da transicao em si
+// para UpdateStatus/maquina de estados.
+func (so *ServiceOrder) AuthorizeCustomerTransition(s OrderStatus) error {
+	if !customerAllowedStatuses[s] {
+		return domainerrors.ErrStatusNotAllowedForCustomer
+	}
+	return so.UpdateStatus(s)
 }
 
 // SetServices substitui a lista de servicos e recalcula o total.

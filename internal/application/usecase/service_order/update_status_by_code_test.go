@@ -129,6 +129,29 @@ func TestUpdateStatusByCode_TransicaoInvalida(t *testing.T) {
 	}
 }
 
+func TestUpdateStatusByCode_StatusNaoPermitidoParaCliente(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	customer := entities.ReconstituteCustomer("cust-1", "Diego", "52998224725", "d@e.com", "", ft(), ft())
+	// OS em in_execution; cliente tenta avancar para finished (acao do mecanico).
+	so := entities.ReconstituteServiceOrder("order-1", 100, "cust-1", "veh-1",
+		entities.StatusInExecution, nil, nil, 0, "", ft(), ft())
+
+	soRepo := mocks.NewMockServiceOrderRepository(ctrl)
+	custRepo := mocks.NewMockCustomerRepository(ctrl)
+
+	custRepo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(customer, nil)
+	soRepo.EXPECT().FindByCode(gomock.Any(), 100).Return(so, nil)
+	// Nao deve chamar UpdateStatus no repositorio.
+
+	uc := NewUpdateServiceOrderStatusByCode(soRepo, custRepo)
+	err := uc.Execute(context.Background(), 100, "52998224725", entities.StatusFinished)
+	if !errors.Is(err, domainerrors.ErrStatusNotAllowedForCustomer) {
+		t.Fatalf("erro = %v, esperava ErrStatusNotAllowedForCustomer", err)
+	}
+}
+
 func TestUpdateStatusByCode_ErroInfraCliente(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()

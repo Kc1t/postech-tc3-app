@@ -655,6 +655,26 @@ func TestServiceOrderHandler_UpdateStatusByCode_NotFound(t *testing.T) {
 	}
 }
 
+func TestServiceOrderHandler_UpdateStatusByCode_StatusNaoPermitido(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	m := newHandler(ctrl)
+	m.updateStatusByCode.EXPECT().
+		Execute(gomock.Any(), 100, "52998224725", entities.StatusFinished).
+		Return(domainerrors.ErrStatusNotAllowedForCustomer)
+
+	body, _ := json.Marshal(map[string]any{"customer_document": "52998224725", "status": "finished"})
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPut, "/service-orders/code/100/status", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+	newTestRouter(m.handler).ServeHTTP(w, req)
+
+	if w.Code != http.StatusForbidden {
+		t.Fatalf("expected 403, got %d: %s", w.Code, w.Body.String())
+	}
+}
+
 func TestServiceOrderHandler_UpdateStatusByCode_TransicaoInvalida(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()

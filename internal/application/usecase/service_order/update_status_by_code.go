@@ -32,7 +32,7 @@ func (uc *UpdateServiceOrderStatusByCode) Execute(ctx context.Context, code int,
 		return domainerrors.ErrNotFound
 	}
 
-	if err := so.UpdateStatus(newStatus); err != nil {
+	if err := so.AuthorizeCustomerTransition(newStatus); err != nil {
 		return err
 	}
 
