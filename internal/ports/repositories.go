@@ -39,6 +39,11 @@ type ServiceOrderRepository interface {
 	FindByCustomerID(ctx context.Context, customerID string) ([]*entities.ServiceOrder, error)
 	UpdateStatus(ctx context.Context, id string, status entities.OrderStatus) error
 	Update(ctx context.Context, so *entities.ServiceOrder) error
+	// ApplyApprovalTransition persiste a OS junto com o decremento de estoque
+	// de suas pecas em uma unica transacao DB (awaiting_approval -> in_execution).
+	// Retorna ErrNotFound ou ErrInsufficientStock se alguma peca falhar no
+	// decremento; o rollback da transacao reverte todas as escritas.
+	ApplyApprovalTransition(ctx context.Context, so *entities.ServiceOrder) error
 	Delete(ctx context.Context, id string) error
 	// AverageExecutionTime retorna a media global do tempo entre a aprovacao
 	// (startedAt) e a finalizacao (finishedAt) das ordens de servico que ja

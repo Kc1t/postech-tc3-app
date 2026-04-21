@@ -367,6 +367,20 @@ func (mr *MockServiceOrderRepositoryMockRecorder) FindByID(ctx, id any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByID", reflect.TypeOf((*MockServiceOrderRepository)(nil).FindByID), ctx, id)
 }
 
+// ApplyApprovalTransition mocks base method.
+func (m *MockServiceOrderRepository) ApplyApprovalTransition(ctx context.Context, so *entities.ServiceOrder) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ApplyApprovalTransition", ctx, so)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ApplyApprovalTransition indicates an expected call of ApplyApprovalTransition.
+func (mr *MockServiceOrderRepositoryMockRecorder) ApplyApprovalTransition(ctx, so any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ApplyApprovalTransition", reflect.TypeOf((*MockServiceOrderRepository)(nil).ApplyApprovalTransition), ctx, so)
+}
+
 // Update mocks base method.
 func (m *MockServiceOrderRepository) Update(ctx context.Context, so *entities.ServiceOrder) error {
 	m.ctrl.T.Helper()
