@@ -7,18 +7,15 @@ import (
 	"github.com/fiap/postech-tc1/internal/ports"
 )
 
-// decrementStockForApproval baixa o estoque das pecas reservadas na OS ao
-// aprovar o orcamento (transicao awaiting_approval -> in_execution). Aplica
-// duas camadas de atomicidade:
-//   - A: cada UpdateStock e atomico no banco (SQL "WHERE stock + ? >= 0").
-//   - B: se uma peca falhar, as pecas ja decrementadas sao revertidas em
-//     memoria operacional via UpdateStock com delta positivo, e o erro
-//     original propaga para impedir a transicao de status.
+// decrementStockForApproval baixa o estoque das pecas ao aprovar o
+// orcamento (awaiting_approval -> in_execution).
 //
-// Erros do rollback sao silenciados de proposito: se a reversao falhar (ex:
-// DB indisponivel), nao ha acao melhor no escopo do MVP — o operador
-// precisara conciliar o estoque manualmente. Transacao cross-aggregate
-// (camada C) ficou explicitamente fora do escopo.
+// Atomicidade por peca: SQL "stock + ? >= 0". Entre pecas: rollback manual
+// (erro do rollback e silenciado). Cross-aggregate (estoque + status da OS):
+// fora de escopo no MVP.
+//
+// TODO N+1: ate 2N-1 round-trips em caso de falha parcial. Solucao prevista:
+// metodo em lote no PartRepository com transacao local + UPDATE CASE WHEN.
 func decrementStockForApproval(ctx context.Context, partRepo ports.PartRepository, parts []entities.PartItem) error {
 	decremented := make([]entities.PartItem, 0, len(parts))
 	for _, p := range parts {
