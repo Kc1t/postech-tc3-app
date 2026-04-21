@@ -6,6 +6,7 @@ import (
 
 	pgmodel "github.com/fiap/postech-tc1/internal/adapters/outbound/postgresql/model"
 	"github.com/fiap/postech-tc1/internal/domain/entities"
+	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
 	"github.com/fiap/postech-tc1/internal/ports"
 	"gorm.io/gorm"
 )
@@ -75,6 +76,47 @@ func (r *serviceOrderRepository) UpdateStatus(ctx context.Context, id string, st
 func (r *serviceOrderRepository) Update(ctx context.Context, so *entities.ServiceOrder) error {
 	m := pgmodel.FromServiceOrder(so)
 	return mapError(r.db.WithContext(ctx).Save(m).Error)
+}
+
+// ApplyApprovalTransition baixa o estoque das pecas e persiste a OS em uma
+// unica transacao DB. Se qualquer decremento falhar (peca inexistente ou
+// estoque insuficiente) ou o Save da OS falhar, o rollback automatico do
+// GORM reverte todas as escritas.
+func (r *serviceOrderRepository) ApplyApprovalTransition(ctx context.Context, so *entities.ServiceOrder) error {
+	err := r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		for _, p := range so.Parts() {
+			if err := decrementStockTx(tx, p.PartID, p.Quantity); err != nil {
+				return err
+			}
+		}
+		m := pgmodel.FromServiceOrder(so)
+		return tx.Save(m).Error
+	})
+	return mapError(err)
+}
+
+// decrementStockTx aplica o decremento atomico em uma unica peca dentro da
+// transacao fornecida. A clausula "stock - ? >= 0" impede estoque negativo;
+// RowsAffected==0 distingue peca inexistente (ErrNotFound) de estoque
+// insuficiente (ErrInsufficientStock).
+func decrementStockTx(tx *gorm.DB, partID string, quantity int) error {
+	result := tx.Model(&pgmodel.Part{}).
+		Where("id = ? AND stock - ? >= 0", partID, quantity).
+		UpdateColumn("stock", gorm.Expr("stock - ?", quantity))
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		var count int64
+		if err := tx.Model(&pgmodel.Part{}).Where("id = ?", partID).Count(&count).Error; err != nil {
+			return err
+		}
+		if count == 0 {
+			return domainerrors.ErrNotFound
+		}
+		return domainerrors.ErrInsufficientStock
+	}
+	return nil
 }
 
 func (r *serviceOrderRepository) Delete(ctx context.Context, id string) error {
