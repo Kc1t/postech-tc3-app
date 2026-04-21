@@ -3,6 +3,8 @@ package config
 import (
 	"os"
 	"testing"
+
+	"github.com/fiap/postech-tc1/pkg/env"
 )
 
 func TestLoad_Defaults(t *testing.T) {
@@ -65,7 +67,7 @@ func TestGetEnv_WithValue(t *testing.T) {
 	}
 	defer func() { _ = os.Unsetenv("TEST_KEY_XYZ") }()
 
-	result := getEnv("TEST_KEY_XYZ", "fallback")
+	result := env.GetOrDefault("TEST_KEY_XYZ", "fallback")
 	if result != "test-value" {
 		t.Errorf("expected %q, got %q", "test-value", result)
 	}
@@ -75,7 +77,7 @@ func TestGetEnv_WithFallback(t *testing.T) {
 	if err := os.Unsetenv("TEST_KEY_MISSING"); err != nil {
 		t.Fatalf("Unsetenv: %v", err)
 	}
-	result := getEnv("TEST_KEY_MISSING", "fallback")
+	result := env.GetOrDefault("TEST_KEY_MISSING", "fallback")
 	if result != "fallback" {
 		t.Errorf("expected %q, got %q", "fallback", result)
 	}

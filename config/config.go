@@ -17,6 +17,7 @@ type Config struct {
 	AppEnv              AppEnv
 	PostgresDSN         string
 	JWTSecret           string
+	JWTExpirationHours  int
 	AccessTokenExpMin   int
 	RefreshTokenExpDays int
 	BcryptCost          int
@@ -32,6 +33,7 @@ func Load() *Config {
 		AppEnv:              AppEnv(env.GetOrDefault("APP_ENV", string(EnvDevelopment))),
 		PostgresDSN:         env.GetOrDefault("POSTGRES_DSN", "postgres://postgres:postgres@localhost:5432/workshop?sslmode=disable"),
 		JWTSecret:           env.GetOrDefault("JWT_SECRET", "secret"),
+		JWTExpirationHours:  24,
 		AccessTokenExpMin:   env.GetIntOrDefault("ACCESS_TOKEN_EXP_MIN", 15),
 		RefreshTokenExpDays: env.GetIntOrDefault("REFRESH_TOKEN_EXP_DAYS", 7),
 		BcryptCost:          env.GetIntOrDefault("BCRYPT_COST", 12),

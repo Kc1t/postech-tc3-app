@@ -31,17 +31,16 @@ func Setup(router *gin.Engine, c *bootstrap.Container) {
 	// (incrementa failed_attempts, bloqueia conta apos N tentativas).
 	// Rate limit por IP foi removido: facilmente burlavel por botnet e
 	// deve ser responsabilidade do infra layer (Cloudflare, nginx, WAF).
-	authPublic := v1.Group("/auth")
+	authPublic := prefix.Group("/auth")
 	authPublic.POST("/register", c.AuthHandler.Register)
 	authPublic.POST("/login", c.AuthHandler.Login)
 	authPublic.POST("/refresh", c.AuthHandler.Refresh)
 
 	// --- Rotas protegidas (qualquer usuario autenticado) ---
-	protected := v1.Group("/")
+	protected := prefix.Group("/")
 	// Rotas publicas do cliente (sem JWT)
 	c.ServiceOrderHandler.SetupPublicRoutes(prefix)
 
-	protected := prefix.Group("/")
 	protected.Use(middleware.Auth(c.Config.JWTSecret))
 
 	// Logout (precisa de JWT)
