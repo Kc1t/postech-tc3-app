@@ -2,6 +2,7 @@ package ports
 
 import (
 	"context"
+	"time"
 
 	"github.com/fiap/postech-tc1/internal/domain/entities"
 )
@@ -39,6 +40,10 @@ type ServiceOrderRepository interface {
 	UpdateStatus(ctx context.Context, id string, status entities.OrderStatus) error
 	Update(ctx context.Context, so *entities.ServiceOrder) error
 	Delete(ctx context.Context, id string) error
+	// AverageExecutionTime retorna a media global do tempo entre a aprovacao
+	// (startedAt) e a finalizacao (finishedAt) das ordens de servico que ja
+	// completaram esse ciclo. Retorna 0 se nenhuma OS se qualifica.
+	AverageExecutionTime(ctx context.Context) (time.Duration, error)
 }
 
 // ServiceRepository define as operacoes de persistencia para servicos.

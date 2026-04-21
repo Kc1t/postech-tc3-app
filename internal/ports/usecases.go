@@ -2,6 +2,7 @@ package ports
 
 import (
 	"context"
+	"time"
 
 	"github.com/fiap/postech-tc1/internal/domain/entities"
 )
@@ -100,6 +101,10 @@ type UpdateServiceOrderUseCase interface {
 
 type DeleteServiceOrderUseCase interface {
 	Execute(ctx context.Context, id string) error
+}
+
+type GetAverageExecutionTimeUseCase interface {
+	Execute(ctx context.Context) (time.Duration, error)
 }
 
 // --- Service ---
