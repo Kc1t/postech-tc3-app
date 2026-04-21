@@ -7,9 +7,9 @@ import (
 )
 
 type CreateServiceOrderRequest struct {
-	CustomerCPF  string `json:"customer_cpf"  binding:"required"`
-	VehiclePlate string `json:"vehicle_plate" binding:"required"`
-	Notes        string `json:"notes"`
+	CustomerDocument string `json:"customer_document" binding:"required"`
+	VehiclePlate     string `json:"vehicle_plate"     binding:"required"`
+	Notes            string `json:"notes"`
 }
 
 type UpdateServiceOrderRequest struct {
@@ -44,8 +44,9 @@ type PartItemResponse struct {
 	UnitPrice   float64 `json:"unit_price"`
 }
 
-type ApproveRejectRequest struct {
-	CustomerCPF string `json:"customer_cpf" binding:"required"`
+type UpdateStatusByCodeRequest struct {
+	CustomerDocument string               `json:"customer_document" binding:"required"`
+	Status           entities.OrderStatus `json:"status"            binding:"required"`
 }
 
 type ServiceOrderResponse struct {

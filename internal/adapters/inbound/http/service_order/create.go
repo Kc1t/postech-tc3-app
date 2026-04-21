@@ -5,7 +5,7 @@ import (
 
 	httputil "github.com/fiap/postech-tc1/internal/adapters/inbound/http"
 	"github.com/fiap/postech-tc1/internal/adapters/inbound/http/commands"
-	"github.com/fiap/postech-tc1/internal/ports"
+	"github.com/fiap/postech-tc1/internal/domain/entities"
 	"github.com/gin-gonic/gin"
 )
 
@@ -25,10 +25,16 @@ func (h *ServiceOrderHandler) Create(c *gin.Context) {
 		return
 	}
 
-	input := ports.CreateServiceOrderInput{
-		CustomerCPF:  req.CustomerCPF,
-		VehiclePlate: req.VehiclePlate,
-		Notes:        req.Notes,
+	doc, err := entities.NewDocument(req.CustomerDocument)
+	if err != nil {
+		httputil.HandleBadRequest(c, err)
+		return
+	}
+
+	input := entities.ServiceOrderInput{
+		CustomerDocument: doc.Value(),
+		VehiclePlate:     req.VehiclePlate,
+		Notes:            req.Notes,
 	}
 
 	so, err := h.create.Execute(c.Request.Context(), input)

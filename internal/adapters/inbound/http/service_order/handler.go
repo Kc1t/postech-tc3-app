@@ -6,16 +6,15 @@ import (
 )
 
 type ServiceOrderHandler struct {
-	create       ports.CreateServiceOrderUseCase
-	getByID      ports.GetServiceOrderUseCase
-	getByCode    ports.GetServiceOrderByCodeUseCase
-	listAll      ports.ListServiceOrdersUseCase
-	listByCPF    ports.ListServiceOrdersByCPFUseCase
-	updateStatus ports.UpdateServiceOrderStatusUseCase
-	update       ports.UpdateServiceOrderUseCase
-	delete       ports.DeleteServiceOrderUseCase
-	approve      ports.ApproveServiceOrderUseCase
-	reject       ports.RejectServiceOrderUseCase
+	create             ports.CreateServiceOrderUseCase
+	getByID            ports.GetServiceOrderUseCase
+	getByCode          ports.GetServiceOrderByCodeUseCase
+	listAll            ports.ListServiceOrdersUseCase
+	listByDocument     ports.ListServiceOrdersByDocumentUseCase
+	updateStatus       ports.UpdateServiceOrderStatusUseCase
+	update             ports.UpdateServiceOrderUseCase
+	delete             ports.DeleteServiceOrderUseCase
+	updateStatusByCode ports.UpdateServiceOrderStatusByCodeUseCase
 }
 
 func NewServiceOrderHandler(
@@ -23,24 +22,22 @@ func NewServiceOrderHandler(
 	getByID ports.GetServiceOrderUseCase,
 	getByCode ports.GetServiceOrderByCodeUseCase,
 	listAll ports.ListServiceOrdersUseCase,
-	listByCPF ports.ListServiceOrdersByCPFUseCase,
+	listByDocument ports.ListServiceOrdersByDocumentUseCase,
 	updateStatus ports.UpdateServiceOrderStatusUseCase,
 	update ports.UpdateServiceOrderUseCase,
 	delete ports.DeleteServiceOrderUseCase,
-	approve ports.ApproveServiceOrderUseCase,
-	reject ports.RejectServiceOrderUseCase,
+	updateStatusByCode ports.UpdateServiceOrderStatusByCodeUseCase,
 ) *ServiceOrderHandler {
 	return &ServiceOrderHandler{
-		create:       create,
-		getByID:      getByID,
-		getByCode:    getByCode,
-		listAll:      listAll,
-		listByCPF:    listByCPF,
-		updateStatus: updateStatus,
-		update:       update,
-		delete:       delete,
-		approve:      approve,
-		reject:       reject,
+		create:             create,
+		getByID:            getByID,
+		getByCode:          getByCode,
+		listAll:            listAll,
+		listByDocument:     listByDocument,
+		updateStatus:       updateStatus,
+		update:             update,
+		delete:             delete,
+		updateStatusByCode: updateStatusByCode,
 	}
 }
 
@@ -59,7 +56,6 @@ func (h *ServiceOrderHandler) SetupRoutes(rg *gin.RouterGroup) {
 func (h *ServiceOrderHandler) SetupPublicRoutes(rg *gin.RouterGroup) {
 	g := rg.Group("/service-orders")
 	g.GET("/code/:code", h.FindByCode)
-	g.GET("/customer", h.FindByCPF)
-	g.POST("/code/:code/approve", h.Approve)
-	g.POST("/code/:code/reject", h.Reject)
+	g.GET("/customer", h.FindByDocument)
+	g.PUT("/code/:code/status", h.UpdateStatusByCode)
 }

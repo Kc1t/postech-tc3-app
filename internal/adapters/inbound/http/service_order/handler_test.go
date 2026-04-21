@@ -27,35 +27,33 @@ func newTestRouter(h *ServiceOrderHandler) *gin.Engine {
 }
 
 type handlerMocks struct {
-	handler      *ServiceOrderHandler
-	create       *mocks.MockCreateServiceOrderUseCase
-	getByID      *mocks.MockGetServiceOrderUseCase
-	getByCode    *mocks.MockGetServiceOrderByCodeUseCase
-	listAll      *mocks.MockListServiceOrdersUseCase
-	listByCPF    *mocks.MockListServiceOrdersByCPFUseCase
-	updateStatus *mocks.MockUpdateServiceOrderStatusUseCase
-	update       *mocks.MockUpdateServiceOrderUseCase
-	del          *mocks.MockDeleteServiceOrderUseCase
-	approve      *mocks.MockApproveServiceOrderUseCase
-	reject       *mocks.MockRejectServiceOrderUseCase
+	handler            *ServiceOrderHandler
+	create             *mocks.MockCreateServiceOrderUseCase
+	getByID            *mocks.MockGetServiceOrderUseCase
+	getByCode          *mocks.MockGetServiceOrderByCodeUseCase
+	listAll            *mocks.MockListServiceOrdersUseCase
+	listByDocument     *mocks.MockListServiceOrdersByDocumentUseCase
+	updateStatus       *mocks.MockUpdateServiceOrderStatusUseCase
+	update             *mocks.MockUpdateServiceOrderUseCase
+	del                *mocks.MockDeleteServiceOrderUseCase
+	updateStatusByCode *mocks.MockUpdateServiceOrderStatusByCodeUseCase
 }
 
 func newHandler(ctrl *gomock.Controller) handlerMocks {
 	m := handlerMocks{
-		create:       mocks.NewMockCreateServiceOrderUseCase(ctrl),
-		getByID:      mocks.NewMockGetServiceOrderUseCase(ctrl),
-		getByCode:    mocks.NewMockGetServiceOrderByCodeUseCase(ctrl),
-		listAll:      mocks.NewMockListServiceOrdersUseCase(ctrl),
-		listByCPF:    mocks.NewMockListServiceOrdersByCPFUseCase(ctrl),
-		updateStatus: mocks.NewMockUpdateServiceOrderStatusUseCase(ctrl),
-		update:       mocks.NewMockUpdateServiceOrderUseCase(ctrl),
-		del:          mocks.NewMockDeleteServiceOrderUseCase(ctrl),
-		approve:      mocks.NewMockApproveServiceOrderUseCase(ctrl),
-		reject:       mocks.NewMockRejectServiceOrderUseCase(ctrl),
+		create:             mocks.NewMockCreateServiceOrderUseCase(ctrl),
+		getByID:            mocks.NewMockGetServiceOrderUseCase(ctrl),
+		getByCode:          mocks.NewMockGetServiceOrderByCodeUseCase(ctrl),
+		listAll:            mocks.NewMockListServiceOrdersUseCase(ctrl),
+		listByDocument:     mocks.NewMockListServiceOrdersByDocumentUseCase(ctrl),
+		updateStatus:       mocks.NewMockUpdateServiceOrderStatusUseCase(ctrl),
+		update:             mocks.NewMockUpdateServiceOrderUseCase(ctrl),
+		del:                mocks.NewMockDeleteServiceOrderUseCase(ctrl),
+		updateStatusByCode: mocks.NewMockUpdateServiceOrderStatusByCodeUseCase(ctrl),
 	}
 	m.handler = NewServiceOrderHandler(
-		m.create, m.getByID, m.getByCode, m.listAll, m.listByCPF,
-		m.updateStatus, m.update, m.del, m.approve, m.reject,
+		m.create, m.getByID, m.getByCode, m.listAll, m.listByDocument,
+		m.updateStatus, m.update, m.del, m.updateStatusByCode,
 	)
 	return m
 }
@@ -73,7 +71,7 @@ func TestServiceOrderHandler_Create_Success(t *testing.T) {
 	m.create.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(so, nil)
 
 	body, _ := json.Marshal(map[string]any{
-		"customer_cpf":  "52998224725",
+		"customer_document":  "52998224725",
 		"vehicle_plate": "ABC1234",
 		"notes":         "trocar pastilhas",
 	})
@@ -111,7 +109,7 @@ func TestServiceOrderHandler_Create_NotFound(t *testing.T) {
 	m.create.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(nil, domainerrors.ErrNotFound)
 
 	body, _ := json.Marshal(map[string]any{
-		"customer_cpf":  "52998224725",
+		"customer_document":  "52998224725",
 		"vehicle_plate": "ABC1234",
 	})
 	w := httptest.NewRecorder()
@@ -132,7 +130,7 @@ func TestServiceOrderHandler_Create_VehicleNotFromCustomer(t *testing.T) {
 	m.create.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(nil, domainerrors.ErrVehicleNotFromCustomer)
 
 	body, _ := json.Marshal(map[string]any{
-		"customer_cpf":  "52998224725",
+		"customer_document":  "52998224725",
 		"vehicle_plate": "ABC1234",
 	})
 	w := httptest.NewRecorder()
@@ -153,7 +151,7 @@ func TestServiceOrderHandler_Create_InternalError(t *testing.T) {
 	m.create.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(nil, errors.New("db error"))
 
 	body, _ := json.Marshal(map[string]any{
-		"customer_cpf":  "52998224725",
+		"customer_document":  "52998224725",
 		"vehicle_plate": "ABC1234",
 	})
 	w := httptest.NewRecorder()
@@ -460,7 +458,7 @@ func TestServiceOrderHandler_FindByCode_Success(t *testing.T) {
 	m.getByCode.EXPECT().Execute(gomock.Any(), 100, "52998224725").Return(so, nil)
 
 	w := httptest.NewRecorder()
-	req := httptest.NewRequest(http.MethodGet, "/service-orders/code/100?cpf=52998224725", nil)
+	req := httptest.NewRequest(http.MethodGet, "/service-orders/code/100?document=52998224725", nil)
 	newTestRouter(m.handler).ServeHTTP(w, req)
 
 	if w.Code != http.StatusOK {
@@ -476,7 +474,7 @@ func TestServiceOrderHandler_FindByCode_NotFound(t *testing.T) {
 	m.getByCode.EXPECT().Execute(gomock.Any(), 999, "52998224725").Return(nil, domainerrors.ErrNotFound)
 
 	w := httptest.NewRecorder()
-	req := httptest.NewRequest(http.MethodGet, "/service-orders/code/999?cpf=52998224725", nil)
+	req := httptest.NewRequest(http.MethodGet, "/service-orders/code/999?document=52998224725", nil)
 	newTestRouter(m.handler).ServeHTTP(w, req)
 
 	if w.Code != http.StatusNotFound {
@@ -484,7 +482,7 @@ func TestServiceOrderHandler_FindByCode_NotFound(t *testing.T) {
 	}
 }
 
-func TestServiceOrderHandler_FindByCode_SemCPF(t *testing.T) {
+func TestServiceOrderHandler_FindByCode_SemDocument(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -506,7 +504,7 @@ func TestServiceOrderHandler_FindByCode_CodigoInvalido(t *testing.T) {
 	m := newHandler(ctrl)
 
 	w := httptest.NewRecorder()
-	req := httptest.NewRequest(http.MethodGet, "/service-orders/code/abc?cpf=52998224725", nil)
+	req := httptest.NewRequest(http.MethodGet, "/service-orders/code/abc?document=52998224725", nil)
 	newTestRouter(m.handler).ServeHTTP(w, req)
 
 	if w.Code != http.StatusBadRequest {
@@ -515,19 +513,19 @@ func TestServiceOrderHandler_FindByCode_CodigoInvalido(t *testing.T) {
 }
 
 // =============================================================================
-// FindByCPF (rota publica)
+// FindByDocument (rota publica)
 // =============================================================================
 
-func TestServiceOrderHandler_FindByCPF_Success(t *testing.T) {
+func TestServiceOrderHandler_FindByDocument_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	m := newHandler(ctrl)
 	orders := []*entities.ServiceOrder{entities.NewServiceOrder("c1", "v1")}
-	m.listByCPF.EXPECT().Execute(gomock.Any(), "52998224725").Return(orders, nil)
+	m.listByDocument.EXPECT().Execute(gomock.Any(), "52998224725").Return(orders, nil)
 
 	w := httptest.NewRecorder()
-	req := httptest.NewRequest(http.MethodGet, "/service-orders/customer?cpf=52998224725", nil)
+	req := httptest.NewRequest(http.MethodGet, "/service-orders/customer?document=52998224725", nil)
 	newTestRouter(m.handler).ServeHTTP(w, req)
 
 	if w.Code != http.StatusOK {
@@ -535,7 +533,7 @@ func TestServiceOrderHandler_FindByCPF_Success(t *testing.T) {
 	}
 }
 
-func TestServiceOrderHandler_FindByCPF_SemCPF(t *testing.T) {
+func TestServiceOrderHandler_FindByDocument_SemDocument(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -550,15 +548,15 @@ func TestServiceOrderHandler_FindByCPF_SemCPF(t *testing.T) {
 	}
 }
 
-func TestServiceOrderHandler_FindByCPF_NotFound(t *testing.T) {
+func TestServiceOrderHandler_FindByDocument_NotFound(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	m := newHandler(ctrl)
-	m.listByCPF.EXPECT().Execute(gomock.Any(), "00000000000").Return(nil, domainerrors.ErrNotFound)
+	m.listByDocument.EXPECT().Execute(gomock.Any(), "52998224725").Return(nil, domainerrors.ErrNotFound)
 
 	w := httptest.NewRecorder()
-	req := httptest.NewRequest(http.MethodGet, "/service-orders/customer?cpf=00000000000", nil)
+	req := httptest.NewRequest(http.MethodGet, "/service-orders/customer?document=52998224725", nil)
 	newTestRouter(m.handler).ServeHTTP(w, req)
 
 	if w.Code != http.StatusNotFound {
@@ -567,19 +565,19 @@ func TestServiceOrderHandler_FindByCPF_NotFound(t *testing.T) {
 }
 
 // =============================================================================
-// Approve (rota publica)
+// UpdateStatusByCode (rota publica)
 // =============================================================================
 
-func TestServiceOrderHandler_Approve_Success(t *testing.T) {
+func TestServiceOrderHandler_UpdateStatusByCode_Aprovacao(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	m := newHandler(ctrl)
-	m.approve.EXPECT().Execute(gomock.Any(), 100, "52998224725").Return(nil)
+	m.updateStatusByCode.EXPECT().Execute(gomock.Any(), 100, "52998224725", entities.StatusInExecution).Return(nil)
 
-	body, _ := json.Marshal(map[string]any{"customer_cpf": "52998224725"})
+	body, _ := json.Marshal(map[string]any{"customer_document": "52998224725", "status": "in_execution"})
 	w := httptest.NewRecorder()
-	req := httptest.NewRequest(http.MethodPost, "/service-orders/code/100/approve", bytes.NewBuffer(body))
+	req := httptest.NewRequest(http.MethodPut, "/service-orders/code/100/status", bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
 	newTestRouter(m.handler).ServeHTTP(w, req)
 
@@ -588,89 +586,16 @@ func TestServiceOrderHandler_Approve_Success(t *testing.T) {
 	}
 }
 
-func TestServiceOrderHandler_Approve_BadRequest_CodigoInvalido(t *testing.T) {
+func TestServiceOrderHandler_UpdateStatusByCode_Rejeicao(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	m := newHandler(ctrl)
+	m.updateStatusByCode.EXPECT().Execute(gomock.Any(), 100, "52998224725", entities.StatusReceived).Return(nil)
 
-	body, _ := json.Marshal(map[string]any{"customer_cpf": "52998224725"})
+	body, _ := json.Marshal(map[string]any{"customer_document": "52998224725", "status": "received"})
 	w := httptest.NewRecorder()
-	req := httptest.NewRequest(http.MethodPost, "/service-orders/code/abc/approve", bytes.NewBuffer(body))
-	req.Header.Set("Content-Type", "application/json")
-	newTestRouter(m.handler).ServeHTTP(w, req)
-
-	if w.Code != http.StatusBadRequest {
-		t.Fatalf("expected 400, got %d", w.Code)
-	}
-}
-
-func TestServiceOrderHandler_Approve_BadRequest_SemBody(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	m := newHandler(ctrl)
-
-	w := httptest.NewRecorder()
-	req := httptest.NewRequest(http.MethodPost, "/service-orders/code/100/approve", bytes.NewBufferString(`{}`))
-	req.Header.Set("Content-Type", "application/json")
-	newTestRouter(m.handler).ServeHTTP(w, req)
-
-	if w.Code != http.StatusBadRequest {
-		t.Fatalf("expected 400, got %d", w.Code)
-	}
-}
-
-func TestServiceOrderHandler_Approve_NotFound(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	m := newHandler(ctrl)
-	m.approve.EXPECT().Execute(gomock.Any(), 999, "52998224725").Return(domainerrors.ErrNotFound)
-
-	body, _ := json.Marshal(map[string]any{"customer_cpf": "52998224725"})
-	w := httptest.NewRecorder()
-	req := httptest.NewRequest(http.MethodPost, "/service-orders/code/999/approve", bytes.NewBuffer(body))
-	req.Header.Set("Content-Type", "application/json")
-	newTestRouter(m.handler).ServeHTTP(w, req)
-
-	if w.Code != http.StatusNotFound {
-		t.Fatalf("expected 404, got %d", w.Code)
-	}
-}
-
-func TestServiceOrderHandler_Approve_InvalidStatus(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	m := newHandler(ctrl)
-	m.approve.EXPECT().Execute(gomock.Any(), 100, "52998224725").Return(domainerrors.ErrInvalidStatus)
-
-	body, _ := json.Marshal(map[string]any{"customer_cpf": "52998224725"})
-	w := httptest.NewRecorder()
-	req := httptest.NewRequest(http.MethodPost, "/service-orders/code/100/approve", bytes.NewBuffer(body))
-	req.Header.Set("Content-Type", "application/json")
-	newTestRouter(m.handler).ServeHTTP(w, req)
-
-	if w.Code != http.StatusUnprocessableEntity {
-		t.Fatalf("expected 422, got %d", w.Code)
-	}
-}
-
-// =============================================================================
-// Reject (rota publica)
-// =============================================================================
-
-func TestServiceOrderHandler_Reject_Success(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	m := newHandler(ctrl)
-	m.reject.EXPECT().Execute(gomock.Any(), 100, "52998224725").Return(nil)
-
-	body, _ := json.Marshal(map[string]any{"customer_cpf": "52998224725"})
-	w := httptest.NewRecorder()
-	req := httptest.NewRequest(http.MethodPost, "/service-orders/code/100/reject", bytes.NewBuffer(body))
+	req := httptest.NewRequest(http.MethodPut, "/service-orders/code/100/status", bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
 	newTestRouter(m.handler).ServeHTTP(w, req)
 
@@ -679,15 +604,15 @@ func TestServiceOrderHandler_Reject_Success(t *testing.T) {
 	}
 }
 
-func TestServiceOrderHandler_Reject_BadRequest_CodigoInvalido(t *testing.T) {
+func TestServiceOrderHandler_UpdateStatusByCode_CodigoInvalido(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	m := newHandler(ctrl)
 
-	body, _ := json.Marshal(map[string]any{"customer_cpf": "52998224725"})
+	body, _ := json.Marshal(map[string]any{"customer_document": "52998224725", "status": "in_execution"})
 	w := httptest.NewRecorder()
-	req := httptest.NewRequest(http.MethodPost, "/service-orders/code/abc/reject", bytes.NewBuffer(body))
+	req := httptest.NewRequest(http.MethodPut, "/service-orders/code/abc/status", bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
 	newTestRouter(m.handler).ServeHTTP(w, req)
 
@@ -696,14 +621,14 @@ func TestServiceOrderHandler_Reject_BadRequest_CodigoInvalido(t *testing.T) {
 	}
 }
 
-func TestServiceOrderHandler_Reject_BadRequest_SemBody(t *testing.T) {
+func TestServiceOrderHandler_UpdateStatusByCode_SemBody(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	m := newHandler(ctrl)
 
 	w := httptest.NewRecorder()
-	req := httptest.NewRequest(http.MethodPost, "/service-orders/code/100/reject", bytes.NewBufferString(`{}`))
+	req := httptest.NewRequest(http.MethodPut, "/service-orders/code/100/status", bytes.NewBufferString(`{}`))
 	req.Header.Set("Content-Type", "application/json")
 	newTestRouter(m.handler).ServeHTTP(w, req)
 
@@ -712,16 +637,16 @@ func TestServiceOrderHandler_Reject_BadRequest_SemBody(t *testing.T) {
 	}
 }
 
-func TestServiceOrderHandler_Reject_NotFound(t *testing.T) {
+func TestServiceOrderHandler_UpdateStatusByCode_NotFound(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	m := newHandler(ctrl)
-	m.reject.EXPECT().Execute(gomock.Any(), 999, "52998224725").Return(domainerrors.ErrNotFound)
+	m.updateStatusByCode.EXPECT().Execute(gomock.Any(), 999, "52998224725", entities.StatusInExecution).Return(domainerrors.ErrNotFound)
 
-	body, _ := json.Marshal(map[string]any{"customer_cpf": "52998224725"})
+	body, _ := json.Marshal(map[string]any{"customer_document": "52998224725", "status": "in_execution"})
 	w := httptest.NewRecorder()
-	req := httptest.NewRequest(http.MethodPost, "/service-orders/code/999/reject", bytes.NewBuffer(body))
+	req := httptest.NewRequest(http.MethodPut, "/service-orders/code/999/status", bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
 	newTestRouter(m.handler).ServeHTTP(w, req)
 
@@ -730,16 +655,36 @@ func TestServiceOrderHandler_Reject_NotFound(t *testing.T) {
 	}
 }
 
-func TestServiceOrderHandler_Reject_InvalidStatus(t *testing.T) {
+func TestServiceOrderHandler_UpdateStatusByCode_StatusNaoPermitido(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	m := newHandler(ctrl)
-	m.reject.EXPECT().Execute(gomock.Any(), 100, "52998224725").Return(domainerrors.ErrInvalidStatus)
+	m.updateStatusByCode.EXPECT().
+		Execute(gomock.Any(), 100, "52998224725", entities.StatusFinished).
+		Return(domainerrors.ErrStatusNotAllowedForCustomer)
 
-	body, _ := json.Marshal(map[string]any{"customer_cpf": "52998224725"})
+	body, _ := json.Marshal(map[string]any{"customer_document": "52998224725", "status": "finished"})
 	w := httptest.NewRecorder()
-	req := httptest.NewRequest(http.MethodPost, "/service-orders/code/100/reject", bytes.NewBuffer(body))
+	req := httptest.NewRequest(http.MethodPut, "/service-orders/code/100/status", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+	newTestRouter(m.handler).ServeHTTP(w, req)
+
+	if w.Code != http.StatusForbidden {
+		t.Fatalf("expected 403, got %d: %s", w.Code, w.Body.String())
+	}
+}
+
+func TestServiceOrderHandler_UpdateStatusByCode_TransicaoInvalida(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	m := newHandler(ctrl)
+	m.updateStatusByCode.EXPECT().Execute(gomock.Any(), 100, "52998224725", entities.StatusInExecution).Return(domainerrors.ErrInvalidStatus)
+
+	body, _ := json.Marshal(map[string]any{"customer_document": "52998224725", "status": "in_execution"})
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPut, "/service-orders/code/100/status", bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
 	newTestRouter(m.handler).ServeHTTP(w, req)
 

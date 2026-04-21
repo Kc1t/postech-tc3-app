@@ -2,10 +2,9 @@ package serviceorderuc
 
 import (
 	"context"
-	"errors"
 
-	"github.com/fiap/postech-tc1/internal/domain/entities"
 	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
+	"github.com/fiap/postech-tc1/internal/domain/entities"
 	"github.com/fiap/postech-tc1/internal/ports"
 )
 
@@ -18,12 +17,9 @@ func NewGetServiceOrderByCode(repo ports.ServiceOrderRepository, customerRepo po
 	return &GetServiceOrderByCode{repo: repo, customerRepo: customerRepo}
 }
 
-func (uc *GetServiceOrderByCode) Execute(ctx context.Context, code int, customerCPF string) (*entities.ServiceOrder, error) {
-	customer, err := uc.customerRepo.FindByDocument(ctx, customerCPF)
+func (uc *GetServiceOrderByCode) Execute(ctx context.Context, code int, customerDocument string) (*entities.ServiceOrder, error) {
+	customer, err := uc.customerRepo.FindByDocument(ctx, customerDocument)
 	if err != nil {
-		if errors.Is(err, domainerrors.ErrNotFound) {
-			return nil, domainerrors.ErrNotFound
-		}
 		return nil, err
 	}
 

@@ -2,7 +2,6 @@ package serviceorderuc
 
 import (
 	"context"
-	"errors"
 
 	"github.com/fiap/postech-tc1/internal/domain/entities"
 	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
@@ -27,26 +26,17 @@ func NewCreateServiceOrder(
 	}
 }
 
-func (uc *CreateServiceOrder) Execute(ctx context.Context, input ports.CreateServiceOrderInput) (*entities.ServiceOrder, error) {
-	// Resolver cliente pelo CPF
-	customer, err := uc.customerRepo.FindByDocument(ctx, input.CustomerCPF)
+func (uc *CreateServiceOrder) Execute(ctx context.Context, input entities.ServiceOrderInput) (*entities.ServiceOrder, error) {
+	customer, err := uc.customerRepo.FindByDocument(ctx, input.CustomerDocument)
 	if err != nil {
-		if errors.Is(err, domainerrors.ErrNotFound) {
-			return nil, domainerrors.ErrNotFound
-		}
 		return nil, err
 	}
 
-	// Resolver veiculo pela placa
 	vehicle, err := uc.vehicleRepo.FindByPlate(ctx, input.VehiclePlate)
 	if err != nil {
-		if errors.Is(err, domainerrors.ErrNotFound) {
-			return nil, domainerrors.ErrNotFound
-		}
 		return nil, err
 	}
 
-	// Validar que o veiculo pertence ao cliente
 	if vehicle.CustomerID() != customer.ID() {
 		return nil, domainerrors.ErrVehicleNotFromCustomer
 	}

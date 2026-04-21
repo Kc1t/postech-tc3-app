@@ -26,7 +26,7 @@ func TestListServiceOrdersByCPF_Sucesso(t *testing.T) {
 	custRepo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(customer, nil)
 	soRepo.EXPECT().FindByCustomerID(gomock.Any(), "cust-1").Return(expected, nil)
 
-	uc := NewListServiceOrdersByCPF(soRepo, custRepo)
+	uc := NewListServiceOrdersByDocument(soRepo, custRepo)
 	got, err := uc.Execute(context.Background(), "52998224725")
 	if err != nil {
 		t.Fatalf("esperava sucesso, obteve: %v", err)
@@ -48,7 +48,7 @@ func TestListServiceOrdersByCPF_ListaVazia(t *testing.T) {
 	custRepo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(customer, nil)
 	soRepo.EXPECT().FindByCustomerID(gomock.Any(), "cust-1").Return([]*entities.ServiceOrder{}, nil)
 
-	uc := NewListServiceOrdersByCPF(soRepo, custRepo)
+	uc := NewListServiceOrdersByDocument(soRepo, custRepo)
 	got, err := uc.Execute(context.Background(), "52998224725")
 	if err != nil {
 		t.Fatalf("esperava sucesso, obteve: %v", err)
@@ -67,7 +67,7 @@ func TestListServiceOrdersByCPF_ClienteNaoEncontrado(t *testing.T) {
 
 	custRepo.EXPECT().FindByDocument(gomock.Any(), "00000000000").Return(nil, domainerrors.ErrNotFound)
 
-	uc := NewListServiceOrdersByCPF(soRepo, custRepo)
+	uc := NewListServiceOrdersByDocument(soRepo, custRepo)
 	_, err := uc.Execute(context.Background(), "00000000000")
 	if !errors.Is(err, domainerrors.ErrNotFound) {
 		t.Fatalf("erro = %v, esperava ErrNotFound", err)
@@ -85,7 +85,7 @@ func TestListServiceOrdersByCPF_ErroInfraCliente(t *testing.T) {
 
 	custRepo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(nil, infraErr)
 
-	uc := NewListServiceOrdersByCPF(soRepo, custRepo)
+	uc := NewListServiceOrdersByDocument(soRepo, custRepo)
 	_, err := uc.Execute(context.Background(), "52998224725")
 	if !errors.Is(err, infraErr) {
 		t.Fatalf("erro = %v, esperava erro de infra propagado", err)
@@ -105,7 +105,7 @@ func TestListServiceOrdersByCPF_ErroInfraRepo(t *testing.T) {
 	custRepo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(customer, nil)
 	soRepo.EXPECT().FindByCustomerID(gomock.Any(), "cust-1").Return(nil, infraErr)
 
-	uc := NewListServiceOrdersByCPF(soRepo, custRepo)
+	uc := NewListServiceOrdersByDocument(soRepo, custRepo)
 	_, err := uc.Execute(context.Background(), "52998224725")
 	if !errors.Is(err, infraErr) {
 		t.Fatalf("erro = %v, esperava erro de infra propagado", err)

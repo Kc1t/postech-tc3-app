@@ -5,7 +5,7 @@ import (
 
 	httputil "github.com/fiap/postech-tc1/internal/adapters/inbound/http"
 	"github.com/fiap/postech-tc1/internal/adapters/inbound/http/commands"
-	"github.com/fiap/postech-tc1/internal/ports"
+	"github.com/fiap/postech-tc1/internal/domain/entities"
 	"github.com/gin-gonic/gin"
 )
 
@@ -26,7 +26,7 @@ func (h *ServiceOrderHandler) UpdateStatus(c *gin.Context) {
 		return
 	}
 
-	input := ports.UpdateStatusInput{
+	input := entities.StatusUpdate{
 		ID:     c.Param("id"),
 		Status: req.Status,
 	}
@@ -35,7 +35,7 @@ func (h *ServiceOrderHandler) UpdateStatus(c *gin.Context) {
 		input.ServiceCodes = append(input.ServiceCodes, s.Code)
 	}
 	for _, p := range req.Parts {
-		input.Parts = append(input.Parts, ports.UpdateStatusPartInput{
+		input.Parts = append(input.Parts, entities.OrderPartItem{
 			ManufacturerCode: p.ManufacturerCode,
 			Quantity:         p.Quantity,
 		})
