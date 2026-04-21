@@ -54,7 +54,7 @@ func TestPartHandler_Create_Success(t *testing.T) {
 	create.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(nil)
 
 	body, _ := json.Marshal(map[string]any{
-		"name": "Filtro", "unit": "unidade", "price": 49.90, "stock": 10,
+		"manufacturer_code": "FAB-001", "name": "Filtro", "unit": "unidade", "price": 49.90, "stock": 10,
 	})
 	w := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodPost, "/parts", bytes.NewBuffer(body))
@@ -90,7 +90,7 @@ func TestPartHandler_Create_Error(t *testing.T) {
 	create.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(errors.New("db error"))
 
 	body, _ := json.Marshal(map[string]any{
-		"name": "Filtro", "unit": "unidade", "price": 49.90, "stock": 10,
+		"manufacturer_code": "FAB-001", "name": "Filtro", "unit": "unidade", "price": 49.90, "stock": 10,
 	})
 	w := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodPost, "/parts", bytes.NewBuffer(body))
@@ -108,7 +108,7 @@ func TestPartHandler_FindByID_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	part := entities.NewPart("Filtro", "Desc", "unidade", 49.90, 10)
+	part := entities.NewPart("FAB-001", "Filtro", "Desc", "unidade", 49.90, 10)
 	h, _, getByID, _, _, _, _ := newHandler(ctrl)
 	getByID.EXPECT().Execute(gomock.Any(), "part-1").Return(part, nil)
 
@@ -143,7 +143,7 @@ func TestPartHandler_FindAll_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	parts := []*entities.Part{entities.NewPart("Filtro", "Desc", "unidade", 49.90, 10)}
+	parts := []*entities.Part{entities.NewPart("FAB-001", "Filtro", "Desc", "unidade", 49.90, 10)}
 	h, _, _, list, _, _, _ := newHandler(ctrl)
 	list.EXPECT().Execute(gomock.Any()).Return(parts, nil)
 
@@ -178,7 +178,7 @@ func TestPartHandler_Update_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	part := entities.NewPart("Filtro", "Desc", "unidade", 49.90, 10)
+	part := entities.NewPart("FAB-001", "Filtro", "Desc", "unidade", 49.90, 10)
 	h, _, getByID, _, update, _, _ := newHandler(ctrl)
 	getByID.EXPECT().Execute(gomock.Any(), "part-1").Return(part, nil)
 	update.EXPECT().Execute(gomock.Any(), part).Return(nil)
@@ -216,7 +216,7 @@ func TestPartHandler_Update_UpdateFails(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	part := entities.NewPart("Filtro", "Desc", "unidade", 49.90, 10)
+	part := entities.NewPart("FAB-001", "Filtro", "Desc", "unidade", 49.90, 10)
 	h, _, getByID, _, update, _, _ := newHandler(ctrl)
 	getByID.EXPECT().Execute(gomock.Any(), "part-1").Return(part, nil)
 	update.EXPECT().Execute(gomock.Any(), part).Return(errors.New("db error"))

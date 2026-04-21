@@ -10,7 +10,7 @@ import (
 
 func TestServiceRepository_Create(t *testing.T) {
 	repo := NewServiceRepository(testDB)
-	s := entities.NewService("Troca de óleo", "Troca de óleo sintético", 150.00, 60)
+	s := entities.NewService(1, "Troca de óleo", "Troca de óleo sintético", 150.00, 60)
 
 	if err := repo.Create(context.Background(), s); err != nil {
 		t.Fatalf("expected no error, got %v", err)
@@ -23,7 +23,7 @@ func TestServiceRepository_Create(t *testing.T) {
 
 func TestServiceRepository_FindByID(t *testing.T) {
 	repo := NewServiceRepository(testDB)
-	s := entities.NewService("Alinhamento", "Alinhamento de direção", 80.00, 30)
+	s := entities.NewService(2, "Alinhamento", "Alinhamento de direção", 80.00, 30)
 	if err := repo.Create(context.Background(), s); err != nil {
 		t.Fatalf("setup failed: %v", err)
 	}
@@ -49,7 +49,7 @@ func TestServiceRepository_FindByID_NotFound(t *testing.T) {
 
 func TestServiceRepository_FindAll(t *testing.T) {
 	repo := NewServiceRepository(testDB)
-	s := entities.NewService("Balanceamento", "Balanceamento de rodas", 60.00, 45)
+	s := entities.NewService(3, "Balanceamento", "Balanceamento de rodas", 60.00, 45)
 	if err := repo.Create(context.Background(), s); err != nil {
 		t.Fatalf("setup failed: %v", err)
 	}
@@ -66,7 +66,7 @@ func TestServiceRepository_FindAll(t *testing.T) {
 
 func TestServiceRepository_Update(t *testing.T) {
 	repo := NewServiceRepository(testDB)
-	s := entities.NewService("Revisão 10k", "Revisão de 10.000 km", 350.00, 120)
+	s := entities.NewService(4, "Revisão 10k", "Revisão de 10.000 km", 350.00, 120)
 	if err := repo.Create(context.Background(), s); err != nil {
 		t.Fatalf("setup failed: %v", err)
 	}
@@ -85,7 +85,7 @@ func TestServiceRepository_Update(t *testing.T) {
 
 func TestServiceRepository_Delete(t *testing.T) {
 	repo := NewServiceRepository(testDB)
-	s := entities.NewService("Higienização", "Higienização interna", 200.00, 90)
+	s := entities.NewService(5, "Higienização", "Higienização interna", 200.00, 90)
 	if err := repo.Create(context.Background(), s); err != nil {
 		t.Fatalf("setup failed: %v", err)
 	}

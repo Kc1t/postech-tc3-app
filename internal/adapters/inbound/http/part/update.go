@@ -31,6 +31,9 @@ func (h *PartHandler) Update(c *gin.Context) {
 		return
 	}
 
+	if req.ManufacturerCode != "" {
+		part.SetManufacturerCode(req.ManufacturerCode)
+	}
 	if req.Name != "" {
 		part.SetName(req.Name)
 	}

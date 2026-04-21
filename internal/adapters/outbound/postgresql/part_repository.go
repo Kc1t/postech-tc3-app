@@ -46,6 +46,18 @@ func (r *partRepository) FindByIDs(ctx context.Context, ids []string) ([]*entiti
 	return parts, nil
 }
 
+func (r *partRepository) FindByManufacturerCodes(ctx context.Context, codes []string) ([]*entities.Part, error) {
+	var docs []pgmodel.Part
+	if err := r.db.WithContext(ctx).Where("manufacturer_code IN ?", codes).Find(&docs).Error; err != nil {
+		return nil, mapError(err)
+	}
+	parts := make([]*entities.Part, 0, len(docs))
+	for i := range docs {
+		parts = append(parts, docs[i].ToDomain())
+	}
+	return parts, nil
+}
+
 func (r *partRepository) FindAll(ctx context.Context) ([]*entities.Part, error) {
 	var docs []pgmodel.Part
 	if err := r.db.WithContext(ctx).Find(&docs).Error; err != nil {

@@ -8,6 +8,7 @@ import (
 
 type Service struct {
 	ID          string    `gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
+	Code        int       `gorm:"not null;uniqueIndex"`
 	Name        string    `gorm:"not null"`
 	Description string
 	Price       float64   `gorm:"not null"`
@@ -19,6 +20,7 @@ type Service struct {
 func FromService(s *entities.Service) *Service {
 	return &Service{
 		ID:          s.ID(),
+		Code:        s.Code(),
 		Name:        s.Name(),
 		Description: s.Description(),
 		Price:       s.Price(),
@@ -29,5 +31,5 @@ func FromService(s *entities.Service) *Service {
 }
 
 func (m *Service) ToDomain() *entities.Service {
-	return entities.ReconstituteService(m.ID, m.Name, m.Description, m.Price, m.DurationMin, m.CreatedAt, m.UpdatedAt)
+	return entities.ReconstituteService(m.ID, m.Code, m.Name, m.Description, m.Price, m.DurationMin, m.CreatedAt, m.UpdatedAt)
 }

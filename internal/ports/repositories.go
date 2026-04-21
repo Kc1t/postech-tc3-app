@@ -23,6 +23,7 @@ type CustomerRepository interface {
 type VehicleRepository interface {
 	Create(ctx context.Context, v *entities.Vehicle) error
 	FindByID(ctx context.Context, id string) (*entities.Vehicle, error)
+	FindByPlate(ctx context.Context, plate string) (*entities.Vehicle, error)
 	FindByCustomerID(ctx context.Context, customerID string) ([]*entities.Vehicle, error)
 	FindAll(ctx context.Context) ([]*entities.Vehicle, error)
 	Update(ctx context.Context, v *entities.Vehicle) error
@@ -33,6 +34,7 @@ type VehicleRepository interface {
 type ServiceOrderRepository interface {
 	Create(ctx context.Context, so *entities.ServiceOrder) error
 	FindByID(ctx context.Context, id string) (*entities.ServiceOrder, error)
+	FindByCode(ctx context.Context, code int) (*entities.ServiceOrder, error)
 	FindAll(ctx context.Context) ([]*entities.ServiceOrder, error)
 	FindByCustomerID(ctx context.Context, customerID string) ([]*entities.ServiceOrder, error)
 	UpdateStatus(ctx context.Context, id string, status entities.OrderStatus) error
@@ -45,6 +47,7 @@ type ServiceRepository interface {
 	Create(ctx context.Context, s *entities.Service) error
 	FindByID(ctx context.Context, id string) (*entities.Service, error)
 	FindByIDs(ctx context.Context, ids []string) ([]*entities.Service, error)
+	FindByCodes(ctx context.Context, codes []int) ([]*entities.Service, error)
 	FindAll(ctx context.Context) ([]*entities.Service, error)
 	Update(ctx context.Context, s *entities.Service) error
 	Delete(ctx context.Context, id string) error
@@ -55,6 +58,7 @@ type PartRepository interface {
 	Create(ctx context.Context, p *entities.Part) error
 	FindByID(ctx context.Context, id string) (*entities.Part, error)
 	FindByIDs(ctx context.Context, ids []string) ([]*entities.Part, error)
+	FindByManufacturerCodes(ctx context.Context, codes []string) ([]*entities.Part, error)
 	FindAll(ctx context.Context) ([]*entities.Part, error)
 	Update(ctx context.Context, p *entities.Part) error
 	Delete(ctx context.Context, id string) error

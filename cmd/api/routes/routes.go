@@ -24,7 +24,7 @@ func Setup(router *gin.Engine, c *bootstrap.Container) {
 		ctx.JSON(http.StatusOK, gin.H{"status": "ok"})
 	})
 
-	v1 := router.Group("/api/v1")
+	prefix := router.Group("/api/v1")
 
 	// --- Auth (publico) ---
 	// Protecao contra brute force e feita via account lockout no use case
@@ -38,6 +38,10 @@ func Setup(router *gin.Engine, c *bootstrap.Container) {
 
 	// --- Rotas protegidas (qualquer usuario autenticado) ---
 	protected := v1.Group("/")
+	// Rotas publicas do cliente (sem JWT)
+	c.ServiceOrderHandler.SetupPublicRoutes(prefix)
+
+	protected := prefix.Group("/")
 	protected.Use(middleware.Auth(c.Config.JWTSecret))
 
 	// Logout (precisa de JWT)

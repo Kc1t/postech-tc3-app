@@ -52,7 +52,7 @@ func TestServiceHandler_Create_Success(t *testing.T) {
 	create.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(nil)
 
 	body, _ := json.Marshal(map[string]any{
-		"name": "Troca de óleo", "price": 150.0, "duration_min": 60,
+		"code": 1, "name": "Troca de óleo", "price": 150.0, "duration_min": 60,
 	})
 	w := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodPost, "/services", bytes.NewBuffer(body))
@@ -88,7 +88,7 @@ func TestServiceHandler_Create_Error(t *testing.T) {
 	create.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(errors.New("db error"))
 
 	body, _ := json.Marshal(map[string]any{
-		"name": "Troca de óleo", "price": 150.0, "duration_min": 60,
+		"code": 1, "name": "Troca de óleo", "price": 150.0, "duration_min": 60,
 	})
 	w := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodPost, "/services", bytes.NewBuffer(body))
@@ -106,7 +106,7 @@ func TestServiceHandler_FindByID_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	svc := entities.NewService("Troca de óleo", "Desc", 150.0, 60)
+	svc := entities.NewService(1, "Troca de óleo", "Desc", 150.0, 60)
 	h, _, getByID, _, _, _ := newHandler(ctrl)
 	getByID.EXPECT().Execute(gomock.Any(), "svc-1").Return(svc, nil)
 
@@ -141,7 +141,7 @@ func TestServiceHandler_FindAll_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	svcs := []*entities.Service{entities.NewService("Troca de óleo", "Desc", 150.0, 60)}
+	svcs := []*entities.Service{entities.NewService(1, "Troca de óleo", "Desc", 150.0, 60)}
 	h, _, _, list, _, _ := newHandler(ctrl)
 	list.EXPECT().Execute(gomock.Any()).Return(svcs, nil)
 
@@ -176,7 +176,7 @@ func TestServiceHandler_Update_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	svc := entities.NewService("Troca de óleo", "Desc", 150.0, 60)
+	svc := entities.NewService(1, "Troca de óleo", "Desc", 150.0, 60)
 	h, _, getByID, _, update, _ := newHandler(ctrl)
 	getByID.EXPECT().Execute(gomock.Any(), "svc-1").Return(svc, nil)
 	update.EXPECT().Execute(gomock.Any(), svc).Return(nil)
@@ -214,7 +214,7 @@ func TestServiceHandler_Update_UpdateFails(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	svc := entities.NewService("Troca de óleo", "Desc", 150.0, 60)
+	svc := entities.NewService(1, "Troca de óleo", "Desc", 150.0, 60)
 	h, _, getByID, _, update, _ := newHandler(ctrl)
 	getByID.EXPECT().Execute(gomock.Any(), "svc-1").Return(svc, nil)
 	update.EXPECT().Execute(gomock.Any(), svc).Return(errors.New("db error"))

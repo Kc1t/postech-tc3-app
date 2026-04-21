@@ -69,11 +69,14 @@ type Container struct {
 	// Use Cases — service order
 	CreateServiceOrder          ports.CreateServiceOrderUseCase          `container:"usecase"`
 	GetServiceOrder             ports.GetServiceOrderUseCase             `container:"usecase"`
+	GetServiceOrderByCode       ports.GetServiceOrderByCodeUseCase       `container:"usecase"`
 	ListServiceOrders           ports.ListServiceOrdersUseCase           `container:"usecase"`
 	ListServiceOrdersByCustomer ports.ListServiceOrdersByCustomerUseCase `container:"usecase"`
+	ListServiceOrdersByDocument ports.ListServiceOrdersByDocumentUseCase `container:"usecase"`
 	UpdateServiceOrderStatus    ports.UpdateServiceOrderStatusUseCase    `container:"usecase"`
 	UpdateServiceOrder          ports.UpdateServiceOrderUseCase          `container:"usecase"`
 	DeleteServiceOrder          ports.DeleteServiceOrderUseCase          `container:"usecase"`
+	UpdateServiceOrderStatusByCode ports.UpdateServiceOrderStatusByCodeUseCase `container:"usecase"`
 
 	// Use Cases — service
 	CreateService ports.CreateServiceUseCase `container:"usecase"`
@@ -185,14 +188,19 @@ func (c *Container) setupUseCases() {
 
 	// ServiceOrder
 	c.CreateServiceOrder = serviceorderuc.NewCreateServiceOrder(
-		c.ServiceOrderRepo, c.CustomerRepo, c.VehicleRepo, c.ServiceRepo, c.PartRepo,
+		c.ServiceOrderRepo, c.CustomerRepo, c.VehicleRepo,
 	)
 	c.GetServiceOrder = serviceorderuc.NewGetServiceOrder(c.ServiceOrderRepo)
+	c.GetServiceOrderByCode = serviceorderuc.NewGetServiceOrderByCode(c.ServiceOrderRepo, c.CustomerRepo)
 	c.ListServiceOrders = serviceorderuc.NewListServiceOrders(c.ServiceOrderRepo)
 	c.ListServiceOrdersByCustomer = serviceorderuc.NewListServiceOrdersByCustomer(c.ServiceOrderRepo)
-	c.UpdateServiceOrderStatus = serviceorderuc.NewUpdateServiceOrderStatus(c.ServiceOrderRepo)
+	c.ListServiceOrdersByDocument = serviceorderuc.NewListServiceOrdersByDocument(c.ServiceOrderRepo, c.CustomerRepo)
+	c.UpdateServiceOrderStatus = serviceorderuc.NewUpdateServiceOrderStatus(
+		c.ServiceOrderRepo, c.ServiceRepo, c.PartRepo,
+	)
 	c.UpdateServiceOrder = serviceorderuc.NewUpdateServiceOrder(c.ServiceOrderRepo)
 	c.DeleteServiceOrder = serviceorderuc.NewDeleteServiceOrder(c.ServiceOrderRepo)
+	c.UpdateServiceOrderStatusByCode = serviceorderuc.NewUpdateServiceOrderStatusByCode(c.ServiceOrderRepo, c.CustomerRepo)
 
 	// Service
 	c.CreateService = serviceuc.NewCreateService(c.ServiceRepo)
@@ -224,8 +232,10 @@ func (c *Container) setupHandlers() {
 		c.UpdateVehicle, c.DeleteVehicle,
 	)
 	c.ServiceOrderHandler = serviceorderhandler.NewServiceOrderHandler(
-		c.CreateServiceOrder, c.GetServiceOrder, c.ListServiceOrders,
+		c.CreateServiceOrder, c.GetServiceOrder, c.GetServiceOrderByCode,
+		c.ListServiceOrders, c.ListServiceOrdersByDocument,
 		c.UpdateServiceOrderStatus, c.UpdateServiceOrder, c.DeleteServiceOrder,
+		c.UpdateServiceOrderStatusByCode,
 	)
 	c.ServiceHandler = servicehandler.NewServiceHandler(
 		c.CreateService, c.GetService, c.ListServices,

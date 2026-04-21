@@ -23,12 +23,21 @@ func (r *serviceOrderRepository) Create(ctx context.Context, so *entities.Servic
 		return mapError(err)
 	}
 	so.SetID(m.ID)
+	so.SetCode(m.Code)
 	return nil
 }
 
 func (r *serviceOrderRepository) FindByID(ctx context.Context, id string) (*entities.ServiceOrder, error) {
 	var m pgmodel.ServiceOrder
 	if err := r.db.WithContext(ctx).First(&m, "id = ?", id).Error; err != nil {
+		return nil, mapError(err)
+	}
+	return m.ToDomain(), nil
+}
+
+func (r *serviceOrderRepository) FindByCode(ctx context.Context, code int) (*entities.ServiceOrder, error) {
+	var m pgmodel.ServiceOrder
+	if err := r.db.WithContext(ctx).First(&m, "code = ?", code).Error; err != nil {
 		return nil, mapError(err)
 	}
 	return m.ToDomain(), nil

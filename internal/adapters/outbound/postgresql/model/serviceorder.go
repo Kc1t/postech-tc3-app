@@ -21,6 +21,7 @@ type PartItem struct {
 
 type ServiceOrder struct {
 	ID          string              `gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
+	Code        int                 `gorm:"not null;uniqueIndex;autoIncrement"`
 	CustomerID  string              `gorm:"type:uuid;not null;index;constraint:OnDelete:RESTRICT"`
 	Customer    Customer            `gorm:"foreignKey:CustomerID"`
 	VehicleID   string              `gorm:"type:uuid;not null;constraint:OnDelete:RESTRICT"`
@@ -47,6 +48,7 @@ func FromServiceOrder(so *entities.ServiceOrder) *ServiceOrder {
 
 	return &ServiceOrder{
 		ID:          so.ID(),
+		Code:        so.Code(),
 		CustomerID:  so.CustomerID(),
 		VehicleID:   so.VehicleID(),
 		Status:      so.Status(),
@@ -71,7 +73,7 @@ func (m *ServiceOrder) ToDomain() *entities.ServiceOrder {
 	}
 
 	return entities.ReconstituteServiceOrder(
-		m.ID, m.CustomerID, m.VehicleID, m.Status,
+		m.ID, m.Code, m.CustomerID, m.VehicleID, m.Status,
 		services, parts, m.TotalAmount, m.Notes, m.CreatedAt, m.UpdatedAt,
 	)
 }

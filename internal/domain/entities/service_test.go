@@ -7,7 +7,7 @@ import (
 
 func TestNewService(t *testing.T) {
 	before := time.Now()
-	s := NewService("Troca de óleo", "Troca completa", 150.0, 60)
+	s := NewService(1, "Troca de óleo", "Troca completa", 150.0, 60)
 	after := time.Now()
 
 	if s.Name() != "Troca de óleo" {
@@ -34,7 +34,7 @@ func TestReconstituteService(t *testing.T) {
 	createdAt := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
 	updatedAt := time.Date(2024, 6, 1, 0, 0, 0, 0, time.UTC)
 
-	s := ReconstituteService("sid-1", "Alinhamento", "Desc", 200.0, 90, createdAt, updatedAt)
+	s := ReconstituteService("sid-1", 2, "Alinhamento", "Desc", 200.0, 90, createdAt, updatedAt)
 
 	if s.ID() != "sid-1" {
 		t.Errorf("expected ID %q, got %q", "sid-1", s.ID())
@@ -48,7 +48,7 @@ func TestReconstituteService(t *testing.T) {
 }
 
 func TestService_SetID(t *testing.T) {
-	s := NewService("Troca de óleo", "Desc", 100.0, 30)
+	s := NewService(1, "Troca de óleo", "Desc", 100.0, 30)
 	s.SetID("sid-1")
 	if s.ID() != "sid-1" {
 		t.Errorf("expected ID %q, got %q", "sid-1", s.ID())
@@ -56,7 +56,7 @@ func TestService_SetID(t *testing.T) {
 }
 
 func TestService_SetName_TouchesUpdatedAt(t *testing.T) {
-	s := NewService("Troca de óleo", "Desc", 100.0, 30)
+	s := NewService(1, "Troca de óleo", "Desc", 100.0, 30)
 	before := s.UpdatedAt()
 	time.Sleep(time.Millisecond)
 	s.SetName("Alinhamento")
@@ -70,7 +70,7 @@ func TestService_SetName_TouchesUpdatedAt(t *testing.T) {
 }
 
 func TestService_SetDescription_TouchesUpdatedAt(t *testing.T) {
-	s := NewService("Troca de óleo", "Desc", 100.0, 30)
+	s := NewService(1, "Troca de óleo", "Desc", 100.0, 30)
 	before := s.UpdatedAt()
 	time.Sleep(time.Millisecond)
 	s.SetDescription("Nova descrição")
@@ -84,7 +84,7 @@ func TestService_SetDescription_TouchesUpdatedAt(t *testing.T) {
 }
 
 func TestService_SetPrice_TouchesUpdatedAt(t *testing.T) {
-	s := NewService("Troca de óleo", "Desc", 100.0, 30)
+	s := NewService(1, "Troca de óleo", "Desc", 100.0, 30)
 	before := s.UpdatedAt()
 	time.Sleep(time.Millisecond)
 	s.SetPrice(250.0)
@@ -98,7 +98,7 @@ func TestService_SetPrice_TouchesUpdatedAt(t *testing.T) {
 }
 
 func TestService_SetDurationMin_TouchesUpdatedAt(t *testing.T) {
-	s := NewService("Troca de óleo", "Desc", 100.0, 30)
+	s := NewService(1, "Troca de óleo", "Desc", 100.0, 30)
 	before := s.UpdatedAt()
 	time.Sleep(time.Millisecond)
 	s.SetDurationMin(120)

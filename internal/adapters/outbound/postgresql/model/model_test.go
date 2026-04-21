@@ -51,7 +51,7 @@ func TestFromVehicle_ToDomain_RoundTrip(t *testing.T) {
 func TestFromPart_ToDomain_RoundTrip(t *testing.T) {
 	createdAt := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
 	updatedAt := time.Date(2024, 6, 1, 0, 0, 0, 0, time.UTC)
-	p := entities.ReconstitutePart("pid-1", "Filtro", "Desc", "unidade", 49.90, 10, createdAt, updatedAt)
+	p := entities.ReconstitutePart("pid-1", "FAB-001", "Filtro", "Desc", "unidade", 49.90, 10, createdAt, updatedAt)
 
 	m := FromPart(p)
 	if m.ID != "pid-1" || m.Name != "Filtro" || m.Stock != 10 {
@@ -69,7 +69,7 @@ func TestFromPart_ToDomain_RoundTrip(t *testing.T) {
 func TestFromService_ToDomain_RoundTrip(t *testing.T) {
 	createdAt := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
 	updatedAt := time.Date(2024, 6, 1, 0, 0, 0, 0, time.UTC)
-	s := entities.ReconstituteService("sid-1", "Troca de óleo", "Desc", 150.0, 60, createdAt, updatedAt)
+	s := entities.ReconstituteService("sid-1", 1, "Troca de óleo", "Desc", 150.0, 60, createdAt, updatedAt)
 
 	m := FromService(s)
 	if m.ID != "sid-1" || m.Name != "Troca de óleo" || m.DurationMin != 60 {
@@ -90,7 +90,7 @@ func TestFromServiceOrder_ToDomain_RoundTrip(t *testing.T) {
 	services := []entities.ServiceItem{{ServiceID: "s1", Description: "Desc", Price: 100.0}}
 	parts := []entities.PartItem{{PartID: "p1", Description: "Peca", Quantity: 2, UnitPrice: 50.0}}
 	so := entities.ReconstituteServiceOrder(
-		"oid-1", "cust-1", "veh-1", entities.StatusInExecution,
+		"oid-1", 0, "cust-1", "veh-1", entities.StatusInExecution,
 		services, parts, 200.0, "notas", createdAt, updatedAt,
 	)
 

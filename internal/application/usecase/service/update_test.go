@@ -14,7 +14,7 @@ func TestUpdateService_Execute_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	s := entities.NewService("Troca de óleo", "Desc", 150.0, 60)
+	s := entities.NewService(1, "Troca de óleo", "Desc", 150.0, 60)
 	repo := mocks.NewMockServiceRepository(ctrl)
 	repo.EXPECT().Update(gomock.Any(), s).Return(nil)
 
@@ -29,7 +29,7 @@ func TestUpdateService_Execute_RepoError(t *testing.T) {
 	defer ctrl.Finish()
 
 	repoErr := errors.New("db error")
-	s := entities.NewService("Troca de óleo", "Desc", 150.0, 60)
+	s := entities.NewService(1, "Troca de óleo", "Desc", 150.0, 60)
 	repo := mocks.NewMockServiceRepository(ctrl)
 	repo.EXPECT().Update(gomock.Any(), s).Return(repoErr)
 

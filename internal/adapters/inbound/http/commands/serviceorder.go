@@ -6,29 +6,29 @@ import (
 	"github.com/fiap/postech-tc1/internal/domain/entities"
 )
 
+type CreateServiceOrderRequest struct {
+	CustomerDocument string `json:"customer_document" binding:"required"`
+	VehiclePlate     string `json:"vehicle_plate"     binding:"required"`
+	Notes            string `json:"notes"`
+}
+
+type UpdateServiceOrderRequest struct {
+	Notes *string `json:"notes"`
+}
+
 type ServiceItemRequest struct {
-	ServiceID   string  `json:"service_id"  binding:"required"`
-	Description string  `json:"description" binding:"required"`
-	Price       float64 `json:"price"       binding:"required,gt=0"`
+	Code int `json:"code" binding:"required,gt=0"`
 }
 
 type PartItemRequest struct {
-	PartID      string  `json:"part_id"     binding:"required"`
-	Description string  `json:"description" binding:"required"`
-	Quantity    int     `json:"quantity"    binding:"required,gt=0"`
-	UnitPrice   float64 `json:"unit_price"  binding:"required,gt=0"`
-}
-
-type CreateServiceOrderRequest struct {
-	CustomerID string               `json:"customer_id" binding:"required"`
-	VehicleID  string               `json:"vehicle_id"  binding:"required"`
-	Services   []ServiceItemRequest `json:"services"`
-	Parts      []PartItemRequest    `json:"parts"`
-	Notes      string               `json:"notes"`
+	ManufacturerCode string `json:"manufacturer_code" binding:"required"`
+	Quantity         int    `json:"quantity"           binding:"required,gt=0"`
 }
 
 type UpdateStatusRequest struct {
-	Status entities.OrderStatus `json:"status" binding:"required"`
+	Status   entities.OrderStatus `json:"status"   binding:"required"`
+	Services []ServiceItemRequest `json:"services"`
+	Parts    []PartItemRequest    `json:"parts"`
 }
 
 type ServiceItemResponse struct {
@@ -44,8 +44,14 @@ type PartItemResponse struct {
 	UnitPrice   float64 `json:"unit_price"`
 }
 
+type UpdateStatusByCodeRequest struct {
+	CustomerDocument string               `json:"customer_document" binding:"required"`
+	Status           entities.OrderStatus `json:"status"            binding:"required"`
+}
+
 type ServiceOrderResponse struct {
 	ID          string                `json:"id"`
+	Code        int                   `json:"code"`
 	CustomerID  string                `json:"customer_id"`
 	VehicleID   string                `json:"vehicle_id"`
 	Status      entities.OrderStatus   `json:"status"`
@@ -55,27 +61,6 @@ type ServiceOrderResponse struct {
 	Notes       string                `json:"notes"`
 	CreatedAt   string                `json:"created_at"`
 	UpdatedAt   string                `json:"updated_at"`
-}
-
-func (r *CreateServiceOrderRequest) ToDomain() *entities.ServiceOrder {
-	so := entities.NewServiceOrder(r.CustomerID, r.VehicleID)
-	so.SetNotes(r.Notes)
-	for _, s := range r.Services {
-		so.AddService(entities.ServiceItem{
-			ServiceID:   s.ServiceID,
-			Description: s.Description,
-			Price:       s.Price,
-		})
-	}
-	for _, p := range r.Parts {
-		so.AddPart(entities.PartItem{
-			PartID:      p.PartID,
-			Description: p.Description,
-			Quantity:    p.Quantity,
-			UnitPrice:   p.UnitPrice,
-		})
-	}
-	return so
 }
 
 func ToServiceOrderResponse(so *entities.ServiceOrder) ServiceOrderResponse {
@@ -100,6 +85,7 @@ func ToServiceOrderResponse(so *entities.ServiceOrder) ServiceOrderResponse {
 
 	return ServiceOrderResponse{
 		ID:          so.ID(),
+		Code:        so.Code(),
 		CustomerID:  so.CustomerID(),
 		VehicleID:   so.VehicleID(),
 		Status:      so.Status(),

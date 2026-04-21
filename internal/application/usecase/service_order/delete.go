@@ -2,7 +2,10 @@ package serviceorderuc
 
 import (
 	"context"
+	"errors"
 
+	"github.com/fiap/postech-tc1/internal/domain/entities"
+	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
 	"github.com/fiap/postech-tc1/internal/ports"
 )
 
@@ -15,6 +18,17 @@ func NewDeleteServiceOrder(repo ports.ServiceOrderRepository) *DeleteServiceOrde
 }
 
 func (uc *DeleteServiceOrder) Execute(ctx context.Context, id string) error {
-	// TODO: apenas OS com status "received" podem ser deletadas
+	so, err := uc.repo.FindByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, domainerrors.ErrNotFound) {
+			return domainerrors.ErrNotFound
+		}
+		return err
+	}
+
+	if so.Status() != entities.StatusReceived {
+		return domainerrors.ErrOrderNotCancellable
+	}
+
 	return uc.repo.Delete(ctx, id)
 }

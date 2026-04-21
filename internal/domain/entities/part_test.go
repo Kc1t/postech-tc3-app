@@ -7,7 +7,7 @@ import (
 
 func TestNewPart(t *testing.T) {
 	before := time.Now()
-	p := NewPart("Filtro de óleo", "Filtro original", "unidade", 49.90, 10)
+	p := NewPart("FAB-001", "Filtro de óleo", "Filtro original", "unidade", 49.90, 10)
 	after := time.Now()
 
 	if p.Name() != "Filtro de óleo" {
@@ -37,7 +37,7 @@ func TestReconstitutePart(t *testing.T) {
 	createdAt := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
 	updatedAt := time.Date(2024, 6, 1, 0, 0, 0, 0, time.UTC)
 
-	p := ReconstitutePart("pid-1", "Filtro", "Desc", "unidade", 30.0, 5, createdAt, updatedAt)
+	p := ReconstitutePart("pid-1", "FAB-001", "Filtro", "Desc", "unidade", 30.0, 5, createdAt, updatedAt)
 
 	if p.ID() != "pid-1" {
 		t.Errorf("expected ID %q, got %q", "pid-1", p.ID())
@@ -51,7 +51,7 @@ func TestReconstitutePart(t *testing.T) {
 }
 
 func TestPart_SetID(t *testing.T) {
-	p := NewPart("Filtro", "Desc", "unidade", 10.0, 5)
+	p := NewPart("FAB-002", "Filtro", "Desc", "unidade", 10.0, 5)
 	p.SetID("pid-1")
 	if p.ID() != "pid-1" {
 		t.Errorf("expected ID %q, got %q", "pid-1", p.ID())
@@ -59,7 +59,7 @@ func TestPart_SetID(t *testing.T) {
 }
 
 func TestPart_SetName_TouchesUpdatedAt(t *testing.T) {
-	p := NewPart("Filtro", "Desc", "unidade", 10.0, 5)
+	p := NewPart("FAB-002", "Filtro", "Desc", "unidade", 10.0, 5)
 	before := p.UpdatedAt()
 	time.Sleep(time.Millisecond)
 	p.SetName("Vela")
@@ -73,7 +73,7 @@ func TestPart_SetName_TouchesUpdatedAt(t *testing.T) {
 }
 
 func TestPart_SetDescription_TouchesUpdatedAt(t *testing.T) {
-	p := NewPart("Filtro", "Desc", "unidade", 10.0, 5)
+	p := NewPart("FAB-002", "Filtro", "Desc", "unidade", 10.0, 5)
 	before := p.UpdatedAt()
 	time.Sleep(time.Millisecond)
 	p.SetDescription("Nova desc")
@@ -87,7 +87,7 @@ func TestPart_SetDescription_TouchesUpdatedAt(t *testing.T) {
 }
 
 func TestPart_SetUnit_TouchesUpdatedAt(t *testing.T) {
-	p := NewPart("Filtro", "Desc", "unidade", 10.0, 5)
+	p := NewPart("FAB-002", "Filtro", "Desc", "unidade", 10.0, 5)
 	before := p.UpdatedAt()
 	time.Sleep(time.Millisecond)
 	p.SetUnit("litro")
@@ -101,7 +101,7 @@ func TestPart_SetUnit_TouchesUpdatedAt(t *testing.T) {
 }
 
 func TestPart_SetPrice_TouchesUpdatedAt(t *testing.T) {
-	p := NewPart("Filtro", "Desc", "unidade", 10.0, 5)
+	p := NewPart("FAB-002", "Filtro", "Desc", "unidade", 10.0, 5)
 	before := p.UpdatedAt()
 	time.Sleep(time.Millisecond)
 	p.SetPrice(99.99)
@@ -115,7 +115,7 @@ func TestPart_SetPrice_TouchesUpdatedAt(t *testing.T) {
 }
 
 func TestPart_SetStock_TouchesUpdatedAt(t *testing.T) {
-	p := NewPart("Filtro", "Desc", "unidade", 10.0, 5)
+	p := NewPart("FAB-002", "Filtro", "Desc", "unidade", 10.0, 5)
 	before := p.UpdatedAt()
 	time.Sleep(time.Millisecond)
 	p.SetStock(20)
