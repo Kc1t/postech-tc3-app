@@ -14,7 +14,7 @@ Table users {
 }
 
 Table refresh_tokens {
-  id uuid [pk, default: `gen_random_uuid()`]
+  id uuid [pk, note: 'UUID gerado no codigo (google/uuid)']
   user_id uuid [not null, ref: > users.id]
   token_hash varchar [not null, unique]
   expires_at timestamp [not null]

@@ -24,7 +24,6 @@ func (r *refreshTokenRepository) Create(ctx context.Context, rt *entities.Refres
 	if err := r.db.WithContext(ctx).Create(m).Error; err != nil {
 		return err
 	}
-	rt.SetID(m.ID)
 	return nil
 }
 
@@ -81,7 +80,6 @@ func (r *refreshTokenRepository) RotateToken(ctx context.Context, oldID string, 
 		if err := tx.Create(m).Error; err != nil {
 			return err
 		}
-		newRT.SetID(m.ID)
 		return nil
 	})
 }
