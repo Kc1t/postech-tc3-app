@@ -39,6 +39,8 @@ func TestMain(m *testing.M) {
 		&pgmodel.Part{},
 		&pgmodel.Service{},
 		&pgmodel.ServiceOrder{},
+		&pgmodel.User{},
+		&pgmodel.RefreshToken{},
 	); err != nil {
 		log.Fatalf("failed to run migrations: %v", err)
 	}

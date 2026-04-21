@@ -1,10 +1,6 @@
 package entities
 
-import (
-	"time"
-
-	"github.com/google/uuid"
-)
+import "time"
 
 type RefreshToken struct {
 	id        string
@@ -15,9 +11,11 @@ type RefreshToken struct {
 	createdAt time.Time
 }
 
+// NewRefreshToken cria um refresh token sem ID — o UUID e gerado pelo banco
+// (default:gen_random_uuid()) e o repository preenche via SetID apos Create.
+// Mantem a geracao de ID na camada de infraestrutura, consistente com User e Customer.
 func NewRefreshToken(userID, tokenHash string, expiresAt time.Time) *RefreshToken {
 	return &RefreshToken{
-		id:        uuid.NewString(),
 		userID:    userID,
 		tokenHash: tokenHash,
 		expiresAt: expiresAt,

@@ -1,6 +1,6 @@
-// Package token implementa a geracao de tokens JWT e refresh tokens.
-// A interface TokenService fica em ports/, aqui apenas a implementacao.
-package token
+// Package jwt implementa a geracao de tokens JWT e refresh tokens.
+// A interface TokenService fica em ports/, aqui apenas a implementacao concreta.
+package jwt
 
 import (
 	"crypto/rand"
@@ -10,26 +10,27 @@ import (
 	"time"
 
 	"github.com/fiap/postech-tc1/internal/domain/entities"
+	"github.com/fiap/postech-tc1/internal/ports"
 	"github.com/golang-jwt/jwt/v5"
 )
 
-type jwtService struct {
+type tokenService struct {
 	secret         string
 	accessExpMin   int
 	refreshExpDays int
 }
 
-// New cria uma implementacao de TokenService usando HMAC-SHA256 para JWT
+// New cria uma implementacao de ports.TokenService usando HMAC-SHA256 para JWT
 // e crypto/rand para refresh tokens.
-func New(secret string, accessExpMin, refreshExpDays int) *jwtService {
-	return &jwtService{
+func New(secret string, accessExpMin, refreshExpDays int) ports.TokenService {
+	return &tokenService{
 		secret:         secret,
 		accessExpMin:   accessExpMin,
 		refreshExpDays: refreshExpDays,
 	}
 }
 
-func (s *jwtService) GenerateAccessToken(u *entities.User) (string, error) {
+func (s *tokenService) GenerateAccessToken(u *entities.User) (string, error) {
 	now := time.Now()
 	claims := jwt.MapClaims{
 		"sub":   u.ID(),
@@ -42,7 +43,7 @@ func (s *jwtService) GenerateAccessToken(u *entities.User) (string, error) {
 	return t.SignedString([]byte(s.secret))
 }
 
-func (s *jwtService) GenerateRefreshToken() (string, string, error) {
+func (s *tokenService) GenerateRefreshToken() (string, string, error) {
 	b := make([]byte, 32)
 	if _, err := rand.Read(b); err != nil {
 		return "", "", fmt.Errorf("failed to generate refresh token: %w", err)
@@ -52,11 +53,11 @@ func (s *jwtService) GenerateRefreshToken() (string, string, error) {
 	return raw, hash, nil
 }
 
-func (s *jwtService) HashToken(raw string) string {
+func (s *tokenService) HashToken(raw string) string {
 	h := sha256.Sum256([]byte(raw))
 	return hex.EncodeToString(h[:])
 }
 
-func (s *jwtService) RefreshTokenExpiration() time.Duration {
+func (s *tokenService) RefreshTokenExpiration() time.Duration {
 	return time.Duration(s.refreshExpDays) * 24 * time.Hour
 }

@@ -7,12 +7,12 @@ import (
 	"sync"
 
 	"github.com/fiap/postech-tc1/config"
+	"github.com/fiap/postech-tc1/internal/adapters/outbound/jwt"
 	"github.com/fiap/postech-tc1/internal/adapters/outbound/postgresql"
 	pgmodel "github.com/fiap/postech-tc1/internal/adapters/outbound/postgresql/model"
 	"github.com/fiap/postech-tc1/internal/domain/entities"
 	"github.com/fiap/postech-tc1/internal/ports"
 	"github.com/fiap/postech-tc1/pkg/hasher"
-	"github.com/fiap/postech-tc1/pkg/token"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
@@ -158,7 +158,7 @@ func (c *Container) setupRepositories() {
 
 func (c *Container) setupUseCases() {
 	// Servicos de infraestrutura (desacoplados via interface nos ports)
-	tokenSvc := token.New(c.Config.JWTSecret, c.Config.AccessTokenExpMin, c.Config.RefreshTokenExpDays)
+	tokenSvc := jwt.New(c.Config.JWTSecret, c.Config.AccessTokenExpMin, c.Config.RefreshTokenExpDays)
 	pwdHasher := hasher.NewBcrypt(c.Config.BcryptCost)
 
 	// Auth

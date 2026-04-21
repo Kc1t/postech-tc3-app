@@ -83,7 +83,8 @@ type RefreshTokenRepository interface {
 }
 
 // TokenService abstrai a geracao e validacao de tokens de autenticacao.
-// A implementacao concreta fica em pkg/token, desacoplando use cases de JWT e crypto.
+// A implementacao concreta fica em internal/adapters/outbound/jwt,
+// desacoplando use cases de JWT e crypto.
 type TokenService interface {
 	GenerateAccessToken(u *entities.User) (string, error)
 	GenerateRefreshToken() (raw string, hash string, err error)
