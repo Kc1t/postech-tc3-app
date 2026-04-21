@@ -61,6 +61,15 @@ type ServiceOrderResponse struct {
 	Notes       string                `json:"notes"`
 	CreatedAt   string                `json:"created_at"`
 	UpdatedAt   string                `json:"updated_at"`
+	StartedAt   *string               `json:"started_at,omitempty"`
+	FinishedAt  *string               `json:"finished_at,omitempty"`
+}
+
+// AverageExecutionTimeResponse expoe o tempo medio de execucao dos servicos
+// (intervalo entre aprovacao e finalizacao da OS).
+type AverageExecutionTimeResponse struct {
+	AverageSeconds float64 `json:"average_seconds" example:"5400"`
+	AverageHuman   string  `json:"average_human"   example:"1h30m0s"`
 }
 
 func ToServiceOrderResponse(so *entities.ServiceOrder) ServiceOrderResponse {
@@ -83,6 +92,16 @@ func ToServiceOrderResponse(so *entities.ServiceOrder) ServiceOrderResponse {
 		})
 	}
 
+	var startedAt, finishedAt *string
+	if t := so.StartedAt(); t != nil {
+		s := t.Format(time.RFC3339)
+		startedAt = &s
+	}
+	if t := so.FinishedAt(); t != nil {
+		s := t.Format(time.RFC3339)
+		finishedAt = &s
+	}
+
 	return ServiceOrderResponse{
 		ID:          so.ID(),
 		Code:        so.Code(),
@@ -95,6 +114,8 @@ func ToServiceOrderResponse(so *entities.ServiceOrder) ServiceOrderResponse {
 		Notes:       so.Notes(),
 		CreatedAt:   so.CreatedAt().Format(time.RFC3339),
 		UpdatedAt:   so.UpdatedAt().Format(time.RFC3339),
+		StartedAt:   startedAt,
+		FinishedAt:  finishedAt,
 	}
 }
 
