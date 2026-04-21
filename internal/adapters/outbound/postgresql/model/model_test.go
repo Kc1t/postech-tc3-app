@@ -89,9 +89,12 @@ func TestFromServiceOrder_ToDomain_RoundTrip(t *testing.T) {
 	updatedAt := time.Date(2024, 6, 1, 0, 0, 0, 0, time.UTC)
 	services := []entities.ServiceItem{{ServiceID: "s1", Description: "Desc", Price: 100.0}}
 	parts := []entities.PartItem{{PartID: "p1", Description: "Peca", Quantity: 2, UnitPrice: 50.0}}
+	startedAt := time.Date(2024, 6, 2, 10, 0, 0, 0, time.UTC)
+	finishedAt := time.Date(2024, 6, 2, 14, 30, 0, 0, time.UTC)
 	so := entities.ReconstituteServiceOrder(
 		"oid-1", 0, "cust-1", "veh-1", entities.StatusInExecution,
 		services, parts, 200.0, "notas", createdAt, updatedAt,
+		&startedAt, &finishedAt,
 	)
 
 	m := FromServiceOrder(so)
@@ -100,6 +103,12 @@ func TestFromServiceOrder_ToDomain_RoundTrip(t *testing.T) {
 	}
 	if len(m.Services) != 1 || len(m.Parts) != 1 {
 		t.Fatalf("expected 1 service and 1 part, got %d and %d", len(m.Services), len(m.Parts))
+	}
+	if m.StartedAt == nil || !m.StartedAt.Equal(startedAt) {
+		t.Errorf("StartedAt mismatch: %v != %v", m.StartedAt, startedAt)
+	}
+	if m.FinishedAt == nil || !m.FinishedAt.Equal(finishedAt) {
+		t.Errorf("FinishedAt mismatch: %v != %v", m.FinishedAt, finishedAt)
 	}
 
 	back := m.ToDomain()
@@ -111,6 +120,34 @@ func TestFromServiceOrder_ToDomain_RoundTrip(t *testing.T) {
 	}
 	if back.TotalAmount() != 200.0 {
 		t.Errorf("expected totalAmount 200.0, got %v", back.TotalAmount())
+	}
+	if back.StartedAt() == nil || !back.StartedAt().Equal(startedAt) {
+		t.Errorf("back.StartedAt() = %v, esperava %v", back.StartedAt(), startedAt)
+	}
+	if back.FinishedAt() == nil || !back.FinishedAt().Equal(finishedAt) {
+		t.Errorf("back.FinishedAt() = %v, esperava %v", back.FinishedAt(), finishedAt)
+	}
+}
+
+// OS nunca iniciada nem finalizada: StartedAt e FinishedAt sobrevivem como nil
+// no round-trip.
+func TestFromServiceOrder_ToDomain_TimestampsNulos(t *testing.T) {
+	createdAt := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+	updatedAt := time.Date(2024, 6, 1, 0, 0, 0, 0, time.UTC)
+	so := entities.ReconstituteServiceOrder(
+		"oid-2", 0, "cust-1", "veh-1", entities.StatusReceived,
+		nil, nil, 0, "", createdAt, updatedAt,
+		nil, nil,
+	)
+
+	m := FromServiceOrder(so)
+	if m.StartedAt != nil || m.FinishedAt != nil {
+		t.Errorf("timestamps deveriam ser nil: started=%v finished=%v", m.StartedAt, m.FinishedAt)
+	}
+
+	back := m.ToDomain()
+	if back.StartedAt() != nil || back.FinishedAt() != nil {
+		t.Errorf("timestamps no round-trip deveriam ser nil: started=%v finished=%v", back.StartedAt(), back.FinishedAt())
 	}
 }
 
