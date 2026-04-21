@@ -98,6 +98,8 @@ type ServiceOrder struct {
 	notes       string
 	createdAt   time.Time
 	updatedAt   time.Time
+	startedAt   *time.Time
+	finishedAt  *time.Time
 }
 
 func NewServiceOrder(customerID, vehicleID string) *ServiceOrder {
@@ -123,6 +125,7 @@ func ReconstituteServiceOrder(
 	totalAmount float64,
 	notes string,
 	createdAt, updatedAt time.Time,
+	startedAt, finishedAt *time.Time,
 ) *ServiceOrder {
 	return &ServiceOrder{
 		id:          id,
@@ -136,6 +139,8 @@ func ReconstituteServiceOrder(
 		notes:       notes,
 		createdAt:   createdAt,
 		updatedAt:   updatedAt,
+		startedAt:   startedAt,
+		finishedAt:  finishedAt,
 	}
 }
 
@@ -150,12 +155,22 @@ func (so *ServiceOrder) TotalAmount() float64    { return so.totalAmount }
 func (so *ServiceOrder) Notes() string           { return so.notes }
 func (so *ServiceOrder) CreatedAt() time.Time    { return so.createdAt }
 func (so *ServiceOrder) UpdatedAt() time.Time    { return so.updatedAt }
+func (so *ServiceOrder) StartedAt() *time.Time   { return so.startedAt }
+func (so *ServiceOrder) FinishedAt() *time.Time  { return so.finishedAt }
 
 func (so *ServiceOrder) SetID(id string)     { so.id = id }
 func (so *ServiceOrder) SetCode(code int)    { so.code = code }
 func (so *ServiceOrder) SetNotes(n string) { so.notes = n; so.touch() }
 
-// UpdateStatus valida a transicao de status antes de aplicar.
+// UpdateStatus valida a transicao de status antes de aplicar. Alem de
+// atualizar o status, registra os timestamps de ciclo de vida relevantes
+// para metricas:
+//   - startedAt e gravado na entrada em in_execution (aprovacao do orcamento).
+//   - finishedAt e gravado na entrada em finished (servico concluido).
+//
+// Os timestamps so sao escritos na primeira transicao (guarda `== nil`) para
+// proteger contra hipoteticas retransicoes — a maquina de estados atual nao
+// permite, mas a defesa e barata.
 func (so *ServiceOrder) UpdateStatus(s OrderStatus) error {
 	if !IsValidStatus(s) {
 		return domainerrors.ErrInvalidStatusValue
@@ -167,6 +182,13 @@ func (so *ServiceOrder) UpdateStatus(s OrderStatus) error {
 	for _, a := range allowed {
 		if a == s {
 			so.status = s
+			now := time.Now()
+			if s == StatusInExecution && so.startedAt == nil {
+				so.startedAt = &now
+			}
+			if s == StatusFinished && so.finishedAt == nil {
+				so.finishedAt = &now
+			}
 			so.touch()
 			return nil
 		}
