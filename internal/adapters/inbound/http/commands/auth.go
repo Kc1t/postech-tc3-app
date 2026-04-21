@@ -7,12 +7,12 @@ type RegisterRequest struct {
 }
 
 type LoginRequest struct {
-	Email    string `json:"email"    binding:"required,email"`
-	Password string `json:"password" binding:"required"`
+	Email    string `json:"email"    binding:"required,email,max=255"`
+	Password string `json:"password" binding:"required,max=128"`
 }
 
 type RefreshRequest struct {
-	RefreshToken string `json:"refresh_token" binding:"required"`
+	RefreshToken string `json:"refresh_token" binding:"required,max=255"`
 }
 
 type AuthResponse struct {
