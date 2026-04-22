@@ -27,33 +27,36 @@ func newTestRouter(h *ServiceOrderHandler) *gin.Engine {
 }
 
 type handlerMocks struct {
-	handler            *ServiceOrderHandler
-	create             *mocks.MockCreateServiceOrderUseCase
-	getByID            *mocks.MockGetServiceOrderUseCase
-	getByCode          *mocks.MockGetServiceOrderByCodeUseCase
-	listAll            *mocks.MockListServiceOrdersUseCase
-	listByDocument     *mocks.MockListServiceOrdersByDocumentUseCase
-	updateStatus       *mocks.MockUpdateServiceOrderStatusUseCase
-	update             *mocks.MockUpdateServiceOrderUseCase
-	del                *mocks.MockDeleteServiceOrderUseCase
-	updateStatusByCode *mocks.MockUpdateServiceOrderStatusByCodeUseCase
+	handler              *ServiceOrderHandler
+	create               *mocks.MockCreateServiceOrderUseCase
+	getByID              *mocks.MockGetServiceOrderUseCase
+	getByCode            *mocks.MockGetServiceOrderByCodeUseCase
+	listAll              *mocks.MockListServiceOrdersUseCase
+	listByDocument       *mocks.MockListServiceOrdersByDocumentUseCase
+	updateStatus         *mocks.MockUpdateServiceOrderStatusUseCase
+	update               *mocks.MockUpdateServiceOrderUseCase
+	del                  *mocks.MockDeleteServiceOrderUseCase
+	updateStatusByCode   *mocks.MockUpdateServiceOrderStatusByCodeUseCase
+	averageExecutionTime *mocks.MockGetAverageExecutionTimeUseCase
 }
 
 func newHandler(ctrl *gomock.Controller) handlerMocks {
 	m := handlerMocks{
-		create:             mocks.NewMockCreateServiceOrderUseCase(ctrl),
-		getByID:            mocks.NewMockGetServiceOrderUseCase(ctrl),
-		getByCode:          mocks.NewMockGetServiceOrderByCodeUseCase(ctrl),
-		listAll:            mocks.NewMockListServiceOrdersUseCase(ctrl),
-		listByDocument:     mocks.NewMockListServiceOrdersByDocumentUseCase(ctrl),
-		updateStatus:       mocks.NewMockUpdateServiceOrderStatusUseCase(ctrl),
-		update:             mocks.NewMockUpdateServiceOrderUseCase(ctrl),
-		del:                mocks.NewMockDeleteServiceOrderUseCase(ctrl),
-		updateStatusByCode: mocks.NewMockUpdateServiceOrderStatusByCodeUseCase(ctrl),
+		create:               mocks.NewMockCreateServiceOrderUseCase(ctrl),
+		getByID:              mocks.NewMockGetServiceOrderUseCase(ctrl),
+		getByCode:            mocks.NewMockGetServiceOrderByCodeUseCase(ctrl),
+		listAll:              mocks.NewMockListServiceOrdersUseCase(ctrl),
+		listByDocument:       mocks.NewMockListServiceOrdersByDocumentUseCase(ctrl),
+		updateStatus:         mocks.NewMockUpdateServiceOrderStatusUseCase(ctrl),
+		update:               mocks.NewMockUpdateServiceOrderUseCase(ctrl),
+		del:                  mocks.NewMockDeleteServiceOrderUseCase(ctrl),
+		updateStatusByCode:   mocks.NewMockUpdateServiceOrderStatusByCodeUseCase(ctrl),
+		averageExecutionTime: mocks.NewMockGetAverageExecutionTimeUseCase(ctrl),
 	}
 	m.handler = NewServiceOrderHandler(
 		m.create, m.getByID, m.getByCode, m.listAll, m.listByDocument,
 		m.updateStatus, m.update, m.del, m.updateStatusByCode,
+		m.averageExecutionTime,
 	)
 	return m
 }

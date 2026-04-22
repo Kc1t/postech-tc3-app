@@ -2,6 +2,7 @@ package ports
 
 import (
 	"context"
+	"time"
 
 	"github.com/fiap/postech-tc1/internal/domain/entities"
 )
@@ -38,7 +39,9 @@ type ServiceOrderRepository interface {
 	FindByCustomerID(ctx context.Context, customerID string) ([]*entities.ServiceOrder, error)
 	UpdateStatus(ctx context.Context, id string, status entities.OrderStatus) error
 	Update(ctx context.Context, so *entities.ServiceOrder) error
+	ApplyApprovalTransition(ctx context.Context, so *entities.ServiceOrder) error
 	Delete(ctx context.Context, id string) error
+	AverageExecutionTime(ctx context.Context) (time.Duration, error)
 }
 
 // ServiceRepository define as operacoes de persistencia para servicos.

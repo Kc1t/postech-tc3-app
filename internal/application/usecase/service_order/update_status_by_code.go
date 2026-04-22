@@ -13,7 +13,10 @@ type UpdateServiceOrderStatusByCode struct {
 	customerRepo ports.CustomerRepository
 }
 
-func NewUpdateServiceOrderStatusByCode(repo ports.ServiceOrderRepository, customerRepo ports.CustomerRepository) *UpdateServiceOrderStatusByCode {
+func NewUpdateServiceOrderStatusByCode(
+	repo ports.ServiceOrderRepository,
+	customerRepo ports.CustomerRepository,
+) *UpdateServiceOrderStatusByCode {
 	return &UpdateServiceOrderStatusByCode{repo: repo, customerRepo: customerRepo}
 }
 
@@ -34,6 +37,13 @@ func (uc *UpdateServiceOrderStatusByCode) Execute(ctx context.Context, code int,
 
 	if err := so.AuthorizeCustomerTransition(newStatus); err != nil {
 		return err
+	}
+
+	// Aprovacao pelo cliente (in_execution): decremento de estoque + persistencia
+	// da OS numa unica transacao DB. Recusa (received) nao toca timestamps,
+	// basta atualizar a coluna status.
+	if newStatus == entities.StatusInExecution {
+		return uc.repo.ApplyApprovalTransition(ctx, so)
 	}
 
 	return uc.repo.UpdateStatus(ctx, so.ID(), newStatus)

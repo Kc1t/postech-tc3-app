@@ -268,6 +268,109 @@ func TestSetParts_SubstituiERecalcula(t *testing.T) {
 	}
 }
 
+// =============================================================================
+// Testes dos timestamps de ciclo de vida (startedAt, finishedAt)
+// =============================================================================
+
+func TestUpdateStatus_InExecution_GravaStartedAt(t *testing.T) {
+	so := newServiceOrderWithStatus(StatusAwaitingApproval)
+
+	if so.StartedAt() != nil {
+		t.Fatal("StartedAt() deveria ser nil antes da aprovacao")
+	}
+	before := time.Now()
+	if err := so.UpdateStatus(StatusInExecution); err != nil {
+		t.Fatalf("transicao falhou: %v", err)
+	}
+	after := time.Now()
+
+	if so.StartedAt() == nil {
+		t.Fatal("StartedAt() nao foi gravado ao entrar em in_execution")
+	}
+	if so.StartedAt().Before(before) || so.StartedAt().After(after) {
+		t.Errorf("StartedAt() = %v, esperava entre %v e %v", *so.StartedAt(), before, after)
+	}
+	if so.FinishedAt() != nil {
+		t.Error("FinishedAt() deveria continuar nil")
+	}
+}
+
+func TestUpdateStatus_Finished_GravaFinishedAt(t *testing.T) {
+	so := newServiceOrderWithStatus(StatusInExecution)
+
+	if so.FinishedAt() != nil {
+		t.Fatal("FinishedAt() deveria ser nil antes de finalizar")
+	}
+	before := time.Now()
+	if err := so.UpdateStatus(StatusFinished); err != nil {
+		t.Fatalf("transicao falhou: %v", err)
+	}
+	after := time.Now()
+
+	if so.FinishedAt() == nil {
+		t.Fatal("FinishedAt() nao foi gravado ao entrar em finished")
+	}
+	if so.FinishedAt().Before(before) || so.FinishedAt().After(after) {
+		t.Errorf("FinishedAt() = %v, esperava entre %v e %v", *so.FinishedAt(), before, after)
+	}
+}
+
+// Transicoes que nao passam por in_execution/finished nao devem tocar os timestamps.
+func TestUpdateStatus_OutrasTransicoes_NaoTocamTimestamps(t *testing.T) {
+	tests := []struct {
+		from OrderStatus
+		to   OrderStatus
+	}{
+		{StatusReceived, StatusInDiagnosis},
+		{StatusInDiagnosis, StatusAwaitingApproval},
+		{StatusAwaitingApproval, StatusReceived}, // recusa
+		{StatusFinished, StatusDelivered},
+	}
+	for _, tt := range tests {
+		t.Run(string(tt.from)+" -> "+string(tt.to), func(t *testing.T) {
+			so := newServiceOrderWithStatus(tt.from)
+			if err := so.UpdateStatus(tt.to); err != nil {
+				t.Fatalf("transicao falhou: %v", err)
+			}
+			if so.StartedAt() != nil {
+				t.Errorf("StartedAt() = %v, deveria continuar nil", so.StartedAt())
+			}
+			if so.FinishedAt() != nil {
+				t.Errorf("FinishedAt() = %v, deveria continuar nil", so.FinishedAt())
+			}
+		})
+	}
+}
+
+// Fluxo completo: startedAt e finishedAt sao gravados uma unica vez, no
+// momento correto do ciclo de vida.
+func TestFluxoCompleto_PopulaStartedEFinished(t *testing.T) {
+	so := NewServiceOrder("cust-1", "veh-1")
+	_ = so.UpdateStatus(StatusInDiagnosis)
+	_ = so.UpdateStatus(StatusAwaitingApproval)
+
+	if so.StartedAt() != nil || so.FinishedAt() != nil {
+		t.Fatal("antes da aprovacao, nenhum timestamp deve existir")
+	}
+
+	_ = so.UpdateStatus(StatusInExecution)
+	startedCapture := so.StartedAt()
+	if startedCapture == nil {
+		t.Fatal("StartedAt() deveria estar gravado apos aprovacao")
+	}
+
+	_ = so.UpdateStatus(StatusFinished)
+	if so.StartedAt() == nil || !so.StartedAt().Equal(*startedCapture) {
+		t.Error("StartedAt() nao deveria ter mudado ao finalizar")
+	}
+	if so.FinishedAt() == nil {
+		t.Error("FinishedAt() deveria estar gravado apos finalizar")
+	}
+	if so.FinishedAt().Before(*startedCapture) {
+		t.Error("FinishedAt() nao pode ser anterior a StartedAt()")
+	}
+}
+
 // Helper para criar OS com status especifico (via reconstituicao).
 func newServiceOrderWithStatus(status OrderStatus) *ServiceOrder {
 	t := time.Now()
@@ -276,5 +379,6 @@ func newServiceOrderWithStatus(status OrderStatus) *ServiceOrder {
 		status,
 		nil, nil, 0, "",
 		t, t,
+		nil, nil,
 	)
 }

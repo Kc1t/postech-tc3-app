@@ -12,6 +12,7 @@ package mocks
 import (
 	context "context"
 	reflect "reflect"
+	time "time"
 
 	entities "github.com/fiap/postech-tc1/internal/domain/entities"
 	gomock "go.uber.org/mock/gomock"
@@ -273,17 +274,18 @@ func (m *MockCreateVehicleUseCase) EXPECT() *MockCreateVehicleUseCaseMockRecorde
 }
 
 // Execute mocks base method.
-func (m *MockCreateVehicleUseCase) Execute(ctx context.Context, v *entities.Vehicle) error {
+func (m *MockCreateVehicleUseCase) Execute(ctx context.Context, input entities.VehicleInput) (*entities.Vehicle, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Execute", ctx, v)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret := m.ctrl.Call(m, "Execute", ctx, input)
+	ret0, _ := ret[0].(*entities.Vehicle)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Execute indicates an expected call of Execute.
-func (mr *MockCreateVehicleUseCaseMockRecorder) Execute(ctx, v any) *gomock.Call {
+func (mr *MockCreateVehicleUseCaseMockRecorder) Execute(ctx, input any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockCreateVehicleUseCase)(nil).Execute), ctx, v)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockCreateVehicleUseCase)(nil).Execute), ctx, input)
 }
 
 // MockGetVehicleUseCase is a mock of GetVehicleUseCase interface.
@@ -863,6 +865,45 @@ func (m *MockDeleteServiceOrderUseCase) Execute(ctx context.Context, id string) 
 func (mr *MockDeleteServiceOrderUseCaseMockRecorder) Execute(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockDeleteServiceOrderUseCase)(nil).Execute), ctx, id)
+}
+
+// MockGetAverageExecutionTimeUseCase is a mock of GetAverageExecutionTimeUseCase interface.
+type MockGetAverageExecutionTimeUseCase struct {
+	ctrl     *gomock.Controller
+	recorder *MockGetAverageExecutionTimeUseCaseMockRecorder
+	isgomock struct{}
+}
+
+// MockGetAverageExecutionTimeUseCaseMockRecorder is the mock recorder for MockGetAverageExecutionTimeUseCase.
+type MockGetAverageExecutionTimeUseCaseMockRecorder struct {
+	mock *MockGetAverageExecutionTimeUseCase
+}
+
+// NewMockGetAverageExecutionTimeUseCase creates a new mock instance.
+func NewMockGetAverageExecutionTimeUseCase(ctrl *gomock.Controller) *MockGetAverageExecutionTimeUseCase {
+	mock := &MockGetAverageExecutionTimeUseCase{ctrl: ctrl}
+	mock.recorder = &MockGetAverageExecutionTimeUseCaseMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockGetAverageExecutionTimeUseCase) EXPECT() *MockGetAverageExecutionTimeUseCaseMockRecorder {
+	return m.recorder
+}
+
+// Execute mocks base method.
+func (m *MockGetAverageExecutionTimeUseCase) Execute(ctx context.Context) (time.Duration, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Execute", ctx)
+	ret0, _ := ret[0].(time.Duration)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Execute indicates an expected call of Execute.
+func (mr *MockGetAverageExecutionTimeUseCaseMockRecorder) Execute(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockGetAverageExecutionTimeUseCase)(nil).Execute), ctx)
 }
 
 // MockCreateServiceUseCase is a mock of CreateServiceUseCase interface.

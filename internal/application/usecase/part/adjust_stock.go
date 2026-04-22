@@ -15,6 +15,5 @@ func NewAdjustPartStock(repo ports.PartRepository) *AdjustPartStock {
 }
 
 func (uc *AdjustPartStock) Execute(ctx context.Context, id string, delta int) error {
-	// TODO: nao permitir estoque negativo
 	return uc.repo.UpdateStock(ctx, id, delta)
 }

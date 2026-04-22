@@ -5,6 +5,7 @@ import (
 	"errors"
 	"testing"
 
+	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
 	"github.com/fiap/postech-tc1/internal/ports/mocks"
 	"go.uber.org/mock/gomock"
 )
@@ -46,5 +47,19 @@ func TestAdjustPartStock_Execute_RepoError(t *testing.T) {
 	uc := NewAdjustPartStock(repo)
 	if err := uc.Execute(context.Background(), "part-1", 5); !errors.Is(err, repoErr) {
 		t.Fatalf("expected %v, got %v", repoErr, err)
+	}
+}
+
+func TestAdjustPartStock_Execute_InsufficientStock(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	repo := mocks.NewMockPartRepository(ctrl)
+	repo.EXPECT().UpdateStock(gomock.Any(), "part-1", -10).Return(domainerrors.ErrInsufficientStock)
+
+	uc := NewAdjustPartStock(repo)
+	err := uc.Execute(context.Background(), "part-1", -10)
+	if !errors.Is(err, domainerrors.ErrInsufficientStock) {
+		t.Fatalf("expected ErrInsufficientStock, got %v", err)
 	}
 }

@@ -169,3 +169,31 @@ func TestVehicleRepository_Delete(t *testing.T) {
 		t.Fatal("expected record to be deleted")
 	}
 }
+
+func TestVehicleRepository_FindByPlate(t *testing.T) {
+	customer := seedCustomer(t)
+	repo := NewVehicleRepository(testDB)
+	now := time.Now()
+	v := entities.ReconstituteVehicle("", customer.ID(), "PLT0001", "Honda", "Civic", 2020, now, now)
+	if err := repo.Create(context.Background(), v); err != nil {
+		t.Fatalf("setup failed: %v", err)
+	}
+	t.Cleanup(func() { testDB.Delete(&pgmodel.Vehicle{}, "id = ?", v.ID()) })
+
+	found, err := repo.FindByPlate(context.Background(), "PLT0001")
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+	if found.ID() != v.ID() {
+		t.Errorf("expected ID %s, got %s", v.ID(), found.ID())
+	}
+}
+
+func TestVehicleRepository_FindByPlate_NotFound(t *testing.T) {
+	repo := NewVehicleRepository(testDB)
+
+	_, err := repo.FindByPlate(context.Background(), "ZZZ9999")
+	if !isDomainNotFound(err) {
+		t.Fatalf("expected ErrNotFound, got %v", err)
+	}
+}

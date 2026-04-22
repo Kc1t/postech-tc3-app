@@ -2,6 +2,7 @@ package ports
 
 import (
 	"context"
+	"time"
 
 	"github.com/fiap/postech-tc1/internal/domain/entities"
 )
@@ -37,7 +38,7 @@ type DeleteCustomerUseCase interface {
 // --- Vehicle ---
 
 type CreateVehicleUseCase interface {
-	Execute(ctx context.Context, v *entities.Vehicle) error
+	Execute(ctx context.Context, input entities.VehicleInput) (*entities.Vehicle, error)
 }
 
 type GetVehicleUseCase interface {
@@ -100,6 +101,10 @@ type UpdateServiceOrderUseCase interface {
 
 type DeleteServiceOrderUseCase interface {
 	Execute(ctx context.Context, id string) error
+}
+
+type GetAverageExecutionTimeUseCase interface {
+	Execute(ctx context.Context) (time.Duration, error)
 }
 
 // --- Service ---

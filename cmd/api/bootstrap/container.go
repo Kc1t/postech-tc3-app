@@ -65,6 +65,7 @@ type Container struct {
 	UpdateServiceOrder          ports.UpdateServiceOrderUseCase          `container:"usecase"`
 	DeleteServiceOrder          ports.DeleteServiceOrderUseCase          `container:"usecase"`
 	UpdateServiceOrderStatusByCode ports.UpdateServiceOrderStatusByCodeUseCase `container:"usecase"`
+	GetAverageExecutionTime        ports.GetAverageExecutionTimeUseCase        `container:"usecase"`
 
 	// Use Cases — service
 	CreateService ports.CreateServiceUseCase `container:"usecase"`
@@ -172,6 +173,7 @@ func (c *Container) setupUseCases() {
 	c.UpdateServiceOrder = serviceorderuc.NewUpdateServiceOrder(c.ServiceOrderRepo)
 	c.DeleteServiceOrder = serviceorderuc.NewDeleteServiceOrder(c.ServiceOrderRepo)
 	c.UpdateServiceOrderStatusByCode = serviceorderuc.NewUpdateServiceOrderStatusByCode(c.ServiceOrderRepo, c.CustomerRepo)
+	c.GetAverageExecutionTime = serviceorderuc.NewGetAverageExecutionTime(c.ServiceOrderRepo)
 
 	// Service
 	c.CreateService = serviceuc.NewCreateService(c.ServiceRepo)
@@ -193,6 +195,7 @@ func (c *Container) setupHandlers() {
 	c.CustomerHandler = customerhandler.NewCustomerHandler(
 		c.CreateCustomer, c.GetCustomer, c.GetCustomerByDocument,
 		c.ListCustomers, c.UpdateCustomer, c.DeleteCustomer,
+		c.ListVehiclesByCustomer,
 	)
 	c.VehicleHandler = vehiclehandler.NewVehicleHandler(
 		c.CreateVehicle, c.GetVehicle, c.ListVehicles,
@@ -203,6 +206,7 @@ func (c *Container) setupHandlers() {
 		c.ListServiceOrders, c.ListServiceOrdersByDocument,
 		c.UpdateServiceOrderStatus, c.UpdateServiceOrder, c.DeleteServiceOrder,
 		c.UpdateServiceOrderStatusByCode,
+		c.GetAverageExecutionTime,
 	)
 	c.ServiceHandler = servicehandler.NewServiceHandler(
 		c.CreateService, c.GetService, c.ListServices,

@@ -6,12 +6,13 @@ import (
 )
 
 type CustomerHandler struct {
-	create        ports.CreateCustomerUseCase
-	getByID       ports.GetCustomerUseCase
-	getByDocument ports.GetCustomerByDocumentUseCase
-	listAll       ports.ListCustomersUseCase
-	update        ports.UpdateCustomerUseCase
-	delete        ports.DeleteCustomerUseCase
+	create           ports.CreateCustomerUseCase
+	getByID          ports.GetCustomerUseCase
+	getByDocument    ports.GetCustomerByDocumentUseCase
+	listAll          ports.ListCustomersUseCase
+	update           ports.UpdateCustomerUseCase
+	delete           ports.DeleteCustomerUseCase
+	listVehicles     ports.ListVehiclesByCustomerUseCase
 }
 
 func NewCustomerHandler(
@@ -21,6 +22,7 @@ func NewCustomerHandler(
 	listAll ports.ListCustomersUseCase,
 	update ports.UpdateCustomerUseCase,
 	delete ports.DeleteCustomerUseCase,
+	listVehicles ports.ListVehiclesByCustomerUseCase,
 ) *CustomerHandler {
 	return &CustomerHandler{
 		create:        create,
@@ -29,6 +31,7 @@ func NewCustomerHandler(
 		listAll:       listAll,
 		update:        update,
 		delete:        delete,
+		listVehicles:  listVehicles,
 	}
 }
 
@@ -38,6 +41,7 @@ func (h *CustomerHandler) SetupRoutes(rg *gin.RouterGroup) {
 	g.GET("", h.FindAll)
 	g.GET("/document/:document", h.FindByDocument)
 	g.GET("/:id", h.FindByID)
+	g.GET("/:id/vehicles", h.ListVehicles)
 	g.PUT("/:id", h.Update)
 	g.DELETE("/:id", h.Delete)
 }

@@ -34,6 +34,7 @@ func newHandler(ctrl *gomock.Controller) (
 	*mocks.MockListCustomersUseCase,
 	*mocks.MockUpdateCustomerUseCase,
 	*mocks.MockDeleteCustomerUseCase,
+	*mocks.MockListVehiclesByCustomerUseCase,
 ) {
 	create := mocks.NewMockCreateCustomerUseCase(ctrl)
 	getByID := mocks.NewMockGetCustomerUseCase(ctrl)
@@ -41,8 +42,9 @@ func newHandler(ctrl *gomock.Controller) (
 	list := mocks.NewMockListCustomersUseCase(ctrl)
 	update := mocks.NewMockUpdateCustomerUseCase(ctrl)
 	del := mocks.NewMockDeleteCustomerUseCase(ctrl)
-	h := NewCustomerHandler(create, getByID, getByDoc, list, update, del)
-	return h, create, getByID, getByDoc, list, update, del
+	listVehicles := mocks.NewMockListVehiclesByCustomerUseCase(ctrl)
+	h := NewCustomerHandler(create, getByID, getByDoc, list, update, del, listVehicles)
+	return h, create, getByID, getByDoc, list, update, del, listVehicles
 }
 
 // --- Create ---
@@ -51,7 +53,7 @@ func TestCustomerHandler_Create_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	h, create, _, _, _, _, _ := newHandler(ctrl)
+	h, create, _, _, _, _, _, _ := newHandler(ctrl)
 	create.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(nil)
 
 	body, _ := json.Marshal(map[string]string{
@@ -72,7 +74,7 @@ func TestCustomerHandler_Create_BadRequest(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	h, _, _, _, _, _, _ := newHandler(ctrl)
+	h, _, _, _, _, _, _, _ := newHandler(ctrl)
 
 	w := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodPost, "/customers", bytes.NewBufferString(`{}`))
@@ -88,7 +90,7 @@ func TestCustomerHandler_Create_AlreadyExists(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	h, create, _, _, _, _, _ := newHandler(ctrl)
+	h, create, _, _, _, _, _, _ := newHandler(ctrl)
 	create.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(domainerrors.ErrAlreadyExists)
 
 	body, _ := json.Marshal(map[string]string{
@@ -112,7 +114,7 @@ func TestCustomerHandler_FindByID_Success(t *testing.T) {
 	defer ctrl.Finish()
 
 	customer := entities.ReconstituteCustomer("", "João", "123", "j@j.com", "11999", time.Now(), time.Now())
-	h, _, getByID, _, _, _, _ := newHandler(ctrl)
+	h, _, getByID, _, _, _, _, _ := newHandler(ctrl)
 	getByID.EXPECT().Execute(gomock.Any(), "cust-1").Return(customer, nil)
 
 	w := httptest.NewRecorder()
@@ -128,7 +130,7 @@ func TestCustomerHandler_FindByID_NotFound(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	h, _, getByID, _, _, _, _ := newHandler(ctrl)
+	h, _, getByID, _, _, _, _, _ := newHandler(ctrl)
 	getByID.EXPECT().Execute(gomock.Any(), "cust-x").Return(nil, domainerrors.ErrNotFound)
 
 	w := httptest.NewRecorder()
@@ -147,7 +149,7 @@ func TestCustomerHandler_FindByDocument_Success(t *testing.T) {
 	defer ctrl.Finish()
 
 	customer := entities.ReconstituteCustomer("", "João", "12345678901", "j@j.com", "11999", time.Now(), time.Now())
-	h, _, _, getByDoc, _, _, _ := newHandler(ctrl)
+	h, _, _, getByDoc, _, _, _, _ := newHandler(ctrl)
 	getByDoc.EXPECT().Execute(gomock.Any(), "12345678901").Return(customer, nil)
 
 	w := httptest.NewRecorder()
@@ -163,7 +165,7 @@ func TestCustomerHandler_FindByDocument_NotFound(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	h, _, _, getByDoc, _, _, _ := newHandler(ctrl)
+	h, _, _, getByDoc, _, _, _, _ := newHandler(ctrl)
 	getByDoc.EXPECT().Execute(gomock.Any(), "00000000000").Return(nil, domainerrors.ErrNotFound)
 
 	w := httptest.NewRecorder()
@@ -182,7 +184,7 @@ func TestCustomerHandler_FindAll_Success(t *testing.T) {
 	defer ctrl.Finish()
 
 	customers := []*entities.Customer{entities.ReconstituteCustomer("", "João", "123", "j@j.com", "11999", time.Now(), time.Now())}
-	h, _, _, _, list, _, _ := newHandler(ctrl)
+	h, _, _, _, list, _, _, _ := newHandler(ctrl)
 	list.EXPECT().Execute(gomock.Any()).Return(customers, nil)
 
 	w := httptest.NewRecorder()
@@ -198,7 +200,7 @@ func TestCustomerHandler_FindAll_Error(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	h, _, _, _, list, _, _ := newHandler(ctrl)
+	h, _, _, _, list, _, _, _ := newHandler(ctrl)
 	list.EXPECT().Execute(gomock.Any()).Return(nil, errors.New("db error"))
 
 	w := httptest.NewRecorder()
@@ -217,7 +219,7 @@ func TestCustomerHandler_Update_Success(t *testing.T) {
 	defer ctrl.Finish()
 
 	customer := entities.ReconstituteCustomer("", "João", "123", "j@j.com", "11999", time.Now(), time.Now())
-	h, _, getByID, _, _, update, _ := newHandler(ctrl)
+	h, _, getByID, _, _, update, _, _ := newHandler(ctrl)
 	getByID.EXPECT().Execute(gomock.Any(), "cust-1").Return(customer, nil)
 	update.EXPECT().Execute(gomock.Any(), customer).Return(nil)
 
@@ -236,7 +238,7 @@ func TestCustomerHandler_Update_NotFound(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	h, _, getByID, _, _, _, _ := newHandler(ctrl)
+	h, _, getByID, _, _, _, _, _ := newHandler(ctrl)
 	getByID.EXPECT().Execute(gomock.Any(), "cust-x").Return(nil, domainerrors.ErrNotFound)
 
 	body, _ := json.Marshal(map[string]string{"name": "Novo"})
@@ -254,7 +256,7 @@ func TestCustomerHandler_Update_BadRequest(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	h, _, _, _, _, _, _ := newHandler(ctrl)
+	h, _, _, _, _, _, _, _ := newHandler(ctrl)
 
 	w := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodPut, "/customers/cust-1", bytes.NewBufferString(`invalid`))
@@ -271,7 +273,7 @@ func TestCustomerHandler_Update_UpdateFails(t *testing.T) {
 	defer ctrl.Finish()
 
 	customer := entities.ReconstituteCustomer("", "João", "123", "j@j.com", "11999", time.Now(), time.Now())
-	h, _, getByID, _, _, update, _ := newHandler(ctrl)
+	h, _, getByID, _, _, update, _, _ := newHandler(ctrl)
 	getByID.EXPECT().Execute(gomock.Any(), "cust-1").Return(customer, nil)
 	update.EXPECT().Execute(gomock.Any(), customer).Return(errors.New("db error"))
 
@@ -292,7 +294,7 @@ func TestCustomerHandler_Delete_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	h, _, _, _, _, _, del := newHandler(ctrl)
+	h, _, _, _, _, _, del, _ := newHandler(ctrl)
 	del.EXPECT().Execute(gomock.Any(), "cust-1").Return(nil)
 
 	w := httptest.NewRecorder()
@@ -308,7 +310,7 @@ func TestCustomerHandler_Delete_NotFound(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	h, _, _, _, _, _, del := newHandler(ctrl)
+	h, _, _, _, _, _, del, _ := newHandler(ctrl)
 	del.EXPECT().Execute(gomock.Any(), "cust-x").Return(domainerrors.ErrNotFound)
 
 	w := httptest.NewRecorder()
@@ -317,5 +319,69 @@ func TestCustomerHandler_Delete_NotFound(t *testing.T) {
 
 	if w.Code != http.StatusNotFound {
 		t.Fatalf("expected 404, got %d", w.Code)
+	}
+}
+
+// --- ListVehicles (GET /customers/:id/vehicles) ---
+
+func TestCustomerHandler_ListVehicles_Success(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	h, _, _, _, _, _, _, listVehicles := newHandler(ctrl)
+	now := time.Now()
+	v1 := entities.ReconstituteVehicle("v1", "cust-1", "ABC1234", "Fiat", "Strada", 2021, now, now)
+	v2 := entities.ReconstituteVehicle("v2", "cust-1", "XYZ9A88", "VW", "Gol", 2019, now, now)
+	listVehicles.EXPECT().Execute(gomock.Any(), "cust-1").Return([]*entities.Vehicle{v1, v2}, nil)
+
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/customers/cust-1/vehicles", nil)
+	newTestRouter(h).ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d: %s", w.Code, w.Body.String())
+	}
+
+	var body []map[string]any
+	if err := json.Unmarshal(w.Body.Bytes(), &body); err != nil {
+		t.Fatalf("json decode: %v", err)
+	}
+	if len(body) != 2 {
+		t.Errorf("retornou %d veiculos, esperava 2", len(body))
+	}
+}
+
+func TestCustomerHandler_ListVehicles_Empty(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	h, _, _, _, _, _, _, listVehicles := newHandler(ctrl)
+	listVehicles.EXPECT().Execute(gomock.Any(), "cust-sem-veh").Return([]*entities.Vehicle{}, nil)
+
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/customers/cust-sem-veh/vehicles", nil)
+	newTestRouter(h).ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", w.Code)
+	}
+	if w.Body.String() != "[]" {
+		t.Errorf("body = %q, esperava \"[]\"", w.Body.String())
+	}
+}
+
+func TestCustomerHandler_ListVehicles_RepoError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	h, _, _, _, _, _, _, listVehicles := newHandler(ctrl)
+	listVehicles.EXPECT().Execute(gomock.Any(), "cust-1").Return(nil, errors.New("db unavailable"))
+
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/customers/cust-1/vehicles", nil)
+	newTestRouter(h).ServeHTTP(w, req)
+
+	if w.Code != http.StatusInternalServerError {
+		t.Fatalf("expected 500, got %d", w.Code)
 	}
 }

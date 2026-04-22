@@ -49,11 +49,12 @@ func TestVehicleHandler_Create_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
+	vehicle, _ := entities.NewVehicle("cust-1", "ABC1234", "Toyota", "Corolla", 2020)
 	h, create, _, _, _, _ := newHandler(ctrl)
-	create.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(nil)
+	create.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(vehicle, nil)
 
 	body, _ := json.Marshal(map[string]any{
-		"customer_id": "cust-1",
+		"customer_document": "52998224725",
 		"plate": "ABC1234", "brand": "Toyota", "model": "Corolla", "year": 2020,
 	})
 	w := httptest.NewRecorder()
@@ -82,15 +83,36 @@ func TestVehicleHandler_Create_BadRequest(t *testing.T) {
 	}
 }
 
+func TestVehicleHandler_Create_DocumentoInvalido(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	h, _, _, _, _, _ := newHandler(ctrl)
+	// Create NAO deve ser chamado — validacao do documento falha antes
+
+	body, _ := json.Marshal(map[string]any{
+		"customer_document": "11111111111",
+		"plate": "ABC1234", "brand": "Toyota", "model": "Corolla", "year": 2020,
+	})
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, "/vehicles", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+	newTestRouter(h).ServeHTTP(w, req)
+
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400, got %d", w.Code)
+	}
+}
+
 func TestVehicleHandler_Create_CustomerNotFound(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	h, create, _, _, _, _ := newHandler(ctrl)
-	create.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(domainerrors.ErrNotFound)
+	create.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(nil, domainerrors.ErrNotFound)
 
 	body, _ := json.Marshal(map[string]any{
-		"customer_id": "cust-x",
+		"customer_document": "52998224725",
 		"plate": "ABC1234", "brand": "Toyota", "model": "Corolla", "year": 2020,
 	})
 	w := httptest.NewRecorder()
@@ -108,10 +130,10 @@ func TestVehicleHandler_Create_AlreadyExists(t *testing.T) {
 	defer ctrl.Finish()
 
 	h, create, _, _, _, _ := newHandler(ctrl)
-	create.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(domainerrors.ErrAlreadyExists)
+	create.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(nil, domainerrors.ErrAlreadyExists)
 
 	body, _ := json.Marshal(map[string]any{
-		"customer_id": "cust-1",
+		"customer_document": "52998224725",
 		"plate": "ABC1234", "brand": "Toyota", "model": "Corolla", "year": 2020,
 	})
 	w := httptest.NewRecorder()
@@ -129,10 +151,10 @@ func TestVehicleHandler_Create_InternalError(t *testing.T) {
 	defer ctrl.Finish()
 
 	h, create, _, _, _, _ := newHandler(ctrl)
-	create.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(errors.New("unexpected"))
+	create.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(nil, errors.New("unexpected"))
 
 	body, _ := json.Marshal(map[string]any{
-		"customer_id": "cust-1",
+		"customer_document": "52998224725",
 		"plate": "ABC1234", "brand": "Toyota", "model": "Corolla", "year": 2020,
 	})
 	w := httptest.NewRecorder()

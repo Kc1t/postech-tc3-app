@@ -33,6 +33,8 @@ type ServiceOrder struct {
 	Notes       string
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
+	StartedAt   *time.Time
+	FinishedAt  *time.Time
 }
 
 func FromServiceOrder(so *entities.ServiceOrder) *ServiceOrder {
@@ -58,6 +60,8 @@ func FromServiceOrder(so *entities.ServiceOrder) *ServiceOrder {
 		Notes:       so.Notes(),
 		CreatedAt:   so.CreatedAt(),
 		UpdatedAt:   so.UpdatedAt(),
+		StartedAt:   so.StartedAt(),
+		FinishedAt:  so.FinishedAt(),
 	}
 }
 
@@ -75,5 +79,6 @@ func (m *ServiceOrder) ToDomain() *entities.ServiceOrder {
 	return entities.ReconstituteServiceOrder(
 		m.ID, m.Code, m.CustomerID, m.VehicleID, m.Status,
 		services, parts, m.TotalAmount, m.Notes, m.CreatedAt, m.UpdatedAt,
+		m.StartedAt, m.FinishedAt,
 	)
 }

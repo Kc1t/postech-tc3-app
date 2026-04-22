@@ -6,15 +6,16 @@ import (
 )
 
 type ServiceOrderHandler struct {
-	create             ports.CreateServiceOrderUseCase
-	getByID            ports.GetServiceOrderUseCase
-	getByCode          ports.GetServiceOrderByCodeUseCase
-	listAll            ports.ListServiceOrdersUseCase
-	listByDocument     ports.ListServiceOrdersByDocumentUseCase
-	updateStatus       ports.UpdateServiceOrderStatusUseCase
-	update             ports.UpdateServiceOrderUseCase
-	delete             ports.DeleteServiceOrderUseCase
-	updateStatusByCode ports.UpdateServiceOrderStatusByCodeUseCase
+	create               ports.CreateServiceOrderUseCase
+	getByID              ports.GetServiceOrderUseCase
+	getByCode            ports.GetServiceOrderByCodeUseCase
+	listAll              ports.ListServiceOrdersUseCase
+	listByDocument       ports.ListServiceOrdersByDocumentUseCase
+	updateStatus         ports.UpdateServiceOrderStatusUseCase
+	update               ports.UpdateServiceOrderUseCase
+	delete               ports.DeleteServiceOrderUseCase
+	updateStatusByCode   ports.UpdateServiceOrderStatusByCodeUseCase
+	averageExecutionTime ports.GetAverageExecutionTimeUseCase
 }
 
 func NewServiceOrderHandler(
@@ -27,17 +28,19 @@ func NewServiceOrderHandler(
 	update ports.UpdateServiceOrderUseCase,
 	delete ports.DeleteServiceOrderUseCase,
 	updateStatusByCode ports.UpdateServiceOrderStatusByCodeUseCase,
+	averageExecutionTime ports.GetAverageExecutionTimeUseCase,
 ) *ServiceOrderHandler {
 	return &ServiceOrderHandler{
-		create:             create,
-		getByID:            getByID,
-		getByCode:          getByCode,
-		listAll:            listAll,
-		listByDocument:     listByDocument,
-		updateStatus:       updateStatus,
-		update:             update,
-		delete:             delete,
-		updateStatusByCode: updateStatusByCode,
+		create:               create,
+		getByID:              getByID,
+		getByCode:            getByCode,
+		listAll:              listAll,
+		listByDocument:       listByDocument,
+		updateStatus:         updateStatus,
+		update:               update,
+		delete:               delete,
+		updateStatusByCode:   updateStatusByCode,
+		averageExecutionTime: averageExecutionTime,
 	}
 }
 
@@ -46,6 +49,7 @@ func (h *ServiceOrderHandler) SetupRoutes(rg *gin.RouterGroup) {
 	g := rg.Group("/service-orders")
 	g.POST("", h.Create)
 	g.GET("", h.FindAll)
+	g.GET("/metrics/execution-time", h.AverageExecutionTime)
 	g.GET("/:id", h.FindByID)
 	g.PUT("/:id/status", h.UpdateStatus)
 	g.PUT("/:id", h.Update)

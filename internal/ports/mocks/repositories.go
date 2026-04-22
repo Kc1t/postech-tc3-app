@@ -12,6 +12,7 @@ package mocks
 import (
 	context "context"
 	reflect "reflect"
+	time "time"
 
 	entities "github.com/fiap/postech-tc1/internal/domain/entities"
 	gomock "go.uber.org/mock/gomock"
@@ -366,6 +367,20 @@ func (mr *MockServiceOrderRepositoryMockRecorder) FindByID(ctx, id any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByID", reflect.TypeOf((*MockServiceOrderRepository)(nil).FindByID), ctx, id)
 }
 
+// ApplyApprovalTransition mocks base method.
+func (m *MockServiceOrderRepository) ApplyApprovalTransition(ctx context.Context, so *entities.ServiceOrder) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ApplyApprovalTransition", ctx, so)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ApplyApprovalTransition indicates an expected call of ApplyApprovalTransition.
+func (mr *MockServiceOrderRepositoryMockRecorder) ApplyApprovalTransition(ctx, so any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ApplyApprovalTransition", reflect.TypeOf((*MockServiceOrderRepository)(nil).ApplyApprovalTransition), ctx, so)
+}
+
 // Update mocks base method.
 func (m *MockServiceOrderRepository) Update(ctx context.Context, so *entities.ServiceOrder) error {
 	m.ctrl.T.Helper()
@@ -392,6 +407,21 @@ func (m *MockServiceOrderRepository) UpdateStatus(ctx context.Context, id string
 func (mr *MockServiceOrderRepositoryMockRecorder) UpdateStatus(ctx, id, status any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatus", reflect.TypeOf((*MockServiceOrderRepository)(nil).UpdateStatus), ctx, id, status)
+}
+
+// AverageExecutionTime mocks base method.
+func (m *MockServiceOrderRepository) AverageExecutionTime(ctx context.Context) (time.Duration, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AverageExecutionTime", ctx)
+	ret0, _ := ret[0].(time.Duration)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AverageExecutionTime indicates an expected call of AverageExecutionTime.
+func (mr *MockServiceOrderRepositoryMockRecorder) AverageExecutionTime(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AverageExecutionTime", reflect.TypeOf((*MockServiceOrderRepository)(nil).AverageExecutionTime), ctx)
 }
 
 // MockServiceRepository is a mock of ServiceRepository interface.
