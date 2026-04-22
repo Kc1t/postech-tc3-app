@@ -6,6 +6,7 @@ import (
 
 	httputil "github.com/fiap/postech-tc1/internal/adapters/inbound/http"
 	"github.com/fiap/postech-tc1/internal/adapters/inbound/http/commands"
+	"github.com/fiap/postech-tc1/internal/domain/entities"
 	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
 	"github.com/gin-gonic/gin"
 )
@@ -26,12 +27,17 @@ func (h *VehicleHandler) Create(c *gin.Context) {
 		return
 	}
 
-	vehicle, err := req.ToDomain()
+	doc, err := entities.NewDocument(req.CustomerDocument)
 	if err != nil {
 		httputil.HandleBadRequest(c, err)
 		return
 	}
-	if err := h.create.Execute(c.Request.Context(), vehicle); err != nil {
+
+	input := req.ToInput()
+	input.CustomerDocument = doc.Value()
+
+	vehicle, err := h.create.Execute(c.Request.Context(), input)
+	if err != nil {
 		switch {
 		case errors.Is(err, domainerrors.ErrNotFound):
 			httputil.HandleError(c, err, msgCustomerNotFound)

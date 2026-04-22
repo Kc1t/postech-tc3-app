@@ -46,14 +46,11 @@ func TestToCustomerListResponse(t *testing.T) {
 
 // --- Vehicle ---
 
-func TestCreateVehicleRequest_ToDomain(t *testing.T) {
-	req := CreateVehicleRequest{CustomerID: "cust-1", Plate: "ABC1234", Brand: "Toyota", Model: "Corolla", Year: 2020}
-	v, err := req.ToDomain()
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if v.Plate() != "ABC1234" || v.Brand() != "Toyota" || v.Year() != 2020 {
-		t.Fatalf("unexpected domain vehicle: %+v", v)
+func TestCreateVehicleRequest_ToInput(t *testing.T) {
+	req := CreateVehicleRequest{CustomerDocument: "52998224725", Plate: "ABC1234", Brand: "Toyota", Model: "Corolla", Year: 2020}
+	input := req.ToInput()
+	if input.CustomerDocument != "52998224725" || input.Plate != "ABC1234" || input.Brand != "Toyota" || input.Year != 2020 {
+		t.Fatalf("unexpected input: %+v", input)
 	}
 }
 

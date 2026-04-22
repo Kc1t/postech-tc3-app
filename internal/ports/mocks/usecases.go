@@ -274,17 +274,18 @@ func (m *MockCreateVehicleUseCase) EXPECT() *MockCreateVehicleUseCaseMockRecorde
 }
 
 // Execute mocks base method.
-func (m *MockCreateVehicleUseCase) Execute(ctx context.Context, v *entities.Vehicle) error {
+func (m *MockCreateVehicleUseCase) Execute(ctx context.Context, input entities.VehicleInput) (*entities.Vehicle, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Execute", ctx, v)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret := m.ctrl.Call(m, "Execute", ctx, input)
+	ret0, _ := ret[0].(*entities.Vehicle)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Execute indicates an expected call of Execute.
-func (mr *MockCreateVehicleUseCaseMockRecorder) Execute(ctx, v any) *gomock.Call {
+func (mr *MockCreateVehicleUseCaseMockRecorder) Execute(ctx, input any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockCreateVehicleUseCase)(nil).Execute), ctx, v)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockCreateVehicleUseCase)(nil).Execute), ctx, input)
 }
 
 // MockGetVehicleUseCase is a mock of GetVehicleUseCase interface.

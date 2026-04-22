@@ -2,6 +2,15 @@ package entities
 
 import "time"
 
+// VehicleInput carrega os dados necessarios para cadastrar um veiculo.
+type VehicleInput struct {
+	CustomerDocument string
+	Plate            string
+	Brand            string
+	Model            string
+	Year             int
+}
+
 type Vehicle struct {
 	id         string
 	customerID string
