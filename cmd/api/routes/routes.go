@@ -27,10 +27,6 @@ func Setup(router *gin.Engine, c *bootstrap.Container) {
 	prefix := router.Group("/api/v1")
 
 	// --- Auth (publico) ---
-	// Protecao contra brute force e feita via account lockout no use case
-	// (incrementa failed_attempts, bloqueia conta apos N tentativas).
-	// Rate limit por IP foi removido: facilmente burlavel por botnet e
-	// deve ser responsabilidade do infra layer (Cloudflare, nginx, WAF).
 	authPublic := prefix.Group("/auth")
 	authPublic.POST("/register", c.AuthHandler.Register)
 	authPublic.POST("/login", c.AuthHandler.Login)
