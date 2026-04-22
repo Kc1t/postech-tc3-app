@@ -3,6 +3,7 @@ package authuc
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/fiap/postech-tc1/internal/domain/entities"
@@ -29,8 +30,11 @@ func NewLogin(
 	hasher ports.PasswordHasher,
 	maxFailedLogins int,
 	lockDurationMin int,
-) *Login {
-	dummy, _ := hasher.Hash("timing-safe-dummy")
+) (*Login, error) {
+	dummy, err := hasher.Hash("timing-safe-dummy")
+	if err != nil {
+		return nil, fmt.Errorf("login: failed to pre-compute dummy hash: %w", err)
+	}
 	return &Login{
 		userRepo:        userRepo,
 		refreshRepo:     refreshRepo,
@@ -39,7 +43,7 @@ func NewLogin(
 		maxFailedLogins: maxFailedLogins,
 		lockDurationMin: lockDurationMin,
 		dummyHash:       dummy,
-	}
+	}, nil
 }
 
 func (uc *Login) Execute(ctx context.Context, email, password string) (string, string, error) {

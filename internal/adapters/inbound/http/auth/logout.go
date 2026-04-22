@@ -3,6 +3,7 @@ package authhandler
 import (
 	"net/http"
 
+	httputil "github.com/fiap/postech-tc1/internal/adapters/inbound/http"
 	"github.com/fiap/postech-tc1/internal/adapters/inbound/http/commands"
 	"github.com/gin-gonic/gin"
 )
@@ -13,23 +14,22 @@ import (
 // @Produce     json
 // @Security    BearerAuth
 // @Success     200 {object} commands.MessageResponse
-// @Failure     401 {object} commands.MessageResponse
 // @Router      /auth/logout [post]
 func (h *AuthHandler) Logout(c *gin.Context) {
 	userIDVal, exists := c.Get("user_id")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "user not identified"})
+		c.JSON(http.StatusUnauthorized, httputil.ErrorResponse{Status: "Unauthorized", Message: "user not identified"})
 		return
 	}
 
 	userID, ok := userIDVal.(string)
 	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid user context"})
+		c.JSON(http.StatusInternalServerError, httputil.ErrorResponse{Status: "Internal Server Error", Message: "internal server error"})
 		return
 	}
 
 	if err := h.logout.Execute(c.Request.Context(), userID); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		httputil.HandleError(c, err)
 		return
 	}
 

@@ -163,10 +163,14 @@ func (c *Container) setupUseCases() {
 
 	// Auth
 	c.RegisterUseCase = authuc.NewRegister(c.UserRepo, pwdHasher)
-	c.LoginUseCase = authuc.NewLogin(
+	loginUC, err := authuc.NewLogin(
 		c.UserRepo, c.RefreshTokenRepo, tokenSvc, pwdHasher,
 		c.Config.MaxFailedLogins, c.Config.LoginLockMin,
 	)
+	if err != nil {
+		log.Fatalf("bootstrap: %v", err)
+	}
+	c.LoginUseCase = loginUC
 	c.RefreshTokenUseCase = authuc.NewRefresh(c.UserRepo, c.RefreshTokenRepo, tokenSvc)
 	c.LogoutUseCase = authuc.NewLogout(c.RefreshTokenRepo)
 

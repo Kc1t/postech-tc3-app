@@ -1,4 +1,4 @@
-	package authuc
+package authuc
 
 import (
 	"context"
