@@ -17,7 +17,7 @@ func init() {
 func makeToken(secret string, valid bool) string {
 	claims := jwt.MapClaims{
 		"sub":  "user-1",
-		"role": "customer",
+		"role": "client",
 		"exp":  time.Now().Add(time.Hour).Unix(),
 	}
 	if !valid {
