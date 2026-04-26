@@ -66,3 +66,20 @@ type PartRepository interface {
 	Delete(ctx context.Context, id string) error
 	UpdateStock(ctx context.Context, id string, delta int) error
 }
+
+// UserRepository define as operacoes de persistencia para usuarios.
+type UserRepository interface {
+	Create(ctx context.Context, u *entities.User) error
+	FindByEmail(ctx context.Context, email string) (*entities.User, error)
+	FindByID(ctx context.Context, id string) (*entities.User, error)
+	Update(ctx context.Context, u *entities.User) error
+}
+
+// RefreshTokenRepository define as operacoes de persistencia para refresh tokens.
+type RefreshTokenRepository interface {
+	Create(ctx context.Context, rt *entities.RefreshToken) error
+	FindByTokenHash(ctx context.Context, hash string) (*entities.RefreshToken, error)
+	Revoke(ctx context.Context, id string) error
+	RevokeByUserID(ctx context.Context, userID string) error
+	RotateToken(ctx context.Context, oldID string, newRT *entities.RefreshToken) error
+}

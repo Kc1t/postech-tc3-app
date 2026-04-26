@@ -1,30 +1,43 @@
 package config
 
 import (
-	"os"
+	"github.com/fiap/postech-tc1/pkg/env"
+	"github.com/joho/godotenv"
+)
+
+type AppEnv string
+
+const (
+	EnvDevelopment AppEnv = "development"
+	EnvProduction  AppEnv = "prod"
 )
 
 type Config struct {
-	AppPort            string
-	AppEnv             string
-	PostgresDSN        string
-	JWTSecret          string
-	JWTExpirationHours int
+	AppPort             string
+	AppEnv              AppEnv
+	PostgresDSN         string
+	JWTSecret           string
+	JWTExpirationHours  int
+	AccessTokenExpMin   int
+	RefreshTokenExpDays int
+	BcryptCost          int
+	MaxFailedLogins     int
+	LoginLockMin        int
 }
 
 func Load() *Config {
-	return &Config{
-		AppPort:            getEnv("APP_PORT", "8080"),
-		AppEnv:             getEnv("APP_ENV", "development"),
-		PostgresDSN:        getEnv("POSTGRES_DSN", "postgres://postgres:postgres@localhost:5432/workshop?sslmode=disable"),
-		JWTSecret:          getEnv("JWT_SECRET", "secret"),
-		JWTExpirationHours: 24,
-	}
-}
+	_ = godotenv.Load()
 
-func getEnv(key, fallback string) string {
-	if v := os.Getenv(key); v != "" {
-		return v
+	return &Config{
+		AppPort:             env.GetOrDefault("APP_PORT", "8080"),
+		AppEnv:              AppEnv(env.GetOrDefault("APP_ENV", string(EnvDevelopment))),
+		PostgresDSN:         env.GetOrDefault("POSTGRES_DSN", "postgres://postgres:postgres@localhost:5432/workshop?sslmode=disable"),
+		JWTSecret:           env.GetOrDefault("JWT_SECRET", "secret"),
+		JWTExpirationHours:  24,
+		AccessTokenExpMin:   env.GetIntOrDefault("ACCESS_TOKEN_EXP_MIN", 15),
+		RefreshTokenExpDays: env.GetIntOrDefault("REFRESH_TOKEN_EXP_DAYS", 7),
+		BcryptCost:          env.GetIntOrDefault("BCRYPT_COST", 12),
+		MaxFailedLogins:     env.GetIntOrDefault("MAX_FAILED_LOGINS", 5),
+		LoginLockMin:        env.GetIntOrDefault("LOGIN_LOCK_MIN", 15),
 	}
-	return fallback
 }

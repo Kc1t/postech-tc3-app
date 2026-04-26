@@ -17,9 +17,9 @@ var testDB *gorm.DB
 func TestMain(m *testing.M) {
 	host := getEnvOrDefault("TEST_DB_HOST", "localhost")
 	port := getEnvOrDefault("TEST_DB_PORT", "5432")
-	user := getEnvOrDefault("TEST_DB_USER", "test")
-	password := getEnvOrDefault("TEST_DB_PASSWORD", "test")
-	dbname := getEnvOrDefault("TEST_DB_NAME", "testdb")
+	user := getEnvOrDefault("TEST_DB_USER", "postgres")
+	password := getEnvOrDefault("TEST_DB_PASSWORD", "postgres")
+	dbname := getEnvOrDefault("TEST_DB_NAME", "workshop")
 
 	dsn := fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
@@ -39,6 +39,8 @@ func TestMain(m *testing.M) {
 		&pgmodel.Part{},
 		&pgmodel.Service{},
 		&pgmodel.ServiceOrder{},
+		&pgmodel.User{},
+		&pgmodel.RefreshToken{},
 	); err != nil {
 		log.Fatalf("failed to run migrations: %v", err)
 	}

@@ -33,8 +33,25 @@ func Auth(jwtSecret string) gin.HandlerFunc {
 			return
 		}
 
-		if claims, ok := token.Claims.(jwt.MapClaims); ok {
-			c.Set("claims", claims)
+		claims, ok := token.Claims.(jwt.MapClaims)
+		if !ok {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid token claims"})
+			return
+		}
+
+		// Valida claims obrigatorias
+		sub, subOk := claims["sub"].(string)
+		role, roleOk := claims["role"].(string)
+		if !subOk || sub == "" || !roleOk || role == "" {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "incomplete token claims"})
+			return
+		}
+
+		c.Set("claims", claims)
+		c.Set("user_id", sub)
+		c.Set("user_role", role)
+		if email, ok := claims["email"].(string); ok {
+			c.Set("user_email", email)
 		}
 
 		c.Next()

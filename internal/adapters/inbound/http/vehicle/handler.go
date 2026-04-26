@@ -36,5 +36,4 @@ func (h *VehicleHandler) SetupRoutes(rg *gin.RouterGroup) {
 	g.GET("/:id", h.FindByID)
 	g.PUT("/:id", h.Update)
 	g.DELETE("/:id", h.Delete)
-
 }

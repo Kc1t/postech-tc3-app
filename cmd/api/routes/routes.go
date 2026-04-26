@@ -5,6 +5,7 @@ import (
 
 	"github.com/fiap/postech-tc1/cmd/api/bootstrap"
 	"github.com/fiap/postech-tc1/cmd/api/middleware"
+	"github.com/fiap/postech-tc1/internal/domain/entities"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -25,15 +26,39 @@ func Setup(router *gin.Engine, c *bootstrap.Container) {
 
 	prefix := router.Group("/api/v1")
 
+	// --- Auth (publico) ---
+	authPublic := prefix.Group("/auth")
+	authPublic.POST("/register", c.AuthHandler.Register)
+	authPublic.POST("/login", c.AuthHandler.Login)
+	authPublic.POST("/refresh", c.AuthHandler.Refresh)
+
+	// --- Rotas protegidas (qualquer usuario autenticado) ---
+	protected := prefix.Group("/")
 	// Rotas publicas do cliente (sem JWT)
 	c.ServiceOrderHandler.SetupPublicRoutes(prefix)
 
-	protected := prefix.Group("/")
 	protected.Use(middleware.Auth(c.Config.JWTSecret))
 
-	c.CustomerHandler.SetupRoutes(protected)
-	c.VehicleHandler.SetupRoutes(protected)
-	c.ServiceOrderHandler.SetupRoutes(protected)
-	c.ServiceHandler.SetupRoutes(protected)
-	c.PartHandler.SetupRoutes(protected)
+	// Logout (precisa de JWT)
+	protected.POST("/auth/logout", c.AuthHandler.Logout)
+
+	// Consulta de OS — client pode ver (filtra por customerID no handler)
+	protected.GET("/service-orders", c.ServiceOrderHandler.FindAll)
+	protected.GET("/service-orders/:id", c.ServiceOrderHandler.FindByID)
+
+	// --- Admin only ---
+	admin := protected.Group("/")
+	admin.Use(middleware.RequireRole(string(entities.RoleAdmin)))
+
+	c.CustomerHandler.SetupRoutes(admin)
+	c.VehicleHandler.SetupRoutes(admin)
+	c.ServiceHandler.SetupRoutes(admin)
+	c.PartHandler.SetupRoutes(admin)
+
+	// Service Orders — escrita apenas admin
+	orders := admin.Group("/service-orders")
+	orders.POST("", c.ServiceOrderHandler.Create)
+	orders.PUT("/:id/status", c.ServiceOrderHandler.UpdateStatus)
+	orders.PUT("/:id", c.ServiceOrderHandler.Update)
+	orders.DELETE("/:id", c.ServiceOrderHandler.Delete)
 }

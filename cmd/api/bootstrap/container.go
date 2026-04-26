@@ -1,23 +1,29 @@
 package bootstrap
 
 import (
+	"context"
 	"log"
+	"os"
 	"sync"
 
 	"github.com/fiap/postech-tc1/config"
+	"github.com/fiap/postech-tc1/internal/adapters/outbound/jwt"
 	"github.com/fiap/postech-tc1/internal/adapters/outbound/postgresql"
 	pgmodel "github.com/fiap/postech-tc1/internal/adapters/outbound/postgresql/model"
+	"github.com/fiap/postech-tc1/internal/domain/entities"
 	"github.com/fiap/postech-tc1/internal/ports"
-	"github.com/joho/godotenv"
+	"github.com/fiap/postech-tc1/pkg/hasher"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
+	authhandler "github.com/fiap/postech-tc1/internal/adapters/inbound/http/auth"
 	customerhandler "github.com/fiap/postech-tc1/internal/adapters/inbound/http/customer"
 	parthandler "github.com/fiap/postech-tc1/internal/adapters/inbound/http/part"
 	servicehandler "github.com/fiap/postech-tc1/internal/adapters/inbound/http/service"
 	serviceorderhandler "github.com/fiap/postech-tc1/internal/adapters/inbound/http/service_order"
 	vehiclehandler "github.com/fiap/postech-tc1/internal/adapters/inbound/http/vehicle"
 
+	authuc "github.com/fiap/postech-tc1/internal/application/usecase/auth"
 	customeruc "github.com/fiap/postech-tc1/internal/application/usecase/customer"
 	partuc "github.com/fiap/postech-tc1/internal/application/usecase/part"
 	serviceuc "github.com/fiap/postech-tc1/internal/application/usecase/service"
@@ -25,18 +31,24 @@ import (
 	vehicleuc "github.com/fiap/postech-tc1/internal/application/usecase/vehicle"
 )
 
-// Container centraliza o acesso as dependencias da aplicacao.
-// A tag `container` documenta a camada de cada dependencia.
 type Container struct {
 	Config *config.Config
 	db     *gorm.DB
 
-	// Repositories — outbound adapters (persistencia)
+	// Repositories
+	UserRepo         ports.UserRepository         `container:"repository"`
+	RefreshTokenRepo ports.RefreshTokenRepository `container:"repository"`
 	CustomerRepo     ports.CustomerRepository     `container:"repository"`
 	VehicleRepo      ports.VehicleRepository      `container:"repository"`
 	ServiceOrderRepo ports.ServiceOrderRepository `container:"repository"`
 	ServiceRepo      ports.ServiceRepository      `container:"repository"`
 	PartRepo         ports.PartRepository         `container:"repository"`
+
+	// Use Cases — auth
+	RegisterUseCase     ports.RegisterUseCase     `container:"usecase"`
+	LoginUseCase        ports.LoginUseCase        `container:"usecase"`
+	RefreshTokenUseCase ports.RefreshTokenUseCase `container:"usecase"`
+	LogoutUseCase       ports.LogoutUseCase       `container:"usecase"`
 
 	// Use Cases — customer
 	CreateCustomer        ports.CreateCustomerUseCase        `container:"usecase"`
@@ -82,7 +94,8 @@ type Container struct {
 	DeletePart      ports.DeletePartUseCase      `container:"usecase"`
 	AdjustPartStock ports.AdjustPartStockUseCase `container:"usecase"`
 
-	// Handlers — inbound adapters (HTTP)
+	// Handlers
+	AuthHandler         *authhandler.AuthHandler                 `container:"handler"`
 	CustomerHandler     *customerhandler.CustomerHandler         `container:"handler"`
 	VehicleHandler      *vehiclehandler.VehicleHandler           `container:"handler"`
 	ServiceOrderHandler *serviceorderhandler.ServiceOrderHandler `container:"handler"`
@@ -95,7 +108,6 @@ var (
 	once     sync.Once
 )
 
-// GetContainer retorna a instancia unica do Container (Singleton).
 func GetContainer() *Container {
 	once.Do(func() {
 		instance = &Container{}
@@ -105,12 +117,12 @@ func GetContainer() *Container {
 }
 
 func (c *Container) initialize() {
-	_ = godotenv.Load()
 	c.Config = config.Load()
 	c.setupDatabase()
 	c.setupRepositories()
 	c.setupUseCases()
 	c.setupHandlers()
+	c.seedAdmin()
 }
 
 func (c *Container) setupDatabase() {
@@ -120,6 +132,8 @@ func (c *Container) setupDatabase() {
 	}
 
 	if err := db.AutoMigrate(
+		&pgmodel.User{},
+		&pgmodel.RefreshToken{},
 		&pgmodel.Customer{},
 		&pgmodel.Vehicle{},
 		&pgmodel.Service{},
@@ -134,6 +148,8 @@ func (c *Container) setupDatabase() {
 }
 
 func (c *Container) setupRepositories() {
+	c.UserRepo = postgresql.NewUserRepository(c.db)
+	c.RefreshTokenRepo = postgresql.NewRefreshTokenRepository(c.db)
 	c.CustomerRepo = postgresql.NewCustomerRepository(c.db)
 	c.VehicleRepo = postgresql.NewVehicleRepository(c.db)
 	c.ServiceOrderRepo = postgresql.NewServiceOrderRepository(c.db)
@@ -142,6 +158,23 @@ func (c *Container) setupRepositories() {
 }
 
 func (c *Container) setupUseCases() {
+	// Servicos de infraestrutura (desacoplados via interface nos ports)
+	tokenSvc := jwt.New(c.Config.JWTSecret, c.Config.AccessTokenExpMin, c.Config.RefreshTokenExpDays)
+	pwdHasher := hasher.NewBcrypt(c.Config.BcryptCost)
+
+	// Auth
+	c.RegisterUseCase = authuc.NewRegister(c.UserRepo, pwdHasher)
+	loginUC, err := authuc.NewLogin(
+		c.UserRepo, c.RefreshTokenRepo, tokenSvc, pwdHasher,
+		c.Config.MaxFailedLogins, c.Config.LoginLockMin,
+	)
+	if err != nil {
+		log.Fatalf("bootstrap: %v", err)
+	}
+	c.LoginUseCase = loginUC
+	c.RefreshTokenUseCase = authuc.NewRefresh(c.UserRepo, c.RefreshTokenRepo, tokenSvc)
+	c.LogoutUseCase = authuc.NewLogout(c.RefreshTokenRepo)
+
 	// Customer
 	c.CreateCustomer = customeruc.NewCreateCustomer(c.CustomerRepo)
 	c.GetCustomer = customeruc.NewGetCustomer(c.CustomerRepo)
@@ -192,6 +225,10 @@ func (c *Container) setupUseCases() {
 }
 
 func (c *Container) setupHandlers() {
+	c.AuthHandler = authhandler.NewAuthHandler(
+		c.RegisterUseCase, c.LoginUseCase, c.RefreshTokenUseCase,
+		c.LogoutUseCase, c.Config.AccessTokenExpMin,
+	)
 	c.CustomerHandler = customerhandler.NewCustomerHandler(
 		c.CreateCustomer, c.GetCustomer, c.GetCustomerByDocument,
 		c.ListCustomers, c.UpdateCustomer, c.DeleteCustomer,
@@ -216,4 +253,33 @@ func (c *Container) setupHandlers() {
 		c.CreatePart, c.GetPart, c.ListParts,
 		c.UpdatePart, c.DeletePart, c.AdjustPartStock,
 	)
+}
+
+func (c *Container) seedAdmin() {
+	email := os.Getenv("ADMIN_EMAIL")
+	password := os.Getenv("ADMIN_PASSWORD")
+
+	// Em prod exige credenciais explicitas, em dev usa fallback
+	if c.Config.AppEnv == config.EnvProduction && (email == "" || password == "") {
+		log.Printf("bootstrap: skipping admin seed in prod (ADMIN_EMAIL and ADMIN_PASSWORD must be set)")
+		return
+	}
+	if email == "" {
+		email = "admin@workshop.com"
+	}
+	if password == "" {
+		password = "admin123"
+	}
+
+	ctx := context.Background()
+	_, err := c.UserRepo.FindByEmail(ctx, email)
+	if err == nil {
+		return
+	}
+
+	if err := c.RegisterUseCase.Execute(ctx, "Admin", email, password, entities.RoleAdmin); err != nil {
+		log.Printf("bootstrap: failed to seed admin user: %v", err)
+		return
+	}
+	log.Printf("bootstrap: admin user seeded (%s)", email)
 }

@@ -5,6 +5,7 @@ import (
 
 	"github.com/fiap/postech-tc1/cmd/api/bootstrap"
 	"github.com/fiap/postech-tc1/cmd/api/routes"
+	"github.com/fiap/postech-tc1/config"
 	"github.com/gin-gonic/gin"
 )
 
@@ -19,7 +20,7 @@ import (
 func main() {
 	container := bootstrap.GetContainer()
 
-	if container.Config.AppEnv == "prod" {
+	if container.Config.AppEnv == config.EnvProduction {
 		gin.SetMode(gin.ReleaseMode)
 	}
 

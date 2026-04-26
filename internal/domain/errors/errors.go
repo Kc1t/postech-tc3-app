@@ -15,4 +15,5 @@ var (
 	ErrVehicleNotFromCustomer      = errors.New("vehicle does not belong to the specified customer")
 	ErrInvalidCredentials          = errors.New("invalid credentials")
 	ErrInvalidRefreshToken         = errors.New("invalid or expired refresh token")
+	ErrAccountLocked               = errors.New("account temporarily locked")
 )
