@@ -49,6 +49,17 @@ services:
       - workshop-net
     restart: unless-stopped
 
+  docs:
+    image: nginx:alpine
+    container_name: workshop-docs
+    ports:
+      - "8083:80"
+    volumes:
+      - ./docs/site:/usr/share/nginx/html:ro
+    networks:
+      - workshop-net
+    restart: unless-stopped
+
 volumes:
   postgres-data:
 
