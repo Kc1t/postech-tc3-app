@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Workshop API — Documentação</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header>
+  <div class="container">
+    <a href="#" class="logo">
+      <div class="logo-icon">🔧</div>
+      Workshop API
+    </a>
+    <nav>
+      <a href="#overview">Visão Geral</a>
+      <a href="#database">Banco de Dados</a>
+      <a href="#architecture">Arquitetura</a>
+      <a href="#structure">Estrutura</a>
+      <a href="#metrics">Métricas</a>
+      <a href="#links">Links</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="container">
+
+    <!-- ── Hero ── -->
+    <section class="hero">
+      <div class="badge">⚙️ FIAP Pós Tech — Tech Challenge 1</div>
+      <h1>Sistema de Gestão de<br/><span>Oficina Mecânica</span></h1>
+      <p class="hero-sub">
+        API REST para gerenciamento completo de solicitantes, veículos, peças,
+        serviços e ordens de serviço. Construída em Go com arquitetura hexagonal.
+      </p>
+      <div class="hero-links">
+        <!-- porta hardcoded — altere se mudar APP_PORT no .env -->
+        <a href="http://localhost:8080/swagger/index.html" class="btn btn-primary" target="_blank">
+          📄 Ver Swagger
+        </a>
+        <a href="http://localhost:8082" class="btn btn-secondary" target="_blank">
+          🗄️ pgAdmin
+        </a>
+        <a href="https://github.com/Kc1t/postech-tc1/blob/main/README.md" class="btn btn-secondary" target="_blank">
+          📘 README
+        </a>
+      </div>
+    </section>
+
+    <!-- ── Stats ── -->
+    <div class="stats">
+      <div class="stat">
+        <span class="stat-value">5</span>
+        <span class="stat-label">Entidades de domínio</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value">30+</span>
+        <span class="stat-label">Use cases</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value">REST</span>
+        <span class="stat-label">Interface HTTP (Gin)</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value">JWT</span>
+        <span class="stat-label">Autenticação</span>
+      </div>
+    </div>
+
+    <!-- ── Visão Geral ── -->
+    <section id="overview">
+      <p class="section-label">Visão Geral</p>
+      <h2>O que é este sistema?</h2>
+      <p class="section-desc">
+        Plataforma backend para oficinas mecânicas gerenciarem seu fluxo operacional
+        completo — do cadastro do solicitante até o fechamento da ordem de serviço.
+      </p>
+      <div class="card-grid">
+        <div class="card">
+          <div class="card-icon" style="background: rgba(52,211,153,0.1);">👤</div>
+          <h3>Solicitantes & Veículos</h3>
+          <p>Cadastro de solicitantes com validação de documento (CPF/CNPJ) e vinculação de múltiplos veículos por solicitante.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon" style="background: rgba(99,102,241,0.1);">📋</div>
+          <h3>Ordens de Serviço</h3>
+          <p>Criação e acompanhamento de OS com cálculo automático de total, associando serviços e peças consumidas.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon" style="background: rgba(251,191,36,0.1);">🔩</div>
+          <h3>Peças & Serviços</h3>
+          <p>Catálogo de serviços e controle de estoque de peças com ajuste de quantidade e rastreabilidade.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon" style="background: rgba(248,113,113,0.1);">🔐</div>
+          <h3>Autenticação JWT</h3>
+          <p>Endpoints protegidos via middleware JWT. Token gerado no login, validado em todas as rotas autenticadas.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Banco de Dados ── -->
+    <section id="database">
+      <p class="section-label">Banco de Dados</p>
+      <h2>Por que PostgreSQL?</h2>
+      <p class="section-desc">
+        A escolha do PostgreSQL não foi arbitrária — cada característica do sistema
+        motivou um requisito que o Postgres atende nativamente.
+      </p>
+      <div class="feature-list">
+        <div class="feature-item">
+          <div class="feature-item-icon">🔒</div>
+          <div>
+            <h4>ACID e integridade transacional</h4>
+            <p>
+              Uma Ordem de Serviço agrega serviços, peças e atualiza o estoque em uma única operação.
+              Se qualquer parte falhar, a transação inteira é revertida. O modelo ACID do Postgres
+              garante que nunca haverá OS criada com estoque inconsistente ou total calculado errado.
+            </p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-item-icon">🔗</div>
+          <div>
+            <h4>Relações entre entidades com integridade referencial</h4>
+            <p>
+              O domínio tem uma hierarquia clara: <code>Requester → Vehicle → ServiceOrder → ServiceItem / PartItem</code>.
+              Chaves estrangeiras com <code>ON DELETE RESTRICT</code> impedem remoção de solicitantes com veículos ativos
+              e de peças referenciadas em OS abertas, sem nenhuma lógica extra na aplicação.
+            </p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-item-icon">🔍</div>
+          <div>
+            <h4>Consultas por índice em campos de negócio</h4>
+            <p>
+              Buscas frequentes por CPF/CNPJ (<code>requester_document</code>) e placa de veículo
+              beneficiam-se diretamente de índices B-tree do Postgres, com custo de leitura O(log n)
+              independentemente do volume de registros.
+            </p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-item-icon">📊</div>
+          <div>
+            <h4>Maturidade, ecossistema e observabilidade</h4>
+            <p>
+              GORM tem suporte de primeira classe para Postgres. pgAdmin (incluído no Docker Compose)
+              oferece inspeção visual do schema sem ferramentas extras. A combinação garante
+              produtividade no desenvolvimento e facilidade de diagnóstico em produção.
+            </p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-item-icon">📈</div>
+          <div>
+            <h4>Escalabilidade vertical e horizontal</h4>
+            <p>
+              Para o volume esperado de uma oficina mecânica, Postgres em modo single-node é mais
+              que suficiente. Se o volume crescer, read replicas e particionamento de tabela são
+              recursos nativos — sem migração de tecnologia.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Arquitetura ── -->
+    <section id="architecture">
+      <p class="section-label">Arquitetura</p>
+      <h2>Arquitetura Hexagonal</h2>
+      <p class="section-desc">
+        O domínio não depende de nada externo. Todas as dependências apontam para dentro —
+        frameworks, banco de dados e transporte HTTP são detalhes de infraestrutura.
+      </p>
+
+      <div class="arch-diagram">
+
+        <div class="arch-layer layer-inbound">
+          <span class="arch-layer-label">Inbound</span>
+          <div class="arch-layer-content">
+            <h4>Adapters HTTP — <code>adapters/inbound/http/</code></h4>
+            <p>Handlers Gin. Recebem a requisição HTTP, validam o payload, chamam o use case e mapeiam o resultado para status code + JSON. Um arquivo por operação (<code>create.go</code>, <code>find_by_id.go</code>…).</p>
+          </div>
+        </div>
+
+        <div class="arch-arrow">↓</div>
+
+        <div class="arch-layer layer-ports">
+          <span class="arch-layer-label">Ports</span>
+          <div class="arch-layer-content">
+            <h4>Interfaces — <code>ports/usecases.go</code> · <code>ports/repositories.go</code></h4>
+            <p>Contratos puros em Go. Use cases e repositories existem apenas como interfaces aqui. Nenhuma implementação — só assinaturas. Isso permite trocar Gin por gRPC ou Postgres por outro banco sem tocar o domínio.</p>
+          </div>
+        </div>
+
+        <div class="arch-arrow">↓</div>
+
+        <div class="arch-layer layer-app">
+          <span class="arch-layer-label">Application</span>
+          <div class="arch-layer-content">
+            <h4>Use Cases — <code>application/usecase/{entidade}/</code></h4>
+            <p>Lógica de negócio. Cada struct tem um único método <code>Execute</code>. Dependem apenas de <code>ports</code> e <code>entities</code> — nunca de Gin, GORM ou Postgres.</p>
+          </div>
+        </div>
+
+        <div class="arch-arrow">↓</div>
+
+        <div class="arch-layer layer-domain">
+          <span class="arch-layer-label">Domain</span>
+          <div class="arch-layer-content">
+            <h4>Entities & Errors — <code>domain/entities/</code> · <code>domain/errors/</code></h4>
+            <p>Núcleo do sistema. Zero dependências externas. Construtores (<code>NewRequester</code>, <code>NewVehicle</code>…), invariantes de negócio e erros sentinela (<code>ErrNotFound</code>, <code>ErrInvalidDocument</code>…).</p>
+          </div>
+        </div>
+
+        <div class="arch-arrow">↑</div>
+
+        <div class="arch-layer layer-outbound">
+          <span class="arch-layer-label">Outbound</span>
+          <div class="arch-layer-content">
+            <h4>Adapters PostgreSQL — <code>adapters/outbound/postgresql/</code></h4>
+            <p>Implementações GORM dos repository interfaces. Models em <code>model/</code> com métodos <code>FromDomain</code> e <code>ToDomain</code> para converter entre entidade de domínio e model de persistência.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="card" style="margin-top: 24px;">
+        <h3 style="margin-bottom: 12px; font-size: 0.9rem;">Regra de dependência</h3>
+        <p style="font-size: 0.875rem; color: var(--text-muted);">
+          O único lugar que conhece todas as camadas é o
+          <code>cmd/api/bootstrap/container.go</code> — o container de DI.
+          Ele instancia repositories → use cases → handlers nessa ordem,
+          injetando as dependências via construtores. Nenhuma outra parte
+          do código importa camadas de fora para dentro.
+        </p>
+      </div>
+    </section>
+
+    <!-- ── Estrutura ── -->
+    <section id="structure">
+      <p class="section-label">Estrutura</p>
+      <h2>Organização do projeto</h2>
+      <p class="section-desc">
+        Cada pasta tem uma única responsabilidade. A estrutura espelha diretamente as camadas da arquitetura hexagonal.
+      </p>
+      <pre>
+cmd/api/
+  main.go                  — entrypoint: monta container e inicia servidor
+  bootstrap/container.go   — DI: instancia repos → use cases → handlers
+  routes/routes.go         — registra SetupRoutes de cada handler
+  middleware/              — JWT auth, CORS
+
+internal/
+  domain/
+    entities/              — Requester, Vehicle, Service, Part, ServiceOrder
+    errors/                — erros sentinela (ErrNotFound, ErrConflict…)
+
+  ports/
+    repositories.go        — interfaces dos repositories (driven ports)
+    usecases.go            — interfaces dos use cases (driving ports)
+
+  application/usecase/
+    requester/             — CreateRequester, GetRequester, ListRequesters…
+    vehicle/               — CreateVehicle, GetVehicle…
+    part/                  — CreatePart, AdjustStock…
+    service/               — CreateService, UpdateService…
+    service_order/         — CreateServiceOrder, UpdateStatus…
+
+  adapters/
+    inbound/http/
+      requester/           — handler.go + create.go + find_by_id.go…
+      vehicle/
+      part/
+      service/
+      service_order/
+    outbound/postgresql/
+      requester_repository.go
+      vehicle_repository.go
+      model/               — pgmodels com FromDomain / ToDomain
+
+docs/
+  site/                    — esta landing page (servida na porta 8083)
+  swagger.json             — gerado pelo swag init
+      </pre>
+    </section>
+
+    <!-- ── Métricas ── -->
+    <section id="metrics">
+      <p class="section-label">Métricas</p>
+      <h2>Endpoints de métricas</h2>
+      <p class="section-desc">
+        Endpoints dedicados para acompanhamento operacional da oficina, acessíveis via API autenticada.
+      </p>
+      <div class="feature-list">
+        <div class="feature-item">
+          <div class="feature-item-icon">⏱️</div>
+          <div>
+            <h4>Tempo médio de execução de OS
+              <code style="margin-left:8px;">GET /service-orders/metrics/execution-time</code>
+            </h4>
+            <p>
+              Calcula a média global do intervalo entre a aprovação do orçamento (<code>started_at</code>)
+              e a finalização do serviço (<code>finished_at</code>) em todas as ordens de serviço concluídas.
+              Retorna <code>0</code> caso nenhuma OS tenha sido finalizada ainda.
+            </p>
+            <pre style="margin-top:12px;">// Resposta
+{
+  "average_seconds": 14400,
+  "average_human":   "4h0m0s"
+}</pre>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-item-icon">📦</div>
+          <div>
+            <h4>Ajuste de estoque de peças
+              <code style="margin-left:8px;">PATCH /parts/{id}/stock</code>
+            </h4>
+            <p>
+              Aplica um delta (positivo ou negativo) ao estoque de uma peça.
+              Retorna <code>422 Unprocessable Entity</code> se o resultado deixaria o estoque negativo
+              (<code>ErrInsufficientStock</code>).
+            </p>
+            <pre style="margin-top:12px;">// Corpo da requisição
+{ "delta": -3 }   // remove 3 unidades do estoque
+{ "delta":  5 }   // adiciona 5 unidades ao estoque</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Links ── -->
+    <section id="links">
+      <p class="section-label">Links</p>
+      <h2>Acesso rápido</h2>
+      <p class="section-desc">Todos os serviços sobem juntos com <code>docker-compose up -d</code>.</p>
+      <div class="links-grid">
+        <!-- porta hardcoded — altere se mudar APP_PORT no .env -->
+        <a href="http://localhost:8080/swagger/index.html" class="link-card" target="_blank">
+          <div class="link-card-icon">📄</div>
+          <div>
+            <h4>Swagger UI</h4>
+            <p>Referência completa dos endpoints, schemas e exemplos de requisição</p>
+          </div>
+        </a>
+        <a href="http://localhost:8082" class="link-card" target="_blank">
+          <div class="link-card-icon">🗄️</div>
+          <div>
+            <h4>pgAdmin</h4>
+            <p>Interface visual para inspecionar o banco de dados PostgreSQL</p>
+            <p style="margin-top:6px; font-size:0.75rem; color: var(--text-muted);">
+              Usuário: <code>admin@workshop.com</code> &nbsp; Senha:&nbsp;&nbsp; <code>admin</code>
+            </p>
+          </div>
+        </a>
+        <a href="http://localhost:8080/health" class="link-card" target="_blank">
+          <div class="link-card-icon">💚</div>
+          <div>
+            <h4>Health Check</h4>
+            <p>Endpoint de liveness da API — confirma que o servidor está no ar</p>
+          </div>
+        </a>
+        <a href="https://github.com/Kc1t/postech-tc1/blob/main/README.md" class="link-card" target="_blank">
+          <div class="link-card-icon">📘</div>
+          <div>
+            <h4>README</h4>
+            <p>Instruções de instalação, variáveis de ambiente e comandos de execução</p>
+          </div>
+        </a>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<footer>
+  <div class="container">
+    <p>Workshop API — FIAP Pós Tech &nbsp;·&nbsp; Go + PostgreSQL + Arquitetura Hexagonal</p>
+  </div>
+</footer>
+
+</body>
+</html>

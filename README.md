@@ -14,7 +14,7 @@ Sistema Integrado de Atendimento e Execucao de Servicos para oficina mecanica.
 ### Justificativa do banco de dados
 
 PostgreSQL foi escolhido por:
-- **Integridade relacional**: clientes, veiculos e ordens de servico possuem relacoes fortes (FK) que o Postgres garante nativamente
+- **Integridade relacional**: solicitantes, veiculos e ordens de servico possuem relacoes fortes (FK) que o Postgres garante nativamente
 - **UUID nativo**: `gen_random_uuid()` para IDs sem dependencia externa
 - **JSONB**: permite armazenar value objects (servicos e pecas dentro da OS) como JSON sem perder a capacidade de consulta
 - **Maturidade e ecossistema**: driver oficial Go (`pgx`), ORM maduro (GORM), ferramentas de administracao (pgAdmin)
@@ -29,7 +29,7 @@ cmd/api/
   main.go              — entrypoint
   bootstrap/           — DI container (singleton)
   routes/              — setup de rotas
-  middleware/           — auth JWT, CORS
+  middleware/          — auth JWT, CORS
 
 internal/
   domain/              — entidades de negocio
@@ -53,9 +53,12 @@ cp .env.example .env
 docker compose up --build
 ```
 
-A API estara disponivel em `http://localhost:8080`.
-O Swagger UI estara em `http://localhost:8080/swagger/index.html`.
-O pgAdmin estara em `http://localhost:8082` (login: `admin@workshop.com` / `admin`).
+| Servico       | URL                                          | Observacao                              |
+|---------------|----------------------------------------------|-----------------------------------------|
+| API           | `http://localhost:8080`                      |                                         |
+| Swagger UI    | `http://localhost:8080/swagger/index.html`   |                                         |
+| pgAdmin       | `http://localhost:8082`                      | login: `admin@workshop.com` / `admin`   |
+| Documentacao  | `http://localhost:8083`                      | landing page do projeto                 |
 
 ### Rodar localmente (sem Docker)
 
@@ -84,51 +87,54 @@ go run ./cmd/api
 
 ## Endpoints
 
-| Metodo | Rota                                    | Descricao                        |
-|--------|-----------------------------------------|----------------------------------|
-| GET    | `/health`                               | Health check                     |
-| **Auth (publico)** | | |
-| POST   | `/api/v1/auth/register`                 | Registrar usuario (role=client)  |
-| POST   | `/api/v1/auth/login`                    | Login (retorna access + refresh) |
-| POST   | `/api/v1/auth/refresh`                  | Rotacionar tokens                |
-| POST   | `/api/v1/auth/logout`                   | Encerrar sessao (requer JWT)     |
-| **Customers** | | |
-| POST   | `/api/v1/customers`                     | Criar cliente                    |
-| GET    | `/api/v1/customers`                     | Listar clientes                  |
-| GET    | `/api/v1/customers/:id`                 | Buscar cliente por ID            |
-| GET    | `/api/v1/customers/document/:document`  | Buscar cliente por CPF/CNPJ      |
-| PUT    | `/api/v1/customers/:id`                 | Atualizar cliente                |
-| DELETE | `/api/v1/customers/:id`                 | Deletar cliente                  |
-| **Vehicles** | | |
-| POST   | `/api/v1/vehicles`                      | Cadastrar veiculo                |
-| GET    | `/api/v1/vehicles`                      | Listar veiculos                  |
-| GET    | `/api/v1/vehicles/:id`                  | Buscar veiculo por ID            |
-| GET    | `/api/v1/customers/:id/vehicles`        | Listar veiculos por cliente      |
-| PUT    | `/api/v1/vehicles/:id`                  | Atualizar veiculo                |
-| DELETE | `/api/v1/vehicles/:id`                  | Deletar veiculo                  |
-| **Services** | | |
-| POST   | `/api/v1/services`                      | Cadastrar servico                |
-| GET    | `/api/v1/services`                      | Listar servicos                  |
-| GET    | `/api/v1/services/:id`                  | Buscar servico por ID            |
-| PUT    | `/api/v1/services/:id`                  | Atualizar servico                |
-| DELETE | `/api/v1/services/:id`                  | Deletar servico                  |
-| **Parts** | | |
-| POST   | `/api/v1/parts`                         | Cadastrar peca/insumo            |
-| GET    | `/api/v1/parts`                         | Listar pecas/insumos             |
-| GET    | `/api/v1/parts/:id`                     | Buscar peca por ID               |
-| PUT    | `/api/v1/parts/:id`                     | Atualizar peca                   |
-| DELETE | `/api/v1/parts/:id`                     | Deletar peca                     |
-| PATCH  | `/api/v1/parts/:id/stock`               | Ajustar estoque                  |
-| **Service Orders** | | |
-| POST   | `/api/v1/service-orders`                | Criar ordem de servico           |
-| GET    | `/api/v1/service-orders`                | Listar ordens de servico         |
-| GET    | `/api/v1/service-orders/:id`            | Buscar ordem por ID              |
-| GET    | `/api/v1/customers/:id/service-orders`  | Listar ordens por cliente        |
-| PUT    | `/api/v1/service-orders/:id/status`     | Atualizar status da OS           |
-| PUT    | `/api/v1/service-orders/:id`            | Atualizar OS                     |
-| DELETE | `/api/v1/service-orders/:id`            | Deletar OS                       |
+As rotas `/api/v1/auth/register`, `/login` e `/refresh` sao publicas. Todas as demais rotas `/api/v1/*` requerem header `Authorization: Bearer <token>`. Rotas marcadas como **admin** exigem `role=admin` nas claims do JWT.
 
-As rotas `/api/v1/auth/register`, `/login` e `/refresh` sao publicas. Protecao contra brute force e feita via account lockout no dominio (5 tentativas falhas bloqueiam a conta por 15min). Todas as demais rotas `/api/v1/*` requerem header `Authorization: Bearer <token>`. Rotas administrativas exigem `role=admin` nas claims do JWT.
+| Metodo | Rota                                          | Auth     | Descricao                              |
+|--------|-----------------------------------------------|----------|----------------------------------------|
+| GET    | `/health`                                     | —        | Health check                           |
+| **Auth** | | | |
+| POST   | `/api/v1/auth/register`                       | publico  | Registrar usuario (role=client)        |
+| POST   | `/api/v1/auth/login`                          | publico  | Login (retorna access + refresh token) |
+| POST   | `/api/v1/auth/refresh`                        | publico  | Rotacionar tokens                      |
+| POST   | `/api/v1/auth/logout`                         | JWT      | Encerrar sessao                        |
+| **Requesters** | | | |
+| POST   | `/api/v1/requesters`                          | admin    | Criar solicitante                      |
+| GET    | `/api/v1/requesters`                          | admin    | Listar solicitantes                    |
+| GET    | `/api/v1/requesters/:id`                      | admin    | Buscar solicitante por ID              |
+| GET    | `/api/v1/requesters/document/:document`       | admin    | Buscar solicitante por CPF/CNPJ        |
+| PUT    | `/api/v1/requesters/:id`                      | admin    | Atualizar solicitante                  |
+| DELETE | `/api/v1/requesters/:id`                      | admin    | Deletar solicitante                    |
+| **Vehicles** | | | |
+| POST   | `/api/v1/vehicles`                            | admin    | Cadastrar veiculo                      |
+| GET    | `/api/v1/vehicles`                            | admin    | Listar veiculos                        |
+| GET    | `/api/v1/vehicles/:id`                        | admin    | Buscar veiculo por ID                  |
+| GET    | `/api/v1/requesters/:id/vehicles`             | admin    | Listar veiculos por solicitante        |
+| PUT    | `/api/v1/vehicles/:id`                        | admin    | Atualizar veiculo                      |
+| DELETE | `/api/v1/vehicles/:id`                        | admin    | Deletar veiculo                        |
+| **Services** | | | |
+| POST   | `/api/v1/services`                            | admin    | Cadastrar servico                      |
+| GET    | `/api/v1/services`                            | admin    | Listar servicos                        |
+| GET    | `/api/v1/services/:id`                        | admin    | Buscar servico por ID                  |
+| PUT    | `/api/v1/services/:id`                        | admin    | Atualizar servico                      |
+| DELETE | `/api/v1/services/:id`                        | admin    | Deletar servico                        |
+| **Parts** | | | |
+| POST   | `/api/v1/parts`                               | admin    | Cadastrar peca/insumo                  |
+| GET    | `/api/v1/parts`                               | admin    | Listar pecas/insumos                   |
+| GET    | `/api/v1/parts/:id`                           | admin    | Buscar peca por ID                     |
+| PUT    | `/api/v1/parts/:id`                           | admin    | Atualizar peca                         |
+| DELETE | `/api/v1/parts/:id`                           | admin    | Deletar peca                           |
+| PATCH  | `/api/v1/parts/:id/stock`                     | admin    | Ajustar estoque (delta +/-)            |
+| **Service Orders** | | | |
+| POST   | `/api/v1/service-orders`                      | admin    | Criar ordem de servico                 |
+| GET    | `/api/v1/service-orders`                      | JWT      | Listar ordens de servico               |
+| GET    | `/api/v1/service-orders/:id`                  | JWT      | Buscar ordem por ID                    |
+| GET    | `/api/v1/service-orders/metrics/execution-time` | admin  | Tempo medio de execucao das OSs        |
+| GET    | `/api/v1/service-orders/code/:code`           | publico  | Buscar OS por codigo (portal cliente)  |
+| GET    | `/api/v1/service-orders/customer`             | publico  | Listar OSs por documento do solicitante|
+| PUT    | `/api/v1/service-orders/code/:code/status`    | publico  | Atualizar status por codigo            |
+| PUT    | `/api/v1/service-orders/:id/status`           | admin    | Atualizar status da OS                 |
+| PUT    | `/api/v1/service-orders/:id`                  | admin    | Atualizar OS                           |
+| DELETE | `/api/v1/service-orders/:id`                  | admin    | Deletar OS                             |
 
 ## Gerando o Swagger
 
