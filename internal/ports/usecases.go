@@ -9,29 +9,29 @@ import (
 
 //go:generate mockgen -source=./usecases.go -destination=./mocks/usecases.go -package=mocks
 
-// --- Customer ---
+// --- Requester ---
 
-type CreateCustomerUseCase interface {
-	Execute(ctx context.Context, c *entities.Customer) error
+type CreateRequesterUseCase interface {
+	Execute(ctx context.Context, c *entities.Requester) error
 }
 
-type GetCustomerUseCase interface {
-	Execute(ctx context.Context, id string) (*entities.Customer, error)
+type GetRequesterUseCase interface {
+	Execute(ctx context.Context, id string) (*entities.Requester, error)
 }
 
-type GetCustomerByDocumentUseCase interface {
-	Execute(ctx context.Context, document string) (*entities.Customer, error)
+type GetRequesterByDocumentUseCase interface {
+	Execute(ctx context.Context, document string) (*entities.Requester, error)
 }
 
-type ListCustomersUseCase interface {
-	Execute(ctx context.Context) ([]*entities.Customer, error)
+type ListRequestersUseCase interface {
+	Execute(ctx context.Context) ([]*entities.Requester, error)
 }
 
-type UpdateCustomerUseCase interface {
-	Execute(ctx context.Context, c *entities.Customer) error
+type UpdateRequesterUseCase interface {
+	Execute(ctx context.Context, c *entities.Requester) error
 }
 
-type DeleteCustomerUseCase interface {
+type DeleteRequesterUseCase interface {
 	Execute(ctx context.Context, id string) error
 }
 
@@ -49,8 +49,8 @@ type ListVehiclesUseCase interface {
 	Execute(ctx context.Context) ([]*entities.Vehicle, error)
 }
 
-type ListVehiclesByCustomerUseCase interface {
-	Execute(ctx context.Context, customerID string) ([]*entities.Vehicle, error)
+type ListVehiclesByRequesterUseCase interface {
+	Execute(ctx context.Context, requesterID string) ([]*entities.Vehicle, error)
 }
 
 type UpdateVehicleUseCase interface {
@@ -75,8 +75,8 @@ type ListServiceOrdersUseCase interface {
 	Execute(ctx context.Context) ([]*entities.ServiceOrder, error)
 }
 
-type ListServiceOrdersByCustomerUseCase interface {
-	Execute(ctx context.Context, customerID string) ([]*entities.ServiceOrder, error)
+type ListServiceOrdersByRequesterUseCase interface {
+	Execute(ctx context.Context, requesterID string) ([]*entities.ServiceOrder, error)
 }
 
 type UpdateServiceOrderStatusUseCase interface {
@@ -84,7 +84,7 @@ type UpdateServiceOrderStatusUseCase interface {
 }
 
 type GetServiceOrderByCodeUseCase interface {
-	Execute(ctx context.Context, code int, customerDocument string) (*entities.ServiceOrder, error)
+	Execute(ctx context.Context, code int, requesterDocument string) (*entities.ServiceOrder, error)
 }
 
 type ListServiceOrdersByDocumentUseCase interface {
@@ -92,7 +92,7 @@ type ListServiceOrdersByDocumentUseCase interface {
 }
 
 type UpdateServiceOrderStatusByCodeUseCase interface {
-	Execute(ctx context.Context, code int, customerDocument string, newStatus entities.OrderStatus) error
+	Execute(ctx context.Context, code int, requesterDocument string, newStatus entities.OrderStatus) error
 }
 
 type UpdateServiceOrderUseCase interface {

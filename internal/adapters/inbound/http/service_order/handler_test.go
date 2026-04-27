@@ -74,7 +74,7 @@ func TestServiceOrderHandler_Create_Success(t *testing.T) {
 	m.create.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(so, nil)
 
 	body, _ := json.Marshal(map[string]any{
-		"customer_document":  "52998224725",
+		"requester_document":  "52998224725",
 		"vehicle_plate": "ABC1234",
 		"notes":         "trocar pastilhas",
 	})
@@ -112,7 +112,7 @@ func TestServiceOrderHandler_Create_NotFound(t *testing.T) {
 	m.create.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(nil, domainerrors.ErrNotFound)
 
 	body, _ := json.Marshal(map[string]any{
-		"customer_document":  "52998224725",
+		"requester_document":  "52998224725",
 		"vehicle_plate": "ABC1234",
 	})
 	w := httptest.NewRecorder()
@@ -125,15 +125,15 @@ func TestServiceOrderHandler_Create_NotFound(t *testing.T) {
 	}
 }
 
-func TestServiceOrderHandler_Create_VehicleNotFromCustomer(t *testing.T) {
+func TestServiceOrderHandler_Create_VehicleNotFromRequester(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	m := newHandler(ctrl)
-	m.create.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(nil, domainerrors.ErrVehicleNotFromCustomer)
+	m.create.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(nil, domainerrors.ErrVehicleNotFromRequester)
 
 	body, _ := json.Marshal(map[string]any{
-		"customer_document":  "52998224725",
+		"requester_document":  "52998224725",
 		"vehicle_plate": "ABC1234",
 	})
 	w := httptest.NewRecorder()
@@ -154,7 +154,7 @@ func TestServiceOrderHandler_Create_InternalError(t *testing.T) {
 	m.create.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(nil, errors.New("db error"))
 
 	body, _ := json.Marshal(map[string]any{
-		"customer_document":  "52998224725",
+		"requester_document":  "52998224725",
 		"vehicle_plate": "ABC1234",
 	})
 	w := httptest.NewRecorder()
@@ -528,7 +528,7 @@ func TestServiceOrderHandler_FindByDocument_Success(t *testing.T) {
 	m.listByDocument.EXPECT().Execute(gomock.Any(), "52998224725").Return(orders, nil)
 
 	w := httptest.NewRecorder()
-	req := httptest.NewRequest(http.MethodGet, "/service-orders/customer?document=52998224725", nil)
+	req := httptest.NewRequest(http.MethodGet, "/service-orders/requester?document=52998224725", nil)
 	newTestRouter(m.handler).ServeHTTP(w, req)
 
 	if w.Code != http.StatusOK {
@@ -543,7 +543,7 @@ func TestServiceOrderHandler_FindByDocument_SemDocument(t *testing.T) {
 	m := newHandler(ctrl)
 
 	w := httptest.NewRecorder()
-	req := httptest.NewRequest(http.MethodGet, "/service-orders/customer", nil)
+	req := httptest.NewRequest(http.MethodGet, "/service-orders/requester", nil)
 	newTestRouter(m.handler).ServeHTTP(w, req)
 
 	if w.Code != http.StatusBadRequest {
@@ -559,7 +559,7 @@ func TestServiceOrderHandler_FindByDocument_NotFound(t *testing.T) {
 	m.listByDocument.EXPECT().Execute(gomock.Any(), "52998224725").Return(nil, domainerrors.ErrNotFound)
 
 	w := httptest.NewRecorder()
-	req := httptest.NewRequest(http.MethodGet, "/service-orders/customer?document=52998224725", nil)
+	req := httptest.NewRequest(http.MethodGet, "/service-orders/requester?document=52998224725", nil)
 	newTestRouter(m.handler).ServeHTTP(w, req)
 
 	if w.Code != http.StatusNotFound {
@@ -578,7 +578,7 @@ func TestServiceOrderHandler_UpdateStatusByCode_Aprovacao(t *testing.T) {
 	m := newHandler(ctrl)
 	m.updateStatusByCode.EXPECT().Execute(gomock.Any(), 100, "52998224725", entities.StatusInExecution).Return(nil)
 
-	body, _ := json.Marshal(map[string]any{"customer_document": "52998224725", "status": "in_execution"})
+	body, _ := json.Marshal(map[string]any{"requester_document": "52998224725", "status": "in_execution"})
 	w := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodPut, "/service-orders/code/100/status", bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
@@ -596,7 +596,7 @@ func TestServiceOrderHandler_UpdateStatusByCode_Rejeicao(t *testing.T) {
 	m := newHandler(ctrl)
 	m.updateStatusByCode.EXPECT().Execute(gomock.Any(), 100, "52998224725", entities.StatusReceived).Return(nil)
 
-	body, _ := json.Marshal(map[string]any{"customer_document": "52998224725", "status": "received"})
+	body, _ := json.Marshal(map[string]any{"requester_document": "52998224725", "status": "received"})
 	w := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodPut, "/service-orders/code/100/status", bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
@@ -613,7 +613,7 @@ func TestServiceOrderHandler_UpdateStatusByCode_CodigoInvalido(t *testing.T) {
 
 	m := newHandler(ctrl)
 
-	body, _ := json.Marshal(map[string]any{"customer_document": "52998224725", "status": "in_execution"})
+	body, _ := json.Marshal(map[string]any{"requester_document": "52998224725", "status": "in_execution"})
 	w := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodPut, "/service-orders/code/abc/status", bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
@@ -647,7 +647,7 @@ func TestServiceOrderHandler_UpdateStatusByCode_NotFound(t *testing.T) {
 	m := newHandler(ctrl)
 	m.updateStatusByCode.EXPECT().Execute(gomock.Any(), 999, "52998224725", entities.StatusInExecution).Return(domainerrors.ErrNotFound)
 
-	body, _ := json.Marshal(map[string]any{"customer_document": "52998224725", "status": "in_execution"})
+	body, _ := json.Marshal(map[string]any{"requester_document": "52998224725", "status": "in_execution"})
 	w := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodPut, "/service-orders/code/999/status", bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
@@ -665,9 +665,9 @@ func TestServiceOrderHandler_UpdateStatusByCode_StatusNaoPermitido(t *testing.T)
 	m := newHandler(ctrl)
 	m.updateStatusByCode.EXPECT().
 		Execute(gomock.Any(), 100, "52998224725", entities.StatusFinished).
-		Return(domainerrors.ErrStatusNotAllowedForCustomer)
+		Return(domainerrors.ErrStatusNotAllowedForRequester)
 
-	body, _ := json.Marshal(map[string]any{"customer_document": "52998224725", "status": "finished"})
+	body, _ := json.Marshal(map[string]any{"requester_document": "52998224725", "status": "finished"})
 	w := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodPut, "/service-orders/code/100/status", bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
@@ -685,7 +685,7 @@ func TestServiceOrderHandler_UpdateStatusByCode_TransicaoInvalida(t *testing.T) 
 	m := newHandler(ctrl)
 	m.updateStatusByCode.EXPECT().Execute(gomock.Any(), 100, "52998224725", entities.StatusInExecution).Return(domainerrors.ErrInvalidStatus)
 
-	body, _ := json.Marshal(map[string]any{"customer_document": "52998224725", "status": "in_execution"})
+	body, _ := json.Marshal(map[string]any{"requester_document": "52998224725", "status": "in_execution"})
 	w := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodPut, "/service-orders/code/100/status", bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")

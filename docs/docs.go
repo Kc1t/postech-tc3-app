@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/customers": {
+        "/requesters": {
             "get": {
                 "security": [
                     {
@@ -26,7 +26,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "customers"
+                    "requesters"
                 ],
                 "summary": "Listar clientes",
                 "responses": {
@@ -35,7 +35,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/commands.CustomerResponse"
+                                "$ref": "#/definitions/commands.RequesterResponse"
                             }
                         }
                     }
@@ -54,7 +54,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "customers"
+                    "requesters"
                 ],
                 "summary": "Criar cliente",
                 "parameters": [
@@ -64,7 +64,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/commands.CreateCustomerRequest"
+                            "$ref": "#/definitions/commands.CreateRequesterRequest"
                         }
                     }
                 ],
@@ -72,13 +72,13 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/commands.CustomerResponse"
+                            "$ref": "#/definitions/commands.RequesterResponse"
                         }
                     }
                 }
             }
         },
-        "/customers/document/{document}": {
+        "/requesters/document/{document}": {
             "get": {
                 "security": [
                     {
@@ -89,13 +89,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "customers"
+                    "requesters"
                 ],
                 "summary": "Buscar cliente por documento",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Customer Document",
+                        "description": "Requester Document",
                         "name": "document",
                         "in": "path",
                         "required": true
@@ -104,7 +104,7 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/customers/{id}": {
+        "/requesters/{id}": {
             "get": {
                 "security": [
                     {
@@ -115,13 +115,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "customers"
+                    "requesters"
                 ],
                 "summary": "Buscar cliente por ID",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Customer ID",
+                        "description": "Requester ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -131,7 +131,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/commands.CustomerResponse"
+                            "$ref": "#/definitions/commands.RequesterResponse"
                         }
                     }
                 }
@@ -149,13 +149,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "customers"
+                    "requesters"
                 ],
                 "summary": "Atualizar cliente",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Customer ID",
+                        "description": "Requester ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -166,7 +166,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/commands.UpdateCustomerRequest"
+                            "$ref": "#/definitions/commands.UpdateRequesterRequest"
                         }
                     }
                 ],
@@ -174,7 +174,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/commands.CustomerResponse"
+                            "$ref": "#/definitions/commands.RequesterResponse"
                         }
                     }
                 }
@@ -186,13 +186,13 @@ const docTemplate = `{
                     }
                 ],
                 "tags": [
-                    "customers"
+                    "requesters"
                 ],
                 "summary": "Deletar cliente",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Customer ID",
+                        "description": "Requester ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -887,7 +887,7 @@ const docTemplate = `{
                 }
             }
         },
-        "commands.CreateCustomerRequest": {
+        "commands.CreateRequesterRequest": {
             "type": "object",
             "required": [
                 "document",
@@ -961,7 +961,7 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "brand",
-                "customer_document",
+                "requester_document",
                 "model",
                 "plate",
                 "year"
@@ -970,7 +970,7 @@ const docTemplate = `{
                 "brand": {
                     "type": "string"
                 },
-                "customer_document": {
+                "requester_document": {
                     "type": "string"
                 },
                 "model": {
@@ -984,7 +984,7 @@ const docTemplate = `{
                 }
             }
         },
-        "commands.CustomerResponse": {
+        "commands.RequesterResponse": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -1065,7 +1065,7 @@ const docTemplate = `{
                 }
             }
         },
-        "commands.UpdateCustomerRequest": {
+        "commands.UpdateRequesterRequest": {
             "type": "object",
             "properties": {
                 "email": {
@@ -1143,7 +1143,7 @@ const docTemplate = `{
                 "created_at": {
                     "type": "string"
                 },
-                "customer_id": {
+                "requester_id": {
                     "type": "string"
                 },
                 "id": {

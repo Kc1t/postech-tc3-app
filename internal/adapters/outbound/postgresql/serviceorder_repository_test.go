@@ -11,21 +11,20 @@ import (
 	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
 )
 
-// seedVehicle creates a vehicle (and the required customer) for service order tests.
-func seedVehicle(t *testing.T, plate string) (*entities.Customer, *entities.Vehicle) {
+func seedVehicle(t *testing.T, plate string) (*entities.Requester, *entities.Vehicle) {
 	t.Helper()
-	crepo := NewCustomerRepository(testDB)
+	crepo := NewRequesterRepository(testDB)
 	doc := "99999999909"
 	now := time.Now()
-	c := entities.ReconstituteCustomer("", "Cliente OS", doc, "os@test.com", "11999990010", now, now)
+	c := entities.ReconstituteRequester("", "Cliente OS", doc, "os@test.com", "11999990010", now, now)
 	if err := crepo.Create(context.Background(), c); err != nil {
 		existing, ferr := crepo.FindByDocument(context.Background(), doc)
 		if ferr != nil {
-			t.Fatalf("seedVehicle: customer create failed: %v", err)
+			t.Fatalf("seedVehicle: requester create failed: %v", err)
 		}
 		c = existing
 	} else {
-		t.Cleanup(func() { testDB.Delete(&pgmodel.Customer{}, "id = ?", c.ID()) })
+		t.Cleanup(func() { testDB.Delete(&pgmodel.Requester{}, "id = ?", c.ID()) })
 	}
 
 	vrepo := NewVehicleRepository(testDB)
@@ -38,8 +37,8 @@ func seedVehicle(t *testing.T, plate string) (*entities.Customer, *entities.Vehi
 	return c, v
 }
 
-func newTestOrder(customerID, vehicleID string) *entities.ServiceOrder {
-	so := entities.NewServiceOrder(customerID, vehicleID)
+func newTestOrder(requesterID, vehicleID string) *entities.ServiceOrder {
+	so := entities.NewServiceOrder(requesterID, vehicleID)
 	return so
 }
 
@@ -102,7 +101,7 @@ func TestServiceOrderRepository_FindAll(t *testing.T) {
 	}
 }
 
-func TestServiceOrderRepository_FindByCustomerID(t *testing.T) {
+func TestServiceOrderRepository_FindByRequesterID(t *testing.T) {
 	c, v := seedVehicle(t, "OS00004")
 	repo := NewServiceOrderRepository(testDB)
 	so := newTestOrder(c.ID(), v.ID())
@@ -111,12 +110,12 @@ func TestServiceOrderRepository_FindByCustomerID(t *testing.T) {
 	}
 	t.Cleanup(func() { testDB.Delete(&pgmodel.ServiceOrder{}, "id = ?", so.ID()) })
 
-	orders, err := repo.FindByCustomerID(context.Background(), c.ID())
+	orders, err := repo.FindByRequesterID(context.Background(), c.ID())
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
 	if len(orders) == 0 {
-		t.Fatal("expected at least one service order for this customer")
+		t.Fatal("expected at least one service order for this requester")
 	}
 }
 
@@ -177,8 +176,6 @@ func TestServiceOrderRepository_Delete(t *testing.T) {
 	}
 }
 
-// AverageExecutionTime considera apenas OSs com ambos startedAt e finishedAt
-// preenchidos e ignora as demais.
 func TestServiceOrderRepository_AverageExecutionTime(t *testing.T) {
 	c, v := seedVehicle(t, "OS00008")
 	repo := NewServiceOrderRepository(testDB)
@@ -193,7 +190,6 @@ func TestServiceOrderRepository_AverageExecutionTime(t *testing.T) {
 		entities.StatusFinished, nil, nil, 0, "", now, now, &started1, &finished1)
 	so2 := entities.ReconstituteServiceOrder("", 0, c.ID(), v.ID(),
 		entities.StatusFinished, nil, nil, 0, "", now, now, &started2, &finished2)
-	// OS sem timestamps — nao deve contar para a media.
 	so3 := entities.ReconstituteServiceOrder("", 0, c.ID(), v.ID(),
 		entities.StatusReceived, nil, nil, 0, "", now, now, nil, nil)
 
@@ -209,8 +205,6 @@ func TestServiceOrderRepository_AverageExecutionTime(t *testing.T) {
 		t.Fatalf("expected no error, got %v", err)
 	}
 
-	// Media de 1h e 3h = 2h. Pequena tolerancia para lidar com arredondamentos
-	// da extracao de EPOCH no Postgres.
 	expected := 2 * time.Hour
 	delta := avg - expected
 	if delta < 0 {
@@ -247,11 +241,9 @@ func TestServiceOrderRepository_FindByCode_NotFound(t *testing.T) {
 	}
 }
 
-// Sem OSs qualificadas (nenhuma com ambos timestamps), a media e 0 — sem erro.
 func TestServiceOrderRepository_AverageExecutionTime_SemAmostras(t *testing.T) {
 	repo := NewServiceOrderRepository(testDB)
 
-	// Limpa qualquer residuo de outros testes para garantir o cenario "sem amostras".
 	testDB.Exec("DELETE FROM service_orders WHERE started_at IS NOT NULL AND finished_at IS NOT NULL")
 
 	avg, err := repo.AverageExecutionTime(context.Background())
@@ -305,7 +297,6 @@ func TestServiceOrderRepository_ApplyApprovalTransition_Sucesso(t *testing.T) {
 	}
 	t.Cleanup(func() { testDB.Delete(&pgmodel.ServiceOrder{}, "id = ?", so.ID()) })
 
-	// Coloca a OS em awaiting_approval -> in_execution para gravar startedAt.
 	if err := so.UpdateStatus(entities.StatusInDiagnosis); err != nil {
 		t.Fatalf("transicao diag: %v", err)
 	}
@@ -369,15 +360,12 @@ func TestServiceOrderRepository_ApplyApprovalTransition_EstoqueInsuficiente_Roll
 		t.Fatalf("erro = %v, esperava ErrInsufficientStock", err)
 	}
 
-	// Rollback: part1 nao foi debitada apesar de ter sido processada antes de part2.
 	if got := partStock(t, part1.ID()); got != 10 {
 		t.Errorf("part1 stock = %d, esperava 10 (rollback)", got)
 	}
 	if got := partStock(t, part2.ID()); got != 1 {
 		t.Errorf("part2 stock = %d, esperava 1 (inalterado)", got)
 	}
-	// OS nao foi persistida com novo status (o status em memoria mudou, mas
-	// o banco precisa refletir o estado anterior a transicao).
 	persisted, ferr := repo.FindByID(context.Background(), so.ID())
 	if ferr != nil {
 		t.Fatalf("FindByID: %v", ferr)

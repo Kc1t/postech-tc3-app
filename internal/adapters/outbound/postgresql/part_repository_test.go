@@ -129,7 +129,6 @@ func TestPartRepository_UpdateStock(t *testing.T) {
 	}
 }
 
-// UpdateStock deve aceitar o decremento que zera exatamente o estoque.
 func TestPartRepository_UpdateStock_ZeroesStock(t *testing.T) {
 	repo := NewPartRepository(testDB)
 	p := entities.NewPart("FAB-007", "Filtro de ar", "Tecfil", "unidade", 40.00, 4)
@@ -148,8 +147,6 @@ func TestPartRepository_UpdateStock_ZeroesStock(t *testing.T) {
 	}
 }
 
-// UpdateStock deve rejeitar decremento maior que o estoque disponivel sem
-// alterar a linha e retornar ErrInsufficientStock.
 func TestPartRepository_UpdateStock_InsufficientStock(t *testing.T) {
 	repo := NewPartRepository(testDB)
 	p := entities.NewPart("FAB-008", "Fluido de freio", "Bosch DOT4", "litro", 30.00, 2)
@@ -169,7 +166,6 @@ func TestPartRepository_UpdateStock_InsufficientStock(t *testing.T) {
 	}
 }
 
-// UpdateStock em peca inexistente deve retornar ErrNotFound, nao ErrInsufficientStock.
 func TestPartRepository_UpdateStock_NotFound(t *testing.T) {
 	repo := NewPartRepository(testDB)
 	err := repo.UpdateStock(context.Background(), "00000000-0000-0000-0000-000000000000", 1)
@@ -215,7 +211,6 @@ func TestPartRepository_FindByManufacturerCodes(t *testing.T) {
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
-	// Retorna apenas as pecas existentes; codigos ausentes sao ignorados.
 	if len(found) != 2 {
 		t.Errorf("esperava 2 pecas, obteve %d", len(found))
 	}

@@ -8,8 +8,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// mapError traduz erros de infraestrutura (GORM/PostgreSQL) para erros de domínio.
-// Deve ser chamado em todos os métodos dos repositories antes de retornar um erro.
 func mapError(err error) error {
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return domainerrors.ErrNotFound

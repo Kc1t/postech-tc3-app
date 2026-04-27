@@ -13,7 +13,7 @@ import (
 
 // FindByCode godoc
 // @Summary     Consultar OS pelo codigo (endpoint publico do cliente)
-// @Tags        service-orders-customer
+// @Tags        service-orders-requester
 // @Produce     json
 // @Param       code path int true "Codigo da OS"
 // @Param       document query string true "CPF ou CNPJ do cliente"

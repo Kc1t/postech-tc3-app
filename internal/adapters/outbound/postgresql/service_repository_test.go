@@ -137,7 +137,6 @@ func TestServiceRepository_FindByCodes(t *testing.T) {
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
-	// Retorna so os servicos que existem (201 e 202); 9999 e ignorado.
 	if len(found) != 2 {
 		t.Errorf("esperava 2 servicos, obteve %d", len(found))
 	}

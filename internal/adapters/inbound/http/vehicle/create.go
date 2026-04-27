@@ -27,20 +27,20 @@ func (h *VehicleHandler) Create(c *gin.Context) {
 		return
 	}
 
-	doc, err := entities.NewDocument(req.CustomerDocument)
+	doc, err := entities.NewDocument(req.RequesterDocument)
 	if err != nil {
 		httputil.HandleBadRequest(c, err)
 		return
 	}
 
 	input := req.ToInput()
-	input.CustomerDocument = doc.Value()
+	input.RequesterDocument = doc.Value()
 
 	vehicle, err := h.create.Execute(c.Request.Context(), input)
 	if err != nil {
 		switch {
 		case errors.Is(err, domainerrors.ErrNotFound):
-			httputil.HandleError(c, err, msgCustomerNotFound)
+			httputil.HandleError(c, err, msgRequesterNotFound)
 		case errors.Is(err, domainerrors.ErrAlreadyExists):
 			httputil.HandleError(c, err, msgAlreadyExists)
 		default:

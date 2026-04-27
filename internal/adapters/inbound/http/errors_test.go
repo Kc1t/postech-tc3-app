@@ -68,10 +68,10 @@ func TestHandleError_InvalidRefreshToken(t *testing.T) {
 	}
 }
 
-func TestHandleError_StatusNotAllowedForCustomer(t *testing.T) {
+func TestHandleError_StatusNotAllowedForRequester(t *testing.T) {
 	w := httptest.NewRecorder()
 	c := newGinContext(w)
-	HandleError(c, domainerrors.ErrStatusNotAllowedForCustomer)
+	HandleError(c, domainerrors.ErrStatusNotAllowedForRequester)
 
 	if w.Code != http.StatusForbidden {
 		t.Fatalf("expected 403, got %d", w.Code)

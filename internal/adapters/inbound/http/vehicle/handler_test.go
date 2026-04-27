@@ -54,7 +54,7 @@ func TestVehicleHandler_Create_Success(t *testing.T) {
 	create.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(vehicle, nil)
 
 	body, _ := json.Marshal(map[string]any{
-		"customer_document": "52998224725",
+		"requester_document": "52998224725",
 		"plate": "ABC1234", "brand": "Toyota", "model": "Corolla", "year": 2020,
 	})
 	w := httptest.NewRecorder()
@@ -91,7 +91,7 @@ func TestVehicleHandler_Create_DocumentoInvalido(t *testing.T) {
 	// Create NAO deve ser chamado — validacao do documento falha antes
 
 	body, _ := json.Marshal(map[string]any{
-		"customer_document": "11111111111",
+		"requester_document": "11111111111",
 		"plate": "ABC1234", "brand": "Toyota", "model": "Corolla", "year": 2020,
 	})
 	w := httptest.NewRecorder()
@@ -104,7 +104,7 @@ func TestVehicleHandler_Create_DocumentoInvalido(t *testing.T) {
 	}
 }
 
-func TestVehicleHandler_Create_CustomerNotFound(t *testing.T) {
+func TestVehicleHandler_Create_RequesterNotFound(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -112,7 +112,7 @@ func TestVehicleHandler_Create_CustomerNotFound(t *testing.T) {
 	create.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(nil, domainerrors.ErrNotFound)
 
 	body, _ := json.Marshal(map[string]any{
-		"customer_document": "52998224725",
+		"requester_document": "52998224725",
 		"plate": "ABC1234", "brand": "Toyota", "model": "Corolla", "year": 2020,
 	})
 	w := httptest.NewRecorder()
@@ -133,7 +133,7 @@ func TestVehicleHandler_Create_AlreadyExists(t *testing.T) {
 	create.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(nil, domainerrors.ErrAlreadyExists)
 
 	body, _ := json.Marshal(map[string]any{
-		"customer_document": "52998224725",
+		"requester_document": "52998224725",
 		"plate": "ABC1234", "brand": "Toyota", "model": "Corolla", "year": 2020,
 	})
 	w := httptest.NewRecorder()
@@ -154,7 +154,7 @@ func TestVehicleHandler_Create_InternalError(t *testing.T) {
 	create.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(nil, errors.New("unexpected"))
 
 	body, _ := json.Marshal(map[string]any{
-		"customer_document": "52998224725",
+		"requester_document": "52998224725",
 		"plate": "ABC1234", "brand": "Toyota", "model": "Corolla", "year": 2020,
 	})
 	w := httptest.NewRecorder()

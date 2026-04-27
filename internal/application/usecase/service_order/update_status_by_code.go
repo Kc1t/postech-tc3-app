@@ -10,18 +10,18 @@ import (
 
 type UpdateServiceOrderStatusByCode struct {
 	repo         ports.ServiceOrderRepository
-	customerRepo ports.CustomerRepository
+	requesterRepo ports.RequesterRepository
 }
 
 func NewUpdateServiceOrderStatusByCode(
 	repo ports.ServiceOrderRepository,
-	customerRepo ports.CustomerRepository,
+	requesterRepo ports.RequesterRepository,
 ) *UpdateServiceOrderStatusByCode {
-	return &UpdateServiceOrderStatusByCode{repo: repo, customerRepo: customerRepo}
+	return &UpdateServiceOrderStatusByCode{repo: repo, requesterRepo: requesterRepo}
 }
 
-func (uc *UpdateServiceOrderStatusByCode) Execute(ctx context.Context, code int, customerDocument string, newStatus entities.OrderStatus) error {
-	customer, err := uc.customerRepo.FindByDocument(ctx, customerDocument)
+func (uc *UpdateServiceOrderStatusByCode) Execute(ctx context.Context, code int, requesterDocument string, newStatus entities.OrderStatus) error {
+	requester, err := uc.requesterRepo.FindByDocument(ctx, requesterDocument)
 	if err != nil {
 		return err
 	}
@@ -31,11 +31,11 @@ func (uc *UpdateServiceOrderStatusByCode) Execute(ctx context.Context, code int,
 		return err
 	}
 
-	if so.CustomerID() != customer.ID() {
+	if so.RequesterID() != requester.ID() {
 		return domainerrors.ErrNotFound
 	}
 
-	if err := so.AuthorizeCustomerTransition(newStatus); err != nil {
+	if err := so.AuthorizeRequesterTransition(newStatus); err != nil {
 		return err
 	}
 

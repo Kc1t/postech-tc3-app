@@ -60,6 +60,6 @@ func (h *ServiceOrderHandler) SetupRoutes(rg *gin.RouterGroup) {
 func (h *ServiceOrderHandler) SetupPublicRoutes(rg *gin.RouterGroup) {
 	g := rg.Group("/service-orders")
 	g.GET("/code/:code", h.FindByCode)
-	g.GET("/customer", h.FindByDocument)
+	g.GET("/requester", h.FindByDocument)
 	g.PUT("/code/:code/status", h.UpdateStatusByCode)
 }

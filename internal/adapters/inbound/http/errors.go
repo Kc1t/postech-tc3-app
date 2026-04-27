@@ -8,15 +8,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// ErrorResponse é a struct padrão de resposta de erro da API.
 type ErrorResponse struct {
 	Status  string `json:"status"`
 	Message string `json:"message"`
 }
 
-// HandleError mapeia erros de domínio para o HTTP status correto e escreve a resposta.
-// msg é opcional: quando fornecida, substitui err.Error() apenas em respostas 4xx.
-// Erros 5xx sempre retornam "internal server error" — detalhes de infra nunca são expostos.
 func HandleError(c *gin.Context, err error, msg ...string) {
 	code := statusFor(err)
 	var message string
@@ -33,7 +29,6 @@ func HandleError(c *gin.Context, err error, msg ...string) {
 	})
 }
 
-// HandleBadRequest escreve uma resposta 400 padronizada para erros de bind/validação.
 func HandleBadRequest(c *gin.Context, err error) {
 	c.JSON(http.StatusBadRequest, ErrorResponse{
 		Status:  http.StatusText(http.StatusBadRequest),
@@ -50,7 +45,7 @@ func statusFor(err error) int {
 	case errors.Is(err, domainerrors.ErrInvalidCredentials),
 		errors.Is(err, domainerrors.ErrInvalidRefreshToken):
 		return http.StatusUnauthorized
-	case errors.Is(err, domainerrors.ErrStatusNotAllowedForCustomer):
+	case errors.Is(err, domainerrors.ErrStatusNotAllowedForRequester):
 		return http.StatusForbidden
 	case errors.Is(err, domainerrors.ErrInvalidDocument),
 		errors.Is(err, domainerrors.ErrInvalidPlate),
@@ -58,7 +53,7 @@ func statusFor(err error) int {
 		errors.Is(err, domainerrors.ErrInvalidStatusValue),
 		errors.Is(err, domainerrors.ErrInsufficientStock),
 		errors.Is(err, domainerrors.ErrOrderNotCancellable),
-		errors.Is(err, domainerrors.ErrVehicleNotFromCustomer):
+		errors.Is(err, domainerrors.ErrVehicleNotFromRequester):
 		return http.StatusUnprocessableEntity
 	default:
 		return http.StatusInternalServerError

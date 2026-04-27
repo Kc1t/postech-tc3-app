@@ -1,5 +1,3 @@
-// Package jwt implementa a geracao de tokens JWT e refresh tokens.
-// A interface TokenService fica em ports/, aqui apenas a implementacao concreta.
 package jwt
 
 import (
@@ -20,8 +18,6 @@ type tokenService struct {
 	refreshExpDays int
 }
 
-// New cria uma implementacao de ports.TokenService usando HMAC-SHA256 para JWT
-// e crypto/rand para refresh tokens.
 func New(secret string, accessExpMin, refreshExpDays int) ports.TokenService {
 	return &tokenService{
 		secret:         secret,

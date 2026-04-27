@@ -7,23 +7,23 @@ import (
 	"github.com/fiap/postech-tc1/internal/domain/entities"
 )
 
-// --- Customer ---
+// --- Requester ---
 
-func TestCreateCustomerRequest_ToDomain(t *testing.T) {
-	req := CreateCustomerRequest{Name: "João", Document: "52998224725", Email: "j@j.com", Phone: "11999"}
+func TestCreateRequesterRequest_ToDomain(t *testing.T) {
+	req := CreateRequesterRequest{Name: "João", Document: "52998224725", Email: "j@j.com", Phone: "11999"}
 	c, err := req.ToDomain()
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	if c.Name() != "João" || c.Document() != "52998224725" || c.Email() != "j@j.com" || c.Phone() != "11999" {
-		t.Fatalf("unexpected domain customer: %+v", c)
+		t.Fatalf("unexpected domain requester: %+v", c)
 	}
 }
 
-func TestToCustomerResponse(t *testing.T) {
+func TestToRequesterResponse(t *testing.T) {
 	now := time.Now()
-	c := entities.ReconstituteCustomer("id-1", "João", "123", "j@j.com", "11999", now, now)
-	resp := ToCustomerResponse(c)
+	c := entities.ReconstituteRequester("id-1", "João", "123", "j@j.com", "11999", now, now)
+	resp := ToRequesterResponse(c)
 	if resp.Name != "João" || resp.Document != "123" || resp.Email != "j@j.com" {
 		t.Fatalf("unexpected response: %+v", resp)
 	}
@@ -32,13 +32,13 @@ func TestToCustomerResponse(t *testing.T) {
 	}
 }
 
-func TestToCustomerListResponse(t *testing.T) {
+func TestToRequesterListResponse(t *testing.T) {
 	now := time.Now()
-	customers := []*entities.Customer{
-		entities.ReconstituteCustomer("", "João", "123", "j@j.com", "11999", now, now),
-		entities.ReconstituteCustomer("", "Maria", "456", "m@m.com", "11888", now, now),
+	requesters := []*entities.Requester{
+		entities.ReconstituteRequester("", "João", "123", "j@j.com", "11999", now, now),
+		entities.ReconstituteRequester("", "Maria", "456", "m@m.com", "11888", now, now),
 	}
-	resp := ToCustomerListResponse(customers)
+	resp := ToRequesterListResponse(requesters)
 	if len(resp) != 2 {
 		t.Fatalf("expected 2, got %d", len(resp))
 	}
@@ -47,9 +47,9 @@ func TestToCustomerListResponse(t *testing.T) {
 // --- Vehicle ---
 
 func TestCreateVehicleRequest_ToInput(t *testing.T) {
-	req := CreateVehicleRequest{CustomerDocument: "52998224725", Plate: "ABC1234", Brand: "Toyota", Model: "Corolla", Year: 2020}
+	req := CreateVehicleRequest{RequesterDocument: "52998224725", Plate: "ABC1234", Brand: "Toyota", Model: "Corolla", Year: 2020}
 	input := req.ToInput()
-	if input.CustomerDocument != "52998224725" || input.Plate != "ABC1234" || input.Brand != "Toyota" || input.Year != 2020 {
+	if input.RequesterDocument != "52998224725" || input.Plate != "ABC1234" || input.Brand != "Toyota" || input.Year != 2020 {
 		t.Fatalf("unexpected input: %+v", input)
 	}
 }
@@ -143,7 +143,7 @@ func TestToServiceOrderResponse(t *testing.T) {
 	so.AddPart(entities.PartItem{PartID: "p1", Description: "Peca", Quantity: 2, UnitPrice: 50.0})
 
 	resp := ToServiceOrderResponse(so)
-	if resp.CustomerID != "cust-1" || resp.VehicleID != "veh-1" {
+	if resp.RequesterID != "cust-1" || resp.VehicleID != "veh-1" {
 		t.Fatalf("unexpected response: %+v", resp)
 	}
 	if len(resp.Services) != 1 || len(resp.Parts) != 1 {

@@ -18,32 +18,32 @@ import (
 	gomock "go.uber.org/mock/gomock"
 )
 
-// MockCustomerRepository is a mock of CustomerRepository interface.
-type MockCustomerRepository struct {
+// MockRequesterRepository is a mock of RequesterRepository interface.
+type MockRequesterRepository struct {
 	ctrl     *gomock.Controller
-	recorder *MockCustomerRepositoryMockRecorder
+	recorder *MockRequesterRepositoryMockRecorder
 	isgomock struct{}
 }
 
-// MockCustomerRepositoryMockRecorder is the mock recorder for MockCustomerRepository.
-type MockCustomerRepositoryMockRecorder struct {
-	mock *MockCustomerRepository
+// MockRequesterRepositoryMockRecorder is the mock recorder for MockRequesterRepository.
+type MockRequesterRepositoryMockRecorder struct {
+	mock *MockRequesterRepository
 }
 
-// NewMockCustomerRepository creates a new mock instance.
-func NewMockCustomerRepository(ctrl *gomock.Controller) *MockCustomerRepository {
-	mock := &MockCustomerRepository{ctrl: ctrl}
-	mock.recorder = &MockCustomerRepositoryMockRecorder{mock}
+// NewMockRequesterRepository creates a new mock instance.
+func NewMockRequesterRepository(ctrl *gomock.Controller) *MockRequesterRepository {
+	mock := &MockRequesterRepository{ctrl: ctrl}
+	mock.recorder = &MockRequesterRepositoryMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockCustomerRepository) EXPECT() *MockCustomerRepositoryMockRecorder {
+func (m *MockRequesterRepository) EXPECT() *MockRequesterRepositoryMockRecorder {
 	return m.recorder
 }
 
 // Create mocks base method.
-func (m *MockCustomerRepository) Create(ctx context.Context, c *entities.Customer) error {
+func (m *MockRequesterRepository) Create(ctx context.Context, c *entities.Requester) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", ctx, c)
 	ret0, _ := ret[0].(error)
@@ -51,13 +51,13 @@ func (m *MockCustomerRepository) Create(ctx context.Context, c *entities.Custome
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockCustomerRepositoryMockRecorder) Create(ctx, c any) *gomock.Call {
+func (mr *MockRequesterRepositoryMockRecorder) Create(ctx, c any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockCustomerRepository)(nil).Create), ctx, c)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockRequesterRepository)(nil).Create), ctx, c)
 }
 
 // Delete mocks base method.
-func (m *MockCustomerRepository) Delete(ctx context.Context, id string) error {
+func (m *MockRequesterRepository) Delete(ctx context.Context, id string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delete", ctx, id)
 	ret0, _ := ret[0].(error)
@@ -65,58 +65,58 @@ func (m *MockCustomerRepository) Delete(ctx context.Context, id string) error {
 }
 
 // Delete indicates an expected call of Delete.
-func (mr *MockCustomerRepositoryMockRecorder) Delete(ctx, id any) *gomock.Call {
+func (mr *MockRequesterRepositoryMockRecorder) Delete(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockCustomerRepository)(nil).Delete), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockRequesterRepository)(nil).Delete), ctx, id)
 }
 
 // FindAll mocks base method.
-func (m *MockCustomerRepository) FindAll(ctx context.Context) ([]*entities.Customer, error) {
+func (m *MockRequesterRepository) FindAll(ctx context.Context) ([]*entities.Requester, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindAll", ctx)
-	ret0, _ := ret[0].([]*entities.Customer)
+	ret0, _ := ret[0].([]*entities.Requester)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FindAll indicates an expected call of FindAll.
-func (mr *MockCustomerRepositoryMockRecorder) FindAll(ctx any) *gomock.Call {
+func (mr *MockRequesterRepositoryMockRecorder) FindAll(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindAll", reflect.TypeOf((*MockCustomerRepository)(nil).FindAll), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindAll", reflect.TypeOf((*MockRequesterRepository)(nil).FindAll), ctx)
 }
 
 // FindByDocument mocks base method.
-func (m *MockCustomerRepository) FindByDocument(ctx context.Context, document string) (*entities.Customer, error) {
+func (m *MockRequesterRepository) FindByDocument(ctx context.Context, document string) (*entities.Requester, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindByDocument", ctx, document)
-	ret0, _ := ret[0].(*entities.Customer)
+	ret0, _ := ret[0].(*entities.Requester)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FindByDocument indicates an expected call of FindByDocument.
-func (mr *MockCustomerRepositoryMockRecorder) FindByDocument(ctx, document any) *gomock.Call {
+func (mr *MockRequesterRepositoryMockRecorder) FindByDocument(ctx, document any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByDocument", reflect.TypeOf((*MockCustomerRepository)(nil).FindByDocument), ctx, document)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByDocument", reflect.TypeOf((*MockRequesterRepository)(nil).FindByDocument), ctx, document)
 }
 
 // FindByID mocks base method.
-func (m *MockCustomerRepository) FindByID(ctx context.Context, id string) (*entities.Customer, error) {
+func (m *MockRequesterRepository) FindByID(ctx context.Context, id string) (*entities.Requester, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindByID", ctx, id)
-	ret0, _ := ret[0].(*entities.Customer)
+	ret0, _ := ret[0].(*entities.Requester)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FindByID indicates an expected call of FindByID.
-func (mr *MockCustomerRepositoryMockRecorder) FindByID(ctx, id any) *gomock.Call {
+func (mr *MockRequesterRepositoryMockRecorder) FindByID(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByID", reflect.TypeOf((*MockCustomerRepository)(nil).FindByID), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByID", reflect.TypeOf((*MockRequesterRepository)(nil).FindByID), ctx, id)
 }
 
 // Update mocks base method.
-func (m *MockCustomerRepository) Update(ctx context.Context, c *entities.Customer) error {
+func (m *MockRequesterRepository) Update(ctx context.Context, c *entities.Requester) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Update", ctx, c)
 	ret0, _ := ret[0].(error)
@@ -124,9 +124,9 @@ func (m *MockCustomerRepository) Update(ctx context.Context, c *entities.Custome
 }
 
 // Update indicates an expected call of Update.
-func (mr *MockCustomerRepositoryMockRecorder) Update(ctx, c any) *gomock.Call {
+func (mr *MockRequesterRepositoryMockRecorder) Update(ctx, c any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockCustomerRepository)(nil).Update), ctx, c)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockRequesterRepository)(nil).Update), ctx, c)
 }
 
 // MockVehicleRepository is a mock of VehicleRepository interface.
@@ -196,19 +196,19 @@ func (mr *MockVehicleRepositoryMockRecorder) FindAll(ctx any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindAll", reflect.TypeOf((*MockVehicleRepository)(nil).FindAll), ctx)
 }
 
-// FindByCustomerID mocks base method.
-func (m *MockVehicleRepository) FindByCustomerID(ctx context.Context, customerID string) ([]*entities.Vehicle, error) {
+// FindByRequesterID mocks base method.
+func (m *MockVehicleRepository) FindByRequesterID(ctx context.Context, requesterID string) ([]*entities.Vehicle, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindByCustomerID", ctx, customerID)
+	ret := m.ctrl.Call(m, "FindByRequesterID", ctx, requesterID)
 	ret0, _ := ret[0].([]*entities.Vehicle)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// FindByCustomerID indicates an expected call of FindByCustomerID.
-func (mr *MockVehicleRepositoryMockRecorder) FindByCustomerID(ctx, customerID any) *gomock.Call {
+// FindByRequesterID indicates an expected call of FindByRequesterID.
+func (mr *MockVehicleRepositoryMockRecorder) FindByRequesterID(ctx, requesterID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByCustomerID", reflect.TypeOf((*MockVehicleRepository)(nil).FindByCustomerID), ctx, customerID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByRequesterID", reflect.TypeOf((*MockVehicleRepository)(nil).FindByRequesterID), ctx, requesterID)
 }
 
 // FindByID mocks base method.
@@ -337,19 +337,19 @@ func (mr *MockServiceOrderRepositoryMockRecorder) FindByCode(ctx, code any) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByCode", reflect.TypeOf((*MockServiceOrderRepository)(nil).FindByCode), ctx, code)
 }
 
-// FindByCustomerID mocks base method.
-func (m *MockServiceOrderRepository) FindByCustomerID(ctx context.Context, customerID string) ([]*entities.ServiceOrder, error) {
+// FindByRequesterID mocks base method.
+func (m *MockServiceOrderRepository) FindByRequesterID(ctx context.Context, requesterID string) ([]*entities.ServiceOrder, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindByCustomerID", ctx, customerID)
+	ret := m.ctrl.Call(m, "FindByRequesterID", ctx, requesterID)
 	ret0, _ := ret[0].([]*entities.ServiceOrder)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// FindByCustomerID indicates an expected call of FindByCustomerID.
-func (mr *MockServiceOrderRepositoryMockRecorder) FindByCustomerID(ctx, customerID any) *gomock.Call {
+// FindByRequesterID indicates an expected call of FindByRequesterID.
+func (mr *MockServiceOrderRepositoryMockRecorder) FindByRequesterID(ctx, requesterID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByCustomerID", reflect.TypeOf((*MockServiceOrderRepository)(nil).FindByCustomerID), ctx, customerID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByRequesterID", reflect.TypeOf((*MockServiceOrderRepository)(nil).FindByRequesterID), ctx, requesterID)
 }
 
 // FindByID mocks base method.

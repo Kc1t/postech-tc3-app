@@ -13,7 +13,7 @@ type RefreshToken struct {
 
 // NewRefreshToken cria um refresh token sem ID — o UUID e gerado pelo banco
 // (default:gen_random_uuid()) e o repository preenche via SetID apos Create.
-// Mantem a geracao de ID na camada de infraestrutura, consistente com User e Customer.
+// Mantem a geracao de ID na camada de infraestrutura, consistente com User e Requester.
 func NewRefreshToken(userID, tokenHash string, expiresAt time.Time) *RefreshToken {
 	return &RefreshToken{
 		userID:    userID,

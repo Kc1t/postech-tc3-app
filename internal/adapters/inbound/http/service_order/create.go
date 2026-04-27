@@ -25,14 +25,14 @@ func (h *ServiceOrderHandler) Create(c *gin.Context) {
 		return
 	}
 
-	doc, err := entities.NewDocument(req.CustomerDocument)
+	doc, err := entities.NewDocument(req.RequesterDocument)
 	if err != nil {
 		httputil.HandleBadRequest(c, err)
 		return
 	}
 
 	input := entities.ServiceOrderInput{
-		CustomerDocument: doc.Value(),
+		RequesterDocument: doc.Value(),
 		VehiclePlate:     req.VehiclePlate,
 		Notes:            req.Notes,
 	}

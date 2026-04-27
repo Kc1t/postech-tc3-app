@@ -42,9 +42,9 @@ func (r *vehicleRepository) FindByPlate(ctx context.Context, plate string) (*ent
 	return m.ToDomain(), nil
 }
 
-func (r *vehicleRepository) FindByCustomerID(ctx context.Context, customerID string) ([]*entities.Vehicle, error) {
+func (r *vehicleRepository) FindByRequesterID(ctx context.Context, requesterID string) ([]*entities.Vehicle, error) {
 	var docs []pgmodel.Vehicle
-	if err := r.db.WithContext(ctx).Find(&docs, "customer_id = ?", customerID).Error; err != nil {
+	if err := r.db.WithContext(ctx).Find(&docs, "requester_id = ?", requesterID).Error; err != nil {
 		return nil, mapError(err)
 	}
 	vehicles := make([]*entities.Vehicle, 0, len(docs))

@@ -5,8 +5,8 @@ import (
 	"errors"
 
 	pgmodel "github.com/fiap/postech-tc1/internal/adapters/outbound/postgresql/model"
-	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
 	"github.com/fiap/postech-tc1/internal/domain/entities"
+	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
 	"github.com/fiap/postech-tc1/internal/ports"
 	"gorm.io/gorm"
 )
@@ -52,7 +52,6 @@ func (r *userRepository) FindByID(ctx context.Context, id string) (*entities.Use
 
 func (r *userRepository) Update(ctx context.Context, u *entities.User) error {
 	m := pgmodel.FromUser(u)
-	// Save atualiza todos os campos — usado pra persistir mudancas de lockout
-	// (failed_attempts, locked_until) e dados do perfil.
+
 	return r.db.WithContext(ctx).Save(m).Error
 }

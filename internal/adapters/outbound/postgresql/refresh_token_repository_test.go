@@ -11,8 +11,6 @@ import (
 	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
 )
 
-// newTestUser cria um usuario direto no DB pra servir como dono dos refresh tokens
-// nos testes. Retorna ID e uma funcao de cleanup.
 func newTestUser(t *testing.T, email string) (string, func()) {
 	t.Helper()
 	u := entities.NewUser("Test User", email, "hashed", entities.RoleClient)
@@ -109,7 +107,6 @@ func TestRefreshTokenRepository_Revoke(t *testing.T) {
 		t.Fatalf("expected no error, got %v", err)
 	}
 
-	// Segunda chamada precisa falhar: token ja revogado nao pode ser revogado de novo.
 	err := repo.Revoke(context.Background(), rt.ID())
 	if !errors.Is(err, domainerrors.ErrNotFound) {
 		t.Fatalf("expected ErrNotFound on second revoke (single-use), got %v", err)
@@ -144,7 +141,6 @@ func TestRefreshTokenRepository_RevokeByUserID(t *testing.T) {
 		t.Fatalf("expected no error, got %v", err)
 	}
 
-	// Nenhum dos dois tokens pode mais ser encontrado (filtro ignora revoked = true).
 	if _, err := repo.FindByTokenHash(context.Background(), "hash-all-1"); !errors.Is(err, domainerrors.ErrNotFound) {
 		t.Errorf("expected rt1 to be unreachable, got %v", err)
 	}
@@ -172,11 +168,9 @@ func TestRefreshTokenRepository_RotateToken(t *testing.T) {
 		t.Fatal("expected new token ID to be set by DB after rotate")
 	}
 
-	// Old ficou revogado (sumiu do find).
 	if _, err := repo.FindByTokenHash(context.Background(), "hash-rotate-old"); !errors.Is(err, domainerrors.ErrNotFound) {
 		t.Errorf("expected old to be revoked, got %v", err)
 	}
-	// New continua valido.
 	found, err := repo.FindByTokenHash(context.Background(), "hash-rotate-new")
 	if err != nil {
 		t.Fatalf("expected new to be found, got %v", err)
@@ -186,9 +180,6 @@ func TestRefreshTokenRepository_RotateToken(t *testing.T) {
 	}
 }
 
-// TestRefreshTokenRepository_RotateToken_SingleUse garante que a rotacao e atomica:
-// uma segunda tentativa de rotar o mesmo old token falha. Simula o cenario de reuse
-// attack — replay do mesmo refresh token duas vezes.
 func TestRefreshTokenRepository_RotateToken_SingleUse(t *testing.T) {
 	userID, cleanupUser := newTestUser(t, "rt-single-use@test.com")
 	t.Cleanup(cleanupUser)
@@ -205,8 +196,6 @@ func TestRefreshTokenRepository_RotateToken_SingleUse(t *testing.T) {
 		t.Fatalf("first rotate failed: %v", err)
 	}
 
-	// Replay: usar o mesmo old.ID() uma segunda vez deve falhar com ErrNotFound
-	// (o WHERE revoked = false nao encontra o registro).
 	second := entities.NewRefreshToken(userID, "hash-single-second", time.Now().Add(24*time.Hour))
 	err := repo.RotateToken(context.Background(), old.ID(), second)
 	if !errors.Is(err, domainerrors.ErrNotFound) {

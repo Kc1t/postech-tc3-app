@@ -9,8 +9,6 @@ import (
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-
-	_ "github.com/fiap/postech-tc1/docs" // swagger docs gerados pelo swag
 )
 
 func Setup(router *gin.Engine, c *bootstrap.Container) {
@@ -42,7 +40,7 @@ func Setup(router *gin.Engine, c *bootstrap.Container) {
 	// Logout (precisa de JWT)
 	protected.POST("/auth/logout", c.AuthHandler.Logout)
 
-	// Consulta de OS — client pode ver (filtra por customerID no handler)
+	// Consulta de OS — client pode ver (filtra por requesterID no handler)
 	protected.GET("/service-orders", c.ServiceOrderHandler.FindAll)
 	protected.GET("/service-orders/:id", c.ServiceOrderHandler.FindByID)
 
@@ -50,7 +48,7 @@ func Setup(router *gin.Engine, c *bootstrap.Container) {
 	admin := protected.Group("/")
 	admin.Use(middleware.RequireRole(string(entities.RoleAdmin)))
 
-	c.CustomerHandler.SetupRoutes(admin)
+	c.RequesterHandler.SetupRoutes(admin)
 	c.VehicleHandler.SetupRoutes(admin)
 	c.ServiceHandler.SetupRoutes(admin)
 	c.PartHandler.SetupRoutes(admin)
