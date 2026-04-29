@@ -46,4 +46,4 @@ Três scanners executados via Docker em 2026-04-27: **`gosec`** (SAST), **`govul
 
 > **Risco residual: BAIXO.** A análise de call-graph (`govulncheck`) confirma que **0 vulnerabilidades são exploráveis** pelos fluxos da aplicação. As CVEs em dependências não são alcançáveis pelo código.
 
-📑 **Relatório técnico completo, com detalhamento por ferramenta e mitigações:** [`security-reports/RELATORIO.md`](https://github.com/Kc1t/postech-tc1/blob/main/security-reports/RELATORIO.md)
+📑 **Relatório técnico completo, com detalhamento por ferramenta e mitigações:** [`docs/security-reports/RELATORIO.md`](https://github.com/Kc1t/postech-tc1/blob/main/docs/security-reports/RELATORIO.md)
