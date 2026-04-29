@@ -19,8 +19,6 @@ ADRs (formato proposto por [Michael Nygard](https://cognitect.com/blog/2011/11/1
 | ---- | ------------------------------------------------- | -------- |
 | [0001](./0001-hexagonal-architecture.md) | Arquitetura hexagonal (Ports & Adapters)         | Accepted |
 | [0002](./0002-postgresql.md)             | PostgreSQL como banco de dados relacional        | Accepted |
-| [0003](./0003-modular-monolith.md)       | Monolito modular como ponto de partida           | Accepted |
-| [0004](./0004-gorm-orm.md)               | GORM como ORM                                    | Accepted |
-| [0005](./0005-jwt-refresh-token.md)      | Autenticação JWT com refresh token rotativo     | Accepted |
-| [0006](./0006-ddd-bounded-contexts.md)   | DDD com bounded contexts internos                | Accepted |
-| [0007](./0007-domain-errors-sentinels.md)| Erros sentinela centralizados em `domainerrors` | Accepted |
+| [0003](./0003-gorm-orm.md)               | GORM como ORM                                    | Accepted |
+| [0004](./0004-jwt-refresh-token.md)      | Autenticação JWT com refresh token rotativo     | Accepted |
+| [0005](./0005-domain-errors-sentinels.md)| Erros sentinela centralizados em `domainerrors` | Accepted |

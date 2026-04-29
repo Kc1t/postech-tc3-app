@@ -83,4 +83,3 @@ GORM é o ORM Go mais usado por uma margem grande, com documentação extensa e 
 ## Referências
 
 - GORM v2 — https://gorm.io/docs/
-- Repositório do projeto: `internal/adapters/outbound/postgresql/`.

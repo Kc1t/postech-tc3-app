@@ -80,10 +80,6 @@ func (r *partRepository) Delete(ctx context.Context, id string) error {
 	return mapError(r.db.WithContext(ctx).Delete(&pgmodel.Part{}, "id = ?", id).Error)
 }
 
-// UpdateStock aplica delta no estoque de forma atomica. A clausula
-// "stock + ? >= 0" impede que o estoque fique negativo sob concorrencia:
-// se o UPDATE nao afetar linhas, distingue peca inexistente (ErrNotFound)
-// de estoque insuficiente (ErrInsufficientStock).
 func (r *partRepository) UpdateStock(ctx context.Context, id string, delta int) error {
 	result := r.db.WithContext(ctx).
 		Model(&pgmodel.Part{}).

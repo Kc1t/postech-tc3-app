@@ -59,4 +59,3 @@ Dependências apontam **sempre para dentro**. O único componente que conhece to
 
 - Alistair Cockburn, *Hexagonal Architecture* (2005).
 - Vaughn Vernon, *Implementing Domain-Driven Design* (2013).
-- Repositório do projeto: `internal/ports/` e `internal/adapters/`.

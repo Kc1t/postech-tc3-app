@@ -3,6 +3,8 @@ package routes
 import (
 	"net/http"
 
+	_ "github.com/fiap/postech-tc1/docs"
+
 	"github.com/fiap/postech-tc1/cmd/api/bootstrap"
 	"github.com/fiap/postech-tc1/cmd/api/middleware"
 	"github.com/fiap/postech-tc1/internal/domain/entities"
@@ -13,50 +15,29 @@ import (
 
 func Setup(router *gin.Engine, c *bootstrap.Container) {
 	router.Use(middleware.CORS())
-
-	// Swagger UI
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-
-	// Health check (publico)
 	router.GET("/health", func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"status": "ok"})
 	})
 
 	prefix := router.Group("/api/v1")
 
-	// --- Auth (publico) ---
-	authPublic := prefix.Group("/auth")
-	authPublic.POST("/register", c.AuthHandler.Register)
-	authPublic.POST("/login", c.AuthHandler.Login)
-	authPublic.POST("/refresh", c.AuthHandler.Refresh)
+	// Rotas publicas
+	auth := prefix.Group("/auth")
+	auth.POST("/register", c.AuthHandler.Register)
+	auth.POST("/login", c.AuthHandler.Login)
+	auth.POST("/refresh", c.AuthHandler.Refresh)
+	auth.POST("/auth/logout", c.AuthHandler.Logout)
 
-	// --- Rotas protegidas (qualquer usuario autenticado) ---
-	protected := prefix.Group("/")
-	// Rotas publicas do cliente (sem JWT)
 	c.ServiceOrderHandler.SetupPublicRoutes(prefix)
 
-	protected.Use(middleware.Auth(c.Config.JWTSecret))
-
-	// Logout (precisa de JWT)
-	protected.POST("/auth/logout", c.AuthHandler.Logout)
-
-	// Consulta de OS — client pode ver (filtra por requesterID no handler)
-	protected.GET("/service-orders", c.ServiceOrderHandler.FindAll)
-	protected.GET("/service-orders/:id", c.ServiceOrderHandler.FindByID)
-
-	// --- Admin only ---
-	admin := protected.Group("/")
+	// Rotas protegidas (JWT obrigatorio) e ADMIN
+	admin := prefix.Group("/")
 	admin.Use(middleware.RequireRole(string(entities.RoleAdmin)))
 
 	c.RequesterHandler.SetupRoutes(admin)
 	c.VehicleHandler.SetupRoutes(admin)
 	c.ServiceHandler.SetupRoutes(admin)
 	c.PartHandler.SetupRoutes(admin)
-
-	// Service Orders — escrita apenas admin
-	orders := admin.Group("/service-orders")
-	orders.POST("", c.ServiceOrderHandler.Create)
-	orders.PUT("/:id/status", c.ServiceOrderHandler.UpdateStatus)
-	orders.PUT("/:id", c.ServiceOrderHandler.Update)
-	orders.DELETE("/:id", c.ServiceOrderHandler.Delete)
+	c.ServiceOrderHandler.SetupRoutes(admin)
 }

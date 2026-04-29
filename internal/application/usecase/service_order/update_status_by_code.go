@@ -3,13 +3,13 @@ package serviceorderuc
 import (
 	"context"
 
-	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
 	"github.com/fiap/postech-tc1/internal/domain/entities"
+	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
 	"github.com/fiap/postech-tc1/internal/ports"
 )
 
 type UpdateServiceOrderStatusByCode struct {
-	repo         ports.ServiceOrderRepository
+	repo          ports.ServiceOrderRepository
 	requesterRepo ports.RequesterRepository
 }
 
@@ -39,9 +39,6 @@ func (uc *UpdateServiceOrderStatusByCode) Execute(ctx context.Context, code int,
 		return err
 	}
 
-	// Aprovacao pelo cliente (in_execution): decremento de estoque + persistencia
-	// da OS numa unica transacao DB. Recusa (received) nao toca timestamps,
-	// basta atualizar a coluna status.
 	if newStatus == entities.StatusInExecution {
 		return uc.repo.ApplyApprovalTransition(ctx, so)
 	}
