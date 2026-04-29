@@ -557,6 +557,44 @@ section p:last-child { margin-bottom: 0; }
 .info-table tr:last-child td { border-bottom: none; }
 .info-table td:first-child { color: var(--text); font-weight: 500; }
 
+/* Tabela de Linguagem Ubíqua — 5 colunas, scroll horizontal em telas estreitas */
+.ubiq-table {
+  display: block;
+  overflow-x: auto;
+  white-space: normal;
+}
+
+.ubiq-table thead,
+.ubiq-table tbody,
+.ubiq-table tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+.ubiq-table th,
+.ubiq-table td {
+  font-size: 0.82rem;
+  padding: 10px 12px;
+  vertical-align: top;
+  word-wrap: break-word;
+}
+
+.ubiq-table th:nth-child(1), .ubiq-table td:nth-child(1) { width: 13%; }
+.ubiq-table th:nth-child(2), .ubiq-table td:nth-child(2) { width: 22%; }
+.ubiq-table th:nth-child(3), .ubiq-table td:nth-child(3) { width: 22%; }
+.ubiq-table th:nth-child(4), .ubiq-table td:nth-child(4) { width: 17%; }
+.ubiq-table th:nth-child(5), .ubiq-table td:nth-child(5) { width: 26%; }
+
+@media (max-width: 900px) {
+  .ubiq-table thead,
+  .ubiq-table tbody,
+  .ubiq-table tr {
+    table-layout: auto;
+    min-width: 720px;
+  }
+}
+
 /* ── Bullets ── */
 .bullets {
   list-style: none;

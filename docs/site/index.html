@@ -445,19 +445,110 @@ docs/
     <section id="ubiquitous-language">
       <span class="kicker">Domínio</span>
       <h2>Linguagem Ubíqua</h2>
-      <p>Glossário entre o vocabulário do negócio (PT) e os termos no código (EN):</p>
-      <table class="info-table">
-        <thead><tr><th>Negócio</th><th>Código</th><th>Definição</th></tr></thead>
+      <p>Vocabulário compartilhado entre time técnico e negócio. A tabela abaixo está sincronizada com o board do Miro e é a fonte de verdade para nomes de entidades, métodos e mensagens em todo o sistema.</p>
+
+      <table class="info-table ubiq-table">
+        <thead>
+          <tr>
+            <th>Termo</th>
+            <th>Definição</th>
+            <th>Contexto</th>
+            <th>Sinônimos</th>
+            <th>Exemplo</th>
+          </tr>
+        </thead>
         <tbody>
-          <tr><td>Solicitante</td><td><code>Requester</code> / <code>Customer</code></td><td>Cliente PF/PJ identificado por CPF/CNPJ.</td></tr>
-          <tr><td>Veículo</td><td><code>Vehicle</code></td><td>Veículo do solicitante (placa, marca, modelo, ano).</td></tr>
-          <tr><td>Ordem de Serviço (OS)</td><td><code>ServiceOrder</code></td><td>Documento que registra serviços e peças aplicados a um veículo.</td></tr>
-          <tr><td>Serviço</td><td><code>Service</code></td><td>Item do catálogo de mão-de-obra (ex.: troca de óleo).</td></tr>
-          <tr><td>Peça / Insumo</td><td><code>Part</code></td><td>Item físico consumido na execução, com controle de estoque.</td></tr>
-          <tr><td>Orçamento</td><td>total da <code>ServiceOrder</code></td><td>Soma automática de serviços + peças aplicadas.</td></tr>
-          <tr><td>Código da OS</td><td><code>ServiceOrder.Code</code></td><td>Identificador legível usado no portal público de consulta.</td></tr>
+          <tr>
+            <td><strong>Solicitante</strong></td>
+            <td>Cliente que solicita um serviço.</td>
+            <td>Representa o proprietário do veículo que solicita o serviço na oficina.</td>
+            <td>Cliente, Proprietário</td>
+            <td>João Silva é o solicitante da OS #1234 para manutenção preventiva.</td>
+          </tr>
+          <tr>
+            <td><strong>Veículo</strong></td>
+            <td>Automóvel sob manutenção ou reparo na oficina.</td>
+            <td>Objeto central do atendimento, identificado por placa e vinculado ao solicitante.</td>
+            <td>Carro, Automóvel</td>
+            <td>O veículo placa ABC-1234 está na oficina desde 10/04 para troca de óleo.</td>
+          </tr>
+          <tr>
+            <td><strong>Serviço</strong></td>
+            <td>Atividade técnica executada no veículo (manutenção, reparo, diagnóstico).</td>
+            <td>Unidade de trabalho registrada na OS; pode consumir peças e insumos.</td>
+            <td>Atividade, Intervenção</td>
+            <td>O serviço de troca de óleo inclui drenagem, substituição do filtro e reabastecimento.</td>
+          </tr>
+          <tr>
+            <td><strong>OS</strong></td>
+            <td>Ordem de Serviço — documento central que registra todo o atendimento.</td>
+            <td>Utilizado no contexto de oficinas para centralizar informações do atendimento ao veículo.</td>
+            <td>Ordem de Serviço</td>
+            <td>A OS #1234 registra a troca de óleo e revisão dos freios do veículo ABC-1234.</td>
+          </tr>
+          <tr>
+            <td><strong>Insumo</strong></td>
+            <td>Material consumível no serviço (óleo, fluido de freio, graxas).</td>
+            <td>Materiais consumidos durante a execução e não recuperáveis.</td>
+            <td>Material Consumível, Consumível</td>
+            <td>Foram utilizados 4 L de óleo sintético e 500 mL de fluido de freio.</td>
+          </tr>
+          <tr>
+            <td><strong>Peça</strong></td>
+            <td>Componente físico substituível (filtro, pastilha, correia).</td>
+            <td>Itens do estoque que substituem componentes defeituosos ou desgastados.</td>
+            <td>Componente, Item de Reposição</td>
+            <td>As peças trocadas incluem filtro de óleo, filtro de ar e jogo de pastilhas.</td>
+          </tr>
+          <tr>
+            <td><strong>Reserva</strong></td>
+            <td>Bloqueio temporário de estoque aguardando confirmação da execução.</td>
+            <td>Garante disponibilidade das peças enquanto aguarda aprovação do orçamento.</td>
+            <td>Bloqueio de Estoque, Separação Temporária</td>
+            <td>As peças da OS #1234 ficaram em reserva por 2 dias até aprovação do cliente.</td>
+          </tr>
+          <tr>
+            <td><strong>Baixa</strong></td>
+            <td>Débito definitivo do estoque após conclusão do serviço.</td>
+            <td>Movimentação que atualiza o estoque quando o serviço é finalizado.</td>
+            <td>Baixa de Estoque, Débito de Estoque</td>
+            <td>Após finalizar a OS, foi realizada a baixa de 1 filtro de óleo e 4 L de óleo sintético.</td>
+          </tr>
+          <tr>
+            <td><strong>Entrega</strong></td>
+            <td>Devolução formal e registrada do veículo ao cliente.</td>
+            <td>Momento final do atendimento com conferência e assinatura do cliente.</td>
+            <td>Devolução, Retirada</td>
+            <td>A entrega do veículo foi realizada às 16h com assinatura do solicitante na OS.</td>
+          </tr>
+          <tr>
+            <td><strong>Tempo de Execução</strong></td>
+            <td>Duração entre início e conclusão do serviço — usado para monitoramento.</td>
+            <td>Métrica operacional para controle de produtividade e planejamento.</td>
+            <td>Duração do Serviço</td>
+            <td>O tempo de execução da troca de óleo foi de 45 minutos.</td>
+          </tr>
+          <tr>
+            <td><strong>Sistema</strong></td>
+            <td>Plataforma digital que gerencia OS e estoque.</td>
+            <td>Ferramenta que centraliza operações da oficina e registra toda movimentação.</td>
+            <td>Plataforma, Software de Gestão</td>
+            <td>O sistema bloqueou automaticamente as peças ao criar a OS #1234.</td>
+          </tr>
+          <tr>
+            <td><strong>Estoque</strong></td>
+            <td>Inventário de peças e insumos disponíveis para uso nos serviços.</td>
+            <td>Controlado por reservas e baixas vinculadas às OS.</td>
+            <td>Inventário, Almoxarifado</td>
+            <td>O estoque atual possui 12 filtros de óleo e 40 L de óleo sintético.</td>
+          </tr>
         </tbody>
       </table>
+
+      <a class="btn btn-secondary" target="_blank" href="https://miro.com/app/board/uXjVHcNJp-s=/?moveToWidget=3458764669930561938&cot=14">
+        <svg class="btn-logo" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.392 0h-3.819l3.246 5.971L9.879 0H6.061l3.535 7.165L2.281 0H0v24h2.281V10.834L9.879 24h3.717l-7.535-13.948L13.573 24h3.819L10.95 11.165 17.392 24H24V0h-6.608z"/></svg>
+        Ver no Miro
+      </a>
     </section>
 
     <!-- DDD MIRO -->
