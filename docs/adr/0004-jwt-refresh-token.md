@@ -77,4 +77,3 @@ Endpoints `GET /api/v1/service-orders/code/:code`, `GET /api/v1/service-orders/c
 
 - RFC 7519 (JSON Web Token).
 - Auth0 — *Refresh Token Rotation* (https://auth0.com/docs/secure/tokens/refresh-tokens/refresh-token-rotation).
-- Repositório: `internal/adapters/outbound/jwt/`, `internal/application/usecase/auth/`.

@@ -24,7 +24,6 @@ Adotar **PostgreSQL 16** como banco de dados único, executado em container dedi
 1. **MySQL 8.** Maduro e comum, porém o suporte a tipos avançados (JSONB, arrays) e a *check constraints* expressivas do Postgres é superior.
 2. **MongoDB.** Atrativo para desenvolvimento rápido, mas o domínio é fortemente relacional — usar Mongo exigiria simular FKs na aplicação, perdendo integridade nativa.
 3. **SQLite.** Ótimo para protótipos, mas não suporta o uso concorrente esperado em produção e não tem `gen_random_uuid()` nativo.
-4. **DynamoDB / outros NoSQL.** Lock-in de cloud e modelagem mais complexa para joins entre OS, peças e serviços.
 
 ## Decisão detalhada — por que PostgreSQL
 
@@ -92,5 +91,3 @@ Sem necessidade de migração de tecnologia.
 ## Referências
 
 - PostgreSQL 16 release notes — https://www.postgresql.org/docs/16/release-16.html
-- Repositório do projeto: `internal/adapters/outbound/postgresql/`.
-- `docker-compose.yml` na raiz.

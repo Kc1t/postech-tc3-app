@@ -92,4 +92,3 @@ var (
 
 - Dave Cheney, *Don't just check errors, handle them gracefully* (2016).
 - `errors.Is` / `errors.As` — https://pkg.go.dev/errors
-- Repositório: `internal/domain/errors/errors.go`, `internal/adapters/inbound/http/errors.go`.
