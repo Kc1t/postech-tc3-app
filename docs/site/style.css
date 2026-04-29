@@ -328,11 +328,11 @@ pre code {
   line-height: 1.4;
 }
 
-/* ── Miro embed ── */
-.miro-embed {
+/* ── Embeds (Miro, vídeo) ── */
+.miro-embed,
+.video-embed {
   position: relative;
   width: 100%;
-  aspect-ratio: 16 / 10;
   margin: 20px 0 14px;
   background: var(--bg-elev);
   border: 1px solid var(--border);
@@ -340,13 +340,106 @@ pre code {
   overflow: hidden;
 }
 
-.miro-embed iframe {
+.miro-embed { aspect-ratio: 16 / 10; }
+.video-embed { aspect-ratio: 16 / 9; }
+
+.miro-embed iframe,
+.video-embed iframe {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   border: none;
   display: block;
+}
+
+/* ── Video card (fallback sem embed) ── */
+.video-card {
+  display: block;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  margin: 20px 0 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  text-decoration: none;
+  background: var(--bg-elev);
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.video-card:hover {
+  border-color: var(--text);
+  text-decoration: none;
+}
+
+.video-card img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(1) brightness(0.7);
+  transition: filter 0.25s ease, transform 0.4s ease;
+}
+
+.video-card:hover img {
+  filter: grayscale(1) brightness(0.55);
+  transform: scale(1.02);
+}
+
+.video-card-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 24px;
+  background: linear-gradient(180deg, rgba(0,0,0,0.0) 0%, rgba(0,0,0,0.55) 100%);
+}
+
+.video-card-play {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.95);
+  color: #000;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.video-card:hover .video-card-play {
+  transform: scale(1.08);
+  background: #fff;
+}
+
+.video-card-play svg {
+  width: 32px;
+  height: 32px;
+  margin-left: 3px;
+}
+
+.video-card-meta {
+  text-align: center;
+  color: #fff;
+}
+
+.video-card-title {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  margin-bottom: 4px;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+}
+
+.video-card-sub {
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.85);
+  text-shadow: 0 1px 4px rgba(0,0,0,0.6);
 }
 
 /* ── Sections ── */
