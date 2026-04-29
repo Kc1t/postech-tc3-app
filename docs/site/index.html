@@ -8,383 +8,576 @@
 </head>
 <body>
 
-<!-- ── Header ── -->
-<header>
-  <div class="container">
-    <a href="#" class="logo">
-      <div class="logo-icon">🔧</div>
-      Workshop API
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <a href="#" class="brand">
+      <span class="brand-icon">🔧</span>
+      <div>
+        <div class="brand-name">Workshop API</div>
+        <div class="brand-sub">FIAP Pós Tech · TC1</div>
+      </div>
     </a>
-    <nav>
-      <a href="#overview">Visão Geral</a>
-      <a href="#database">Banco de Dados</a>
-      <a href="#architecture">Arquitetura</a>
-      <a href="#structure">Estrutura</a>
-      <a href="#metrics">Métricas</a>
-      <a href="#links">Links</a>
-    </nav>
   </div>
-</header>
 
-<main>
-  <div class="container">
-
-    <!-- ── Hero ── -->
-    <section class="hero">
-      <div class="badge">⚙️ FIAP Pós Tech — Tech Challenge 1</div>
-      <h1>Sistema de Gestão de<br/><span>Oficina Mecânica</span></h1>
-      <p class="hero-sub">
-        API REST para gerenciamento completo de solicitantes, veículos, peças,
-        serviços e ordens de serviço. Construída em Go com arquitetura hexagonal.
-      </p>
-      <div class="hero-links">
-        <!-- porta hardcoded — altere se mudar APP_PORT no .env -->
-        <a href="http://localhost:8080/swagger/index.html" class="btn btn-primary" target="_blank">
-          📄 Ver Swagger
-        </a>
-        <a href="http://localhost:8082" class="btn btn-secondary" target="_blank">
-          🗄️ pgAdmin
-        </a>
-        <a href="https://github.com/Kc1t/postech-tc1/blob/main/README.md" class="btn btn-secondary" target="_blank">
-          📘 README
-        </a>
-      </div>
-    </section>
-
-    <!-- ── Stats ── -->
-    <div class="stats">
-      <div class="stat">
-        <span class="stat-value">5</span>
-        <span class="stat-label">Entidades de domínio</span>
-      </div>
-      <div class="stat">
-        <span class="stat-value">30+</span>
-        <span class="stat-label">Use cases</span>
-      </div>
-      <div class="stat">
-        <span class="stat-value">REST</span>
-        <span class="stat-label">Interface HTTP (Gin)</span>
-      </div>
-      <div class="stat">
-        <span class="stat-value">JWT</span>
-        <span class="stat-label">Autenticação</span>
-      </div>
+  <nav class="sidebar-nav">
+    <div class="nav-group">
+      <div class="nav-group-title">Introdução</div>
+      <a href="#overview">Visão geral</a>
+      <a href="#entrega">Entrega da Fase 1</a>
+      <a href="#stack">Stack tecnológica</a>
     </div>
 
-    <!-- ── Visão Geral ── -->
-    <section id="overview">
-      <p class="section-label">Visão Geral</p>
-      <h2>O que é este sistema?</h2>
-      <p class="section-desc">
-        Plataforma backend para oficinas mecânicas gerenciarem seu fluxo operacional
-        completo — do cadastro do solicitante até o fechamento da ordem de serviço.
+    <div class="nav-group">
+      <div class="nav-group-title">Arquitetura</div>
+      <a href="#hexagonal">Arquitetura Hexagonal</a>
+      <a href="#structure">Estrutura do projeto</a>
+      <a href="#database">Banco de dados</a>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-title">Domínio</div>
+      <a href="#bounded-contexts">Bounded Contexts</a>
+      <a href="#service-order">Ordem de Serviço</a>
+      <a href="#ubiquitous-language">Linguagem Ubíqua</a>
+      <a href="#ddd-miro">Documentação DDD (Miro)</a>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-title">API</div>
+      <a href="#api-overview">Visão geral da API</a>
+      <a href="#swagger">Swagger</a>
+      <a href="#metrics">Endpoints de métricas</a>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-title">Segurança</div>
+      <a href="#security-practices">Práticas aplicadas</a>
+      <a href="#vuln-report">Relatório de vulnerabilidades</a>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-title">Operação</div>
+      <a href="#getting-started">Como executar</a>
+      <a href="#tests">Testes</a>
+      <a href="#resources">Recursos & Links</a>
+    </div>
+  </nav>
+</aside>
+
+<main class="content">
+  <div class="content-inner">
+
+    <!-- HERO -->
+    <header class="page-header">
+      <div class="badge">📦 Tech Challenge — Fase 1</div>
+      <h1>Workshop API</h1>
+      <p class="lead">
+        Documentação técnica do Sistema Integrado de Atendimento e Execução
+        de Serviços para oficina mecânica. Back-end em Go com arquitetura
+        hexagonal, PostgreSQL e DDD.
       </p>
+      <div class="quick-links">
+        <a href="https://github.com/Kc1t/postech-tc1" target="_blank" class="btn btn-primary">
+          <svg class="btn-logo" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.56v-2c-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.18-3.1-.12-.29-.51-1.46.11-3.04 0 0 .97-.31 3.18 1.18.92-.26 1.91-.39 2.9-.39.99 0 1.98.13 2.9.39 2.21-1.49 3.18-1.18 3.18-1.18.62 1.58.23 2.75.11 3.04.74.81 1.18 1.84 1.18 3.1 0 4.42-2.69 5.4-5.25 5.68.41.36.78 1.05.78 2.13v3.16c0 .31.21.67.8.56C20.21 21.39 23.5 17.08 23.5 12 23.5 5.65 18.35.5 12 .5z"/></svg>
+          Repositório
+        </a>
+        <a href="http://localhost:8080/swagger/index.html" target="_blank" class="btn btn-secondary">
+          <svg class="btn-logo" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.36 0 0 5.36 0 12s5.36 12 12 12 12-5.36 12-12S18.64 0 12 0zm0 22.32c-5.7 0-10.32-4.62-10.32-10.32S6.3 1.68 12 1.68 22.32 6.3 22.32 12 17.7 22.32 12 22.32zm-3.78-7.86c.06.78.06 1.56-.06 2.34-.06.36-.18.66-.42.96-.36.42-.84.66-1.44.66-.18 0-.36-.06-.54-.12V16.8c.66.06.96-.18 1.02-.84.06-.66 0-1.32 0-1.98 0-.42.06-.84.06-1.26.12-.96.66-1.5 1.62-1.5h.18v-1.5c-.18 0-.3-.06-.42-.06-.78-.06-1.2-.42-1.32-1.2-.06-.36-.06-.78-.06-1.14-.06-.6-.06-1.2-.18-1.74-.12-.6-.54-.96-1.14-.96h-.42v-1.5c1.62-.24 2.7.36 2.94 1.74.12.66.12 1.32.18 1.98.06 1.14.12 1.32 1.2 1.5v1.62c-.12.06-.3.06-.42.06-.6.06-.9.3-.96.9-.06.42-.06.9-.06 1.32 0 .54-.06 1.08-.06 1.62-.06.06-.06.06-.12.12zm9.12-3.6c-.96.06-1.5.6-1.5 1.56-.06.78 0 1.56-.06 2.34v.78c-.18 1.32-1.02 1.92-2.34 1.74-.18 0-.3-.06-.48-.06v-1.5c.18 0 .36 0 .48.06.66 0 .96-.24 1.02-.9 0-.42 0-.84.06-1.26 0-.6 0-1.2.06-1.74.06-.78.42-1.26 1.14-1.62-.66-.42-1.08-.96-1.14-1.74-.06-.78-.06-1.62-.06-2.4 0-.84-.36-1.14-1.2-1.14-.18 0-.3 0-.42-.06v-1.5c1.74-.3 2.94.36 3 2.04.06.66 0 1.32.06 1.98 0 .3 0 .6.06.9.12.66.42.96 1.08 1.02h.36v1.62c-.06-.06-.12-.06-.16-.06zm-5.16-.42a.99.99 0 0 1-.96 1.02.96.96 0 0 1-.96-1.02c0-.54.42-1.02.96-1.02.54 0 .96.48.96 1.02zm-3.42 0c0 .54-.42 1.02-.96 1.02s-.96-.48-.96-1.02.42-1.02.96-1.02.96.48.96 1.02zm6.78-1.02c.54 0 .96.48.96 1.02s-.42 1.02-.96 1.02a.99.99 0 0 1-.96-1.02c0-.54.42-1.02.96-1.02z"/></svg>
+          Swagger
+        </a>
+        <a href="https://miro.com/welcomeonboard/dFZpMFM2akVraHBDNDh4Q0w2RnRIWTgzLzRJZjFCNVJQVXY5TFluUnZQNlh4VGhITlRFQ2F2aGVzZDM2V3Z5eW9HWGJGbnhrZWIxTFZPTmVrZDU1UzBaU3FqOFhyWmwxOUw2ZzN4V01IaWxWNmxzZTkxUWJyMHlpU2tVNjdGZTFyVmtkMG5hNDA3dVlncnBvRVB2ZXBnPT0hdjE=?share_link_id=794148254581" target="_blank" class="btn btn-secondary">
+          <svg class="btn-logo" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.392 0h-3.819l3.246 5.971L9.879 0H6.061l3.535 7.165L2.281 0H0v24h2.281V10.834L9.879 24h3.717l-7.535-13.948L13.573 24h3.819L10.95 11.165 17.392 24H24V0h-6.608z"/></svg>
+          Miro (DDD)
+        </a>
+      </div>
+    </header>
+
+    <!-- SUMÁRIO -->
+    <section id="sumario" class="toc">
+      <span class="kicker">Sumário</span>
+      <h2>Índice da documentação</h2>
+      <p>Itens marcados com <span class="toc-badge">FIAP</span> mapeiam diretamente para um requisito do Tech Challenge — Fase 1.</p>
+
+      <div class="toc-grid">
+        <div class="toc-group">
+          <div class="toc-group-title">Introdução</div>
+          <ol class="toc-list">
+            <li><a href="#overview">Visão geral</a></li>
+            <li><a href="#entrega">Entrega da Fase 1</a></li>
+            <li><a href="#stack">Stack tecnológica</a></li>
+          </ol>
+        </div>
+
+        <div class="toc-group">
+          <div class="toc-group-title">Arquitetura</div>
+          <ol class="toc-list">
+            <li><a href="#hexagonal">Arquitetura Hexagonal</a></li>
+            <li><a href="#structure">Estrutura do projeto</a></li>
+            <li><a href="#database">Banco de dados <span class="toc-badge">FIAP</span></a></li>
+          </ol>
+        </div>
+
+        <div class="toc-group">
+          <div class="toc-group-title">Domínio (DDD)</div>
+          <ol class="toc-list">
+            <li><a href="#bounded-contexts">Bounded Contexts</a></li>
+            <li><a href="#service-order">Status da OS <span class="toc-badge">FIAP</span></a></li>
+            <li><a href="#ubiquitous-language">Linguagem Ubíqua <span class="toc-badge">FIAP</span></a></li>
+            <li><a href="#ddd-miro">Event Storming (Miro) <span class="toc-badge">FIAP</span></a></li>
+          </ol>
+        </div>
+
+        <div class="toc-group">
+          <div class="toc-group-title">API</div>
+          <ol class="toc-list">
+            <li><a href="#api-overview">Visão geral da API <span class="toc-badge">FIAP</span></a></li>
+            <li><a href="#swagger">Swagger <span class="toc-badge">FIAP</span></a></li>
+            <li><a href="#metrics">Tempo médio de execução <span class="toc-badge">FIAP</span></a></li>
+          </ol>
+        </div>
+
+        <div class="toc-group">
+          <div class="toc-group-title">Segurança</div>
+          <ol class="toc-list">
+            <li><a href="#security-practices">JWT e validações <span class="toc-badge">FIAP</span></a></li>
+            <li><a href="#vuln-report">Relatório de vulnerabilidades <span class="toc-badge">FIAP</span></a></li>
+          </ol>
+        </div>
+
+        <div class="toc-group">
+          <div class="toc-group-title">Operação</div>
+          <ol class="toc-list">
+            <li><a href="#getting-started">Como executar (Docker) <span class="toc-badge">FIAP</span></a></li>
+            <li><a href="#tests">Testes (80% cobertura) <span class="toc-badge">FIAP</span></a></li>
+            <li><a href="#resources">Recursos &amp; Links</a></li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- VISÃO GERAL -->
+    <section id="overview">
+      <span class="kicker">Introdução</span>
+      <h2>Visão geral</h2>
+      <p>
+        O <strong>Workshop API</strong> é o back-end (MVP) de um sistema integrado
+        para uma oficina mecânica de médio porte. Ele substitui o atual processo
+        baseado em planilhas e anotações manuais por um fluxo digital que cobre
+        desde o cadastro do solicitante até a entrega do veículo.
+      </p>
+
       <div class="card-grid">
         <div class="card">
-          <div class="card-icon" style="background: rgba(52,211,153,0.1);">👤</div>
+          <div class="card-icon">👤</div>
           <h3>Solicitantes & Veículos</h3>
-          <p>Cadastro de solicitantes com validação de documento (CPF/CNPJ) e vinculação de múltiplos veículos por solicitante.</p>
+          <p>Cadastro de solicitantes (PF/PJ) com validação de documento e múltiplos veículos por solicitante.</p>
         </div>
         <div class="card">
-          <div class="card-icon" style="background: rgba(99,102,241,0.1);">📋</div>
+          <div class="card-icon">📋</div>
           <h3>Ordens de Serviço</h3>
-          <p>Criação e acompanhamento de OS com cálculo automático de total, associando serviços e peças consumidas.</p>
+          <p>Criação, acompanhamento e atualização de status com cálculo automático de orçamento.</p>
         </div>
         <div class="card">
-          <div class="card-icon" style="background: rgba(251,191,36,0.1);">🔩</div>
-          <h3>Peças & Serviços</h3>
-          <p>Catálogo de serviços e controle de estoque de peças com ajuste de quantidade e rastreabilidade.</p>
+          <div class="card-icon">🔩</div>
+          <h3>Catálogo & Estoque</h3>
+          <p>CRUD de serviços, peças e insumos com controle de estoque e ajustes positivos/negativos.</p>
         </div>
         <div class="card">
-          <div class="card-icon" style="background: rgba(248,113,113,0.1);">🔐</div>
+          <div class="card-icon">🔐</div>
           <h3>Autenticação JWT</h3>
-          <p>Endpoints protegidos via middleware JWT. Token gerado no login, validado em todas as rotas autenticadas.</p>
+          <p>Access + refresh token com rotação, roles (admin/client) e portal público de consulta de OS.</p>
         </div>
       </div>
     </section>
 
-    <!-- ── Banco de Dados ── -->
-    <section id="database">
-      <p class="section-label">Banco de Dados</p>
-      <h2>Por que PostgreSQL?</h2>
-      <p class="section-desc">
-        A escolha do PostgreSQL não foi arbitrária — cada característica do sistema
-        motivou um requisito que o Postgres atende nativamente.
-      </p>
-      <div class="feature-list">
-        <div class="feature-item">
-          <div class="feature-item-icon">🔒</div>
-          <div>
-            <h4>ACID e integridade transacional</h4>
-            <p>
-              Uma Ordem de Serviço agrega serviços, peças e atualiza o estoque em uma única operação.
-              Se qualquer parte falhar, a transação inteira é revertida. O modelo ACID do Postgres
-              garante que nunca haverá OS criada com estoque inconsistente ou total calculado errado.
-            </p>
-          </div>
-        </div>
-        <div class="feature-item">
-          <div class="feature-item-icon">🔗</div>
-          <div>
-            <h4>Relações entre entidades com integridade referencial</h4>
-            <p>
-              O domínio tem uma hierarquia clara: <code>Requester → Vehicle → ServiceOrder → ServiceItem / PartItem</code>.
-              Chaves estrangeiras com <code>ON DELETE RESTRICT</code> impedem remoção de solicitantes com veículos ativos
-              e de peças referenciadas em OS abertas, sem nenhuma lógica extra na aplicação.
-            </p>
-          </div>
-        </div>
-        <div class="feature-item">
-          <div class="feature-item-icon">🔍</div>
-          <div>
-            <h4>Consultas por índice em campos de negócio</h4>
-            <p>
-              Buscas frequentes por CPF/CNPJ (<code>requester_document</code>) e placa de veículo
-              beneficiam-se diretamente de índices B-tree do Postgres, com custo de leitura O(log n)
-              independentemente do volume de registros.
-            </p>
-          </div>
-        </div>
-        <div class="feature-item">
-          <div class="feature-item-icon">📊</div>
-          <div>
-            <h4>Maturidade, ecossistema e observabilidade</h4>
-            <p>
-              GORM tem suporte de primeira classe para Postgres. pgAdmin (incluído no Docker Compose)
-              oferece inspeção visual do schema sem ferramentas extras. A combinação garante
-              produtividade no desenvolvimento e facilidade de diagnóstico em produção.
-            </p>
-          </div>
-        </div>
-        <div class="feature-item">
-          <div class="feature-item-icon">📈</div>
-          <div>
-            <h4>Escalabilidade vertical e horizontal</h4>
-            <p>
-              Para o volume esperado de uma oficina mecânica, Postgres em modo single-node é mais
-              que suficiente. Se o volume crescer, read replicas e particionamento de tabela são
-              recursos nativos — sem migração de tecnologia.
-            </p>
-          </div>
-        </div>
-      </div>
+    <!-- ENTREGA -->
+    <section id="entrega">
+      <span class="kicker">Introdução</span>
+      <h2>Entrega da Fase 1</h2>
+      <p>Esta documentação reúne todos os artefatos exigidos pelo Tech Challenge da Fase 1.</p>
+
+      <table class="info-table">
+        <thead><tr><th>Artefato</th><th>Onde encontrar</th></tr></thead>
+        <tbody>
+          <tr><td>Código-fonte</td><td><a href="https://github.com/Kc1t/postech-tc1" target="_blank">github.com/Kc1t/postech-tc1</a></td></tr>
+          <tr><td>API documentada (Swagger)</td><td><a href="http://localhost:8080/swagger/index.html" target="_blank">localhost:8080/swagger</a></td></tr>
+          <tr><td>Documentação DDD (Event Storming, Context Map, Linguagem Ubíqua)</td><td><a href="https://miro.com/welcomeonboard/dFZpMFM2akVraHBDNDh4Q0w2RnRIWTgzLzRJZjFCNVJQVXY5TFluUnZQNlh4VGhITlRFQ2F2aGVzZDM2V3Z5eW9HWGJGbnhrZWIxTFZPTmVrZDU1UzBaU3FqOFhyWmwxOUw2ZzN4V01IaWxWNmxzZTkxUWJyMHlpU2tVNjdGZTFyVmtkMG5hNDA3dVlncnBvRVB2ZXBnPT0hdjE=?share_link_id=794148254581" target="_blank">Miro Board</a></td></tr>
+          <tr><td>Relatório de vulnerabilidades</td><td><a href="https://github.com/Kc1t/postech-tc1/blob/main/security-reports/RELATORIO.md" target="_blank">security-reports/RELATORIO.md</a></td></tr>
+          <tr><td>README de instalação</td><td><a href="https://github.com/Kc1t/postech-tc1/blob/main/README.md" target="_blank">README.md</a></td></tr>
+          <tr><td>Dockerfile + docker-compose</td><td>Raiz do repositório</td></tr>
+        </tbody>
+      </table>
     </section>
 
-    <!-- ── Arquitetura ── -->
-    <section id="architecture">
-      <p class="section-label">Arquitetura</p>
+    <!-- STACK -->
+    <section id="stack">
+      <span class="kicker">Introdução</span>
+      <h2>Stack tecnológica</h2>
+      <table class="info-table">
+        <thead><tr><th>Camada</th><th>Tecnologia</th><th>Versão</th></tr></thead>
+        <tbody>
+          <tr><td>Linguagem</td><td>Go</td><td>1.23+</td></tr>
+          <tr><td>Framework HTTP</td><td>Gin</td><td>—</td></tr>
+          <tr><td>ORM</td><td>GORM</td><td>—</td></tr>
+          <tr><td>Banco de dados</td><td>PostgreSQL</td><td>16</td></tr>
+          <tr><td>Autenticação</td><td>JWT (<code>golang-jwt/jwt</code>)</td><td>—</td></tr>
+          <tr><td>Hash de senhas</td><td>bcrypt</td><td>cost 12</td></tr>
+          <tr><td>Documentação API</td><td>Swagger (<code>swaggo/swag</code>)</td><td>—</td></tr>
+          <tr><td>Containerização</td><td>Docker + docker-compose</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ARQUITETURA HEXAGONAL -->
+    <section id="hexagonal">
+      <span class="kicker">Arquitetura</span>
       <h2>Arquitetura Hexagonal</h2>
-      <p class="section-desc">
-        O domínio não depende de nada externo. Todas as dependências apontam para dentro —
-        frameworks, banco de dados e transporte HTTP são detalhes de infraestrutura.
+      <p>
+        Embora o desafio permitisse arquitetura em camadas tradicional, optou-se pela
+        <strong>arquitetura hexagonal (Ports &amp; Adapters)</strong> dentro de um monolito.
+        O domínio não depende de nada externo — frameworks, banco e transporte HTTP são
+        detalhes de infraestrutura.
       </p>
 
-      <div class="arch-diagram">
-
-        <div class="arch-layer layer-inbound">
-          <span class="arch-layer-label">Inbound</span>
-          <div class="arch-layer-content">
-            <h4>Adapters HTTP — <code>adapters/inbound/http/</code></h4>
-            <p>Handlers Gin. Recebem a requisição HTTP, validam o payload, chamam o use case e mapeiam o resultado para status code + JSON. Um arquivo por operação (<code>create.go</code>, <code>find_by_id.go</code>…).</p>
+      <div class="arch-stack">
+        <div class="arch-layer arch-inbound">
+          <div class="arch-tag">Inbound</div>
+          <div>
+            <h4>Adapters HTTP <span class="muted">— <code>adapters/inbound/http/</code></span></h4>
+            <p>Handlers Gin. Recebem a requisição, validam payload, chamam o use case e mapeiam o resultado para status HTTP. Um arquivo por operação (<code>create.go</code>, <code>find_by_id.go</code>…).</p>
           </div>
         </div>
-
         <div class="arch-arrow">↓</div>
-
-        <div class="arch-layer layer-ports">
-          <span class="arch-layer-label">Ports</span>
-          <div class="arch-layer-content">
-            <h4>Interfaces — <code>ports/usecases.go</code> · <code>ports/repositories.go</code></h4>
-            <p>Contratos puros em Go. Use cases e repositories existem apenas como interfaces aqui. Nenhuma implementação — só assinaturas. Isso permite trocar Gin por gRPC ou Postgres por outro banco sem tocar o domínio.</p>
+        <div class="arch-layer arch-ports">
+          <div class="arch-tag">Ports</div>
+          <div>
+            <h4>Interfaces <span class="muted">— <code>ports/usecases.go</code> · <code>ports/repositories.go</code></span></h4>
+            <p>Contratos puros em Go. Use cases e repositories existem aqui apenas como interfaces — nenhuma implementação.</p>
           </div>
         </div>
-
         <div class="arch-arrow">↓</div>
-
-        <div class="arch-layer layer-app">
-          <span class="arch-layer-label">Application</span>
-          <div class="arch-layer-content">
-            <h4>Use Cases — <code>application/usecase/{entidade}/</code></h4>
-            <p>Lógica de negócio. Cada struct tem um único método <code>Execute</code>. Dependem apenas de <code>ports</code> e <code>entities</code> — nunca de Gin, GORM ou Postgres.</p>
+        <div class="arch-layer arch-app">
+          <div class="arch-tag">Application</div>
+          <div>
+            <h4>Use Cases <span class="muted">— <code>application/usecase/{recurso}/</code></span></h4>
+            <p>Lógica de negócio. Cada struct expõe um único método <code>Execute</code> e depende apenas de <code>ports</code> e <code>entities</code>.</p>
           </div>
         </div>
-
         <div class="arch-arrow">↓</div>
-
-        <div class="arch-layer layer-domain">
-          <span class="arch-layer-label">Domain</span>
-          <div class="arch-layer-content">
-            <h4>Entities & Errors — <code>domain/entities/</code> · <code>domain/errors/</code></h4>
-            <p>Núcleo do sistema. Zero dependências externas. Construtores (<code>NewRequester</code>, <code>NewVehicle</code>…), invariantes de negócio e erros sentinela (<code>ErrNotFound</code>, <code>ErrInvalidDocument</code>…).</p>
+        <div class="arch-layer arch-domain">
+          <div class="arch-tag">Domain</div>
+          <div>
+            <h4>Entities &amp; Errors <span class="muted">— <code>domain/entities/</code> · <code>domain/errors/</code></span></h4>
+            <p>Núcleo do sistema. Zero dependências externas. Construtores, invariantes de negócio e erros sentinela centralizados.</p>
           </div>
         </div>
-
         <div class="arch-arrow">↑</div>
-
-        <div class="arch-layer layer-outbound">
-          <span class="arch-layer-label">Outbound</span>
-          <div class="arch-layer-content">
-            <h4>Adapters PostgreSQL — <code>adapters/outbound/postgresql/</code></h4>
-            <p>Implementações GORM dos repository interfaces. Models em <code>model/</code> com métodos <code>FromDomain</code> e <code>ToDomain</code> para converter entre entidade de domínio e model de persistência.</p>
+        <div class="arch-layer arch-outbound">
+          <div class="arch-tag">Outbound</div>
+          <div>
+            <h4>Adapters PostgreSQL <span class="muted">— <code>adapters/outbound/postgresql/</code></span></h4>
+            <p>Implementações GORM dos repositórios. Models em <code>model/</code> com <code>FromDomain</code> e <code>ToDomain</code>.</p>
           </div>
         </div>
-
       </div>
 
-      <div class="card" style="margin-top: 24px;">
-        <h3 style="margin-bottom: 12px; font-size: 0.9rem;">Regra de dependência</h3>
-        <p style="font-size: 0.875rem; color: var(--text-muted);">
-          O único lugar que conhece todas as camadas é o
-          <code>cmd/api/bootstrap/container.go</code> — o container de DI.
-          Ele instancia repositories → use cases → handlers nessa ordem,
-          injetando as dependências via construtores. Nenhuma outra parte
-          do código importa camadas de fora para dentro.
-        </p>
+      <div class="callout">
+        <strong>Regra de dependência:</strong> O único lugar que conhece todas as camadas é o
+        <code>cmd/api/bootstrap/container.go</code> — o container de DI manual. Ele instancia
+        repositories → use cases → handlers, injetando dependências via construtores.
       </div>
     </section>
 
-    <!-- ── Estrutura ── -->
+    <!-- ESTRUTURA -->
     <section id="structure">
-      <p class="section-label">Estrutura</p>
-      <h2>Organização do projeto</h2>
-      <p class="section-desc">
-        Cada pasta tem uma única responsabilidade. A estrutura espelha diretamente as camadas da arquitetura hexagonal.
-      </p>
-      <pre>
-cmd/api/
-  main.go                  — entrypoint: monta container e inicia servidor
-  bootstrap/container.go   — DI: instancia repos → use cases → handlers
-  routes/routes.go         — registra SetupRoutes de cada handler
-  middleware/              — JWT auth, CORS
+      <span class="kicker">Arquitetura</span>
+      <h2>Estrutura do projeto</h2>
+      <pre><code>cmd/api/
+  main.go                  entrypoint
+  bootstrap/container.go   DI manual (singleton)
+  routes/routes.go         registro de rotas
+  middleware/              JWT auth, CORS, role
 
 internal/
   domain/
-    entities/              — Requester, Vehicle, Service, Part, ServiceOrder
-    errors/                — erros sentinela (ErrNotFound, ErrConflict…)
-
+    entities/              entidades (User, Customer, Vehicle, ServiceOrder, Part, Service)
+    errors/                erros de domínio centralizados
   ports/
-    repositories.go        — interfaces dos repositories (driven ports)
-    usecases.go            — interfaces dos use cases (driving ports)
-
-  application/usecase/
-    requester/             — CreateRequester, GetRequester, ListRequesters…
-    vehicle/               — CreateVehicle, GetVehicle…
-    part/                  — CreatePart, AdjustStock…
-    service/               — CreateService, UpdateService…
-    service_order/         — CreateServiceOrder, UpdateStatus…
-
+    repositories.go        interfaces (repos + TokenService + PasswordHasher)
+    usecases.go            interfaces de use cases
+  application/usecase/     1 arquivo por operação
   adapters/
-    inbound/http/
-      requester/           — handler.go + create.go + find_by_id.go…
-      vehicle/
-      part/
-      service/
-      service_order/
-    outbound/postgresql/
-      requester_repository.go
-      vehicle_repository.go
-      model/               — pgmodels com FromDomain / ToDomain
+    inbound/http/          handlers Gin
+    outbound/postgresql/   implementações GORM + models
+
+pkg/
+  env/                     helpers de env vars
+  hasher/                  bcrypt
+  ioc/                     container de injeção
 
 docs/
-  site/                    — esta landing page (servida na porta 8083)
-  swagger.json             — gerado pelo swag init
-      </pre>
+  site/                    esta documentação (porta 8083)
+  swagger.json             gerado pelo swag init</code></pre>
     </section>
 
-    <!-- ── Métricas ── -->
+    <!-- BANCO -->
+    <section id="database">
+      <span class="kicker">Arquitetura</span>
+      <h2>Banco de dados — por que PostgreSQL?</h2>
+      <p>A escolha não foi arbitrária — cada característica do sistema motiva um requisito que o Postgres atende nativamente.</p>
+
+      <ul class="bullets">
+        <li><strong>ACID e integridade transacional</strong> — Uma OS agrega serviços, peças e atualiza estoque numa única transação. Se qualquer parte falhar, tudo reverte.</li>
+        <li><strong>Integridade referencial</strong> — A hierarquia <code>Requester → Vehicle → ServiceOrder → ServiceItem / PartItem</code> é garantida por chaves estrangeiras (<code>ON DELETE RESTRICT</code>) sem lógica extra na aplicação.</li>
+        <li><strong>UUID nativo</strong> — <code>gen_random_uuid()</code> sem dependências externas.</li>
+        <li><strong>JSONB</strong> — Permite armazenar Value Objects (serviços e peças vinculadas à OS) como JSON consultável.</li>
+        <li><strong>Índices B-tree em campos de negócio</strong> — Buscas por CPF/CNPJ e placa têm custo O(log n) independente do volume.</li>
+        <li><strong>Maturidade e ecossistema</strong> — Driver oficial Go (<code>pgx</code>), GORM, pgAdmin para inspeção visual.</li>
+        <li><strong>Escalabilidade</strong> — Para o volume de uma oficina, single-node basta. Read replicas e particionamento são nativos se crescer.</li>
+      </ul>
+    </section>
+
+    <!-- BOUNDED CONTEXTS -->
+    <section id="bounded-contexts">
+      <span class="kicker">Domínio</span>
+      <h2>Bounded Contexts</h2>
+      <p>O sistema foi modelado em quatro contextos delimitados:</p>
+      <div class="card-grid">
+        <div class="card"><h3>Identidade &amp; Acesso</h3><p>Usuários, autenticação JWT, roles e refresh tokens.</p></div>
+        <div class="card"><h3>Atendimento</h3><p>Solicitantes (PF/PJ), veículos e seu vínculo.</p></div>
+        <div class="card"><h3>Oficina / Execução</h3><p>Ordens de serviço, status, orçamento e métricas.</p></div>
+        <div class="card"><h3>Catálogo &amp; Estoque</h3><p>Serviços oferecidos, peças/insumos e controle de estoque.</p></div>
+      </div>
+    </section>
+
+    <!-- ORDEM DE SERVIÇO -->
+    <section id="service-order">
+      <span class="kicker">Domínio</span>
+      <h2>Ordem de Serviço — Máquina de Estados</h2>
+      <p>Os estados da OS e suas transições são controlados pela própria entidade <code>ServiceOrder</code>, nunca pelo handler HTTP.</p>
+      <pre><code>Recebida → Em diagnóstico → Aguardando aprovação → Em execução → Finalizada → Entregue</code></pre>
+      <p>Transições inválidas retornam <code>ErrInvalidStatusTransition</code> e o handler traduz para <code>422 Unprocessable Entity</code>.</p>
+    </section>
+
+    <!-- LINGUAGEM UBÍQUA -->
+    <section id="ubiquitous-language">
+      <span class="kicker">Domínio</span>
+      <h2>Linguagem Ubíqua</h2>
+      <p>Glossário entre o vocabulário do negócio (PT) e os termos no código (EN):</p>
+      <table class="info-table">
+        <thead><tr><th>Negócio</th><th>Código</th><th>Definição</th></tr></thead>
+        <tbody>
+          <tr><td>Solicitante</td><td><code>Requester</code> / <code>Customer</code></td><td>Cliente PF/PJ identificado por CPF/CNPJ.</td></tr>
+          <tr><td>Veículo</td><td><code>Vehicle</code></td><td>Veículo do solicitante (placa, marca, modelo, ano).</td></tr>
+          <tr><td>Ordem de Serviço (OS)</td><td><code>ServiceOrder</code></td><td>Documento que registra serviços e peças aplicados a um veículo.</td></tr>
+          <tr><td>Serviço</td><td><code>Service</code></td><td>Item do catálogo de mão-de-obra (ex.: troca de óleo).</td></tr>
+          <tr><td>Peça / Insumo</td><td><code>Part</code></td><td>Item físico consumido na execução, com controle de estoque.</td></tr>
+          <tr><td>Orçamento</td><td>total da <code>ServiceOrder</code></td><td>Soma automática de serviços + peças aplicadas.</td></tr>
+          <tr><td>Código da OS</td><td><code>ServiceOrder.Code</code></td><td>Identificador legível usado no portal público de consulta.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- DDD MIRO -->
+    <section id="ddd-miro">
+      <span class="kicker">Domínio</span>
+      <h2>Documentação DDD completa (Miro)</h2>
+      <p>O board do Miro contém o material exigido pelo Tech Challenge:</p>
+      <ul class="bullets">
+        <li><strong>Event Storming</strong> dos fluxos de Criação/Acompanhamento da OS e Gestão de peças e insumos;</li>
+        <li><strong>Context Map</strong> com relações entre os bounded contexts;</li>
+        <li><strong>Diagramas de agregados</strong> e invariantes;</li>
+        <li><strong>Linguagem Ubíqua</strong> aplicada.</li>
+      </ul>
+
+      <div class="miro-embed">
+        <iframe
+          src="https://miro.com/welcomeonboard/dFZpMFM2akVraHBDNDh4Q0w2RnRIWTgzLzRJZjFCNVJQVXY5TFluUnZQNlh4VGhITlRFQ2F2aGVzZDM2V3Z5eW9HWGJGbnhrZWIxTFZPTmVrZDU1UzBaU3FqOFhyWmwxOUw2ZzN4V01IaWxWNmxzZTkxUWJyMHlpU2tVNjdGZTFyVmtkMG5hNDA3dVlncnBvRVB2ZXBnPT0hdjE=?share_link_id=794148254581"
+          frameborder="0"
+          scrolling="no"
+          allow="fullscreen; clipboard-read; clipboard-write"
+          allowfullscreen
+          loading="lazy"
+          title="Workshop API — Documentação DDD no Miro">
+        </iframe>
+      </div>
+
+      <p class="muted small">Caso o conteúdo acima não carregue (Miro pode exigir login), use o botão abaixo para abrir o board em uma nova aba.</p>
+
+      <a class="btn btn-primary" target="_blank" href="https://miro.com/welcomeonboard/dFZpMFM2akVraHBDNDh4Q0w2RnRIWTgzLzRJZjFCNVJQVXY5TFluUnZQNlh4VGhITlRFQ2F2aGVzZDM2V3Z5eW9HWGJGbnhrZWIxTFZPTmVrZDU1UzBaU3FqOFhyWmwxOUw2ZzN4V01IaWxWNmxzZTkxUWJyMHlpU2tVNjdGZTFyVmtkMG5hNDA3dVlncnBvRVB2ZXBnPT0hdjE=?share_link_id=794148254581">
+        <svg class="btn-logo" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.392 0h-3.819l3.246 5.971L9.879 0H6.061l3.535 7.165L2.281 0H0v24h2.281V10.834L9.879 24h3.717l-7.535-13.948L13.573 24h3.819L10.95 11.165 17.392 24H24V0h-6.608z"/></svg>
+        Abrir Miro Board
+      </a>
+    </section>
+
+    <!-- API OVERVIEW -->
+    <section id="api-overview">
+      <span class="kicker">API</span>
+      <h2>Visão geral da API</h2>
+      <p>API REST sob o prefixo <code>/api/v1</code>. As rotas <code>/auth/register</code>, <code>/auth/login</code>, <code>/auth/refresh</code> e endpoints do <em>portal cliente</em> (consulta de OS por código) são <strong>públicas</strong>. Todas as demais exigem <code>Authorization: Bearer &lt;token&gt;</code>; rotas administrativas exigem <code>role=admin</code> nas claims do JWT.</p>
+
+      <div class="card-grid">
+        <div class="card"><h3>Auth</h3><p><code>POST /auth/{register,login,refresh,logout}</code></p></div>
+        <div class="card"><h3>Requesters</h3><p>CRUD + busca por documento + listagem de veículos por solicitante.</p></div>
+        <div class="card"><h3>Vehicles</h3><p>CRUD de veículos.</p></div>
+        <div class="card"><h3>Services</h3><p>CRUD do catálogo de serviços.</p></div>
+        <div class="card"><h3>Parts</h3><p>CRUD + ajuste de estoque (<code>PATCH /parts/:id/stock</code>).</p></div>
+        <div class="card"><h3>Service Orders</h3><p>CRUD, mudança de status, métrica de tempo médio e portal público.</p></div>
+      </div>
+    </section>
+
+    <!-- SWAGGER -->
+    <section id="swagger">
+      <span class="kicker">API</span>
+      <h2>Swagger</h2>
+      <p>Documentação interativa de todos os endpoints — schemas de request/response, exemplos e códigos de erro.</p>
+      <a class="btn btn-primary" target="_blank" href="http://localhost:8080/swagger/index.html">📄 Abrir Swagger UI</a>
+      <p class="muted small" style="margin-top:8px;">Disponível após <code>docker compose up</code>.</p>
+    </section>
+
+    <!-- MÉTRICAS -->
     <section id="metrics">
-      <p class="section-label">Métricas</p>
+      <span class="kicker">API</span>
       <h2>Endpoints de métricas</h2>
-      <p class="section-desc">
-        Endpoints dedicados para acompanhamento operacional da oficina, acessíveis via API autenticada.
-      </p>
-      <div class="feature-list">
-        <div class="feature-item">
-          <div class="feature-item-icon">⏱️</div>
-          <div>
-            <h4>Tempo médio de execução de OS
-              <code style="margin-left:8px;">GET /service-orders/metrics/execution-time</code>
-            </h4>
-            <p>
-              Calcula a média global do intervalo entre a aprovação do orçamento (<code>started_at</code>)
-              e a finalização do serviço (<code>finished_at</code>) em todas as ordens de serviço concluídas.
-              Retorna <code>0</code> caso nenhuma OS tenha sido finalizada ainda.
-            </p>
-            <pre style="margin-top:12px;">// Resposta
-{
+
+      <div class="endpoint">
+        <div class="endpoint-method">GET</div>
+        <code class="endpoint-path">/api/v1/service-orders/metrics/execution-time</code>
+      </div>
+      <p>Calcula a média global do intervalo entre <code>started_at</code> (aprovação do orçamento) e <code>finished_at</code> (finalização) de todas as OSs concluídas. Retorna <code>0</code> caso nenhuma OS tenha sido finalizada.</p>
+<pre><code>{
   "average_seconds": 14400,
   "average_human":   "4h0m0s"
-}</pre>
-          </div>
-        </div>
-        <div class="feature-item">
-          <div class="feature-item-icon">📦</div>
-          <div>
-            <h4>Ajuste de estoque de peças
-              <code style="margin-left:8px;">PATCH /parts/{id}/stock</code>
-            </h4>
-            <p>
-              Aplica um delta (positivo ou negativo) ao estoque de uma peça.
-              Retorna <code>422 Unprocessable Entity</code> se o resultado deixaria o estoque negativo
-              (<code>ErrInsufficientStock</code>).
-            </p>
-            <pre style="margin-top:12px;">// Corpo da requisição
-{ "delta": -3 }   // remove 3 unidades do estoque
-{ "delta":  5 }   // adiciona 5 unidades ao estoque</pre>
-          </div>
-        </div>
+}</code></pre>
+
+      <div class="endpoint">
+        <div class="endpoint-method">PATCH</div>
+        <code class="endpoint-path">/api/v1/parts/{id}/stock</code>
+      </div>
+      <p>Aplica delta (positivo ou negativo) ao estoque de uma peça. Retorna <code>422</code> com <code>ErrInsufficientStock</code> se o resultado deixaria o estoque negativo.</p>
+<pre><code>{ "delta": -3 }   // remove 3 unidades
+{ "delta":  5 }   // adiciona 5 unidades</code></pre>
+    </section>
+
+    <!-- SEGURANÇA -->
+    <section id="security-practices">
+      <span class="kicker">Segurança</span>
+      <h2>Práticas aplicadas</h2>
+      <ul class="bullets">
+        <li><strong>JWT</strong> com access token (15 min) e refresh token (7 dias) com rotação;</li>
+        <li><strong>bcrypt</strong> (custo 12) para hash de senhas;</li>
+        <li><strong>Validação de dados sensíveis</strong>: CPF/CNPJ e placa de veículo validados no domínio;</li>
+        <li><strong>Account lockout</strong> após N tentativas de login falhadas;</li>
+        <li><strong>Limites de tamanho</strong> em todos os inputs;</li>
+        <li><strong>Variáveis de ambiente</strong> para segredos (sem credenciais hardcoded);</li>
+        <li><strong>Roles</strong> (<code>admin</code>, <code>client</code>) — rotas administrativas exigem <code>role=admin</code>.</li>
+      </ul>
+    </section>
+
+    <!-- VULN -->
+    <section id="vuln-report">
+      <span class="kicker">Segurança</span>
+      <h2>Relatório de vulnerabilidades</h2>
+      <p>Foram executados três scanners complementares em 2026-04-27, todos via container Docker:</p>
+      <ul class="bullets">
+        <li><code>gosec</code> — SAST estático para Go;</li>
+        <li><code>govulncheck</code> — vulnerabilidades em deps com análise de call-graph;</li>
+        <li><code>trivy</code> — scan de <code>go.mod</code>, Dockerfile e segredos.</li>
+      </ul>
+
+      <table class="info-table">
+        <thead><tr><th>Severidade</th><th>Qtd.</th><th>Origem</th></tr></thead>
+        <tbody>
+          <tr><td><span class="sev sev-crit">Crítica</span></td><td>1</td><td>Dependência (<code>pgx/v5</code>)</td></tr>
+          <tr><td><span class="sev sev-high">Alta</span></td><td>1</td><td>Dockerfile (sem <code>USER</code> não-root)</td></tr>
+          <tr><td><span class="sev sev-med">Média</span></td><td>2</td><td>Dependência (<code>golang.org/x/crypto</code>)</td></tr>
+          <tr><td><span class="sev sev-low">Baixa</span></td><td>3</td><td>Código, Dockerfile, Dependência</td></tr>
+          <tr><td>Segredos expostos</td><td>0</td><td>—</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout">
+        <strong>Conclusão:</strong> risco residual <strong>baixo</strong>. A análise de call-graph
+        do <code>govulncheck</code> confirma que <strong>0 vulnerabilidades são exploráveis</strong>
+        pelos fluxos da aplicação. As CVEs em dependências, embora com severidade nominal alta,
+        não são alcançáveis pelo código.
+      </div>
+
+      <div class="quick-links">
+        <a class="btn btn-primary" target="_blank" href="https://github.com/Kc1t/postech-tc1/blob/main/security-reports/RELATORIO.md">📑 Relatório completo</a>
+        <a class="btn btn-secondary" target="_blank" href="https://github.com/Kc1t/postech-tc1/tree/main/security-reports">📁 Saídas brutas dos scans</a>
       </div>
     </section>
 
-    <!-- ── Links ── -->
-    <section id="links">
-      <p class="section-label">Links</p>
-      <h2>Acesso rápido</h2>
-      <p class="section-desc">Todos os serviços sobem juntos com <code>docker-compose up -d</code>.</p>
+    <!-- COMO EXECUTAR -->
+    <section id="getting-started">
+      <span class="kicker">Operação</span>
+      <h2>Como executar</h2>
+      <p>Pré-requisitos: Docker e docker-compose.</p>
+<pre><code>git clone https://github.com/Kc1t/postech-tc1.git
+cd postech-tc1
+cp .env.example .env
+docker compose up --build</code></pre>
+
+      <table class="info-table">
+        <thead><tr><th>Serviço</th><th>URL</th><th>Credenciais</th></tr></thead>
+        <tbody>
+          <tr><td>API</td><td><a href="http://localhost:8080" target="_blank">localhost:8080</a></td><td>—</td></tr>
+          <tr><td>Swagger UI</td><td><a href="http://localhost:8080/swagger/index.html" target="_blank">localhost:8080/swagger</a></td><td>—</td></tr>
+          <tr><td>pgAdmin</td><td><a href="http://localhost:8082" target="_blank">localhost:8082</a></td><td><code>admin@workshop.com</code> / <code>admin</code></td></tr>
+          <tr><td>Documentação (esta página)</td><td><a href="http://localhost:8083" target="_blank">localhost:8083</a></td><td>—</td></tr>
+          <tr><td>Health check</td><td><a href="http://localhost:8080/health" target="_blank">localhost:8080/health</a></td><td>—</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- TESTES -->
+    <section id="tests">
+      <span class="kicker">Operação</span>
+      <h2>Testes</h2>
+      <p>Cobertura mínima de 80% nos domínios críticos (entidades, use cases, repositórios).</p>
+<pre><code>go test ./... -v -coverprofile=coverage.out
+go tool cover -func=coverage.out</code></pre>
+    </section>
+
+    <!-- RECURSOS -->
+    <section id="resources">
+      <span class="kicker">Operação</span>
+      <h2>Recursos &amp; Links</h2>
       <div class="links-grid">
-        <!-- porta hardcoded — altere se mudar APP_PORT no .env -->
-        <a href="http://localhost:8080/swagger/index.html" class="link-card" target="_blank">
-          <div class="link-card-icon">📄</div>
-          <div>
-            <h4>Swagger UI</h4>
-            <p>Referência completa dos endpoints, schemas e exemplos de requisição</p>
-          </div>
+        <a class="link-card" target="_blank" href="https://github.com/Kc1t/postech-tc1">
+          <div class="link-card-icon">📂</div>
+          <div><h4>Repositório (GitHub)</h4><p>Código-fonte, Dockerfile e docker-compose.</p></div>
         </a>
-        <a href="http://localhost:8082" class="link-card" target="_blank">
-          <div class="link-card-icon">🗄️</div>
-          <div>
-            <h4>pgAdmin</h4>
-            <p>Interface visual para inspecionar o banco de dados PostgreSQL</p>
-            <p style="margin-top:6px; font-size:0.75rem; color: var(--text-muted);">
-              Usuário: <code>admin@workshop.com</code> &nbsp; Senha:&nbsp;&nbsp; <code>admin</code>
-            </p>
-          </div>
-        </a>
-        <a href="http://localhost:8080/health" class="link-card" target="_blank">
-          <div class="link-card-icon">💚</div>
-          <div>
-            <h4>Health Check</h4>
-            <p>Endpoint de liveness da API — confirma que o servidor está no ar</p>
-          </div>
-        </a>
-        <a href="https://github.com/Kc1t/postech-tc1/blob/main/README.md" class="link-card" target="_blank">
+        <a class="link-card" target="_blank" href="https://github.com/Kc1t/postech-tc1/blob/main/README.md">
           <div class="link-card-icon">📘</div>
-          <div>
-            <h4>README</h4>
-            <p>Instruções de instalação, variáveis de ambiente e comandos de execução</p>
-          </div>
+          <div><h4>README</h4><p>Instruções de instalação, variáveis de ambiente e comandos.</p></div>
+        </a>
+        <a class="link-card" target="_blank" href="http://localhost:8080/swagger/index.html">
+          <div class="link-card-icon">📄</div>
+          <div><h4>Swagger UI</h4><p>Referência completa dos endpoints (após subir o ambiente).</p></div>
+        </a>
+        <a class="link-card" target="_blank" href="https://miro.com/welcomeonboard/dFZpMFM2akVraHBDNDh4Q0w2RnRIWTgzLzRJZjFCNVJQVXY5TFluUnZQNlh4VGhITlRFQ2F2aGVzZDM2V3Z5eW9HWGJGbnhrZWIxTFZPTmVrZDU1UzBaU3FqOFhyWmwxOUw2ZzN4V01IaWxWNmxzZTkxUWJyMHlpU2tVNjdGZTFyVmtkMG5hNDA3dVlncnBvRVB2ZXBnPT0hdjE=?share_link_id=794148254581">
+          <div class="link-card-icon">🧠</div>
+          <div><h4>Miro (DDD)</h4><p>Event Storming, Context Map, Linguagem Ubíqua.</p></div>
+        </a>
+        <a class="link-card" target="_blank" href="https://github.com/Kc1t/postech-tc1/blob/main/security-reports/RELATORIO.md">
+          <div class="link-card-icon">🛡️</div>
+          <div><h4>Relatório de vulnerabilidades</h4><p>Análise consolidada dos scans (gosec, govulncheck, trivy).</p></div>
+        </a>
+        <a class="link-card" target="_blank" href="https://github.com/Kc1t/postech-tc1/blob/main/DOCUMENTO_ENTREGA.md">
+          <div class="link-card-icon">📝</div>
+          <div><h4>Documento de entrega</h4><p>Capa oficial: grupo, participantes, links e resumo de segurança.</p></div>
         </a>
       </div>
     </section>
+
+    <footer class="page-footer">
+      <p>Workshop API · FIAP Pós Tech (15SOAT) · Tech Challenge — Fase 1</p>
+    </footer>
 
   </div>
 </main>
-
-<footer>
-  <div class="container">
-    <p>Workshop API — FIAP Pós Tech &nbsp;·&nbsp; Go + PostgreSQL + Arquitetura Hexagonal</p>
-  </div>
-</footer>
 
 </body>
 </html>
