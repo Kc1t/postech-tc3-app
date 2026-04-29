@@ -27,12 +27,17 @@ func Setup(router *gin.Engine, c *bootstrap.Container) {
 	auth.POST("/register", c.AuthHandler.Register)
 	auth.POST("/login", c.AuthHandler.Login)
 	auth.POST("/refresh", c.AuthHandler.Refresh)
-	auth.POST("/auth/logout", c.AuthHandler.Logout)
 
 	c.ServiceOrderHandler.SetupPublicRoutes(prefix)
 
+	// Rotas autenticadas (qualquer role)
+	protected := prefix.Group("/")
+	protected.Use(middleware.Auth(c.Config.JWTSecret))
+	protected.POST("/auth/logout", c.AuthHandler.Logout)
+
 	// Rotas protegidas (JWT obrigatorio) e ADMIN
 	admin := prefix.Group("/")
+	admin.Use(middleware.Auth(c.Config.JWTSecret))
 	admin.Use(middleware.RequireRole(string(entities.RoleAdmin)))
 
 	c.RequesterHandler.SetupRoutes(admin)
