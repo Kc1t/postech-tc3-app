@@ -9,13 +9,13 @@ import (
 
 //go:generate mockgen -source=./repositories.go -destination=./mocks/repositories.go -package=mocks
 
-// CustomerRepository define as operacoes de persistencia para clientes.
-type CustomerRepository interface {
-	Create(ctx context.Context, c *entities.Customer) error
-	FindByID(ctx context.Context, id string) (*entities.Customer, error)
-	FindByDocument(ctx context.Context, document string) (*entities.Customer, error)
-	FindAll(ctx context.Context) ([]*entities.Customer, error)
-	Update(ctx context.Context, c *entities.Customer) error
+// RequesterRepository define as operacoes de persistencia para clientes.
+type RequesterRepository interface {
+	Create(ctx context.Context, c *entities.Requester) error
+	FindByID(ctx context.Context, id string) (*entities.Requester, error)
+	FindByDocument(ctx context.Context, document string) (*entities.Requester, error)
+	FindAll(ctx context.Context) ([]*entities.Requester, error)
+	Update(ctx context.Context, c *entities.Requester) error
 	Delete(ctx context.Context, id string) error
 }
 
@@ -24,7 +24,7 @@ type VehicleRepository interface {
 	Create(ctx context.Context, v *entities.Vehicle) error
 	FindByID(ctx context.Context, id string) (*entities.Vehicle, error)
 	FindByPlate(ctx context.Context, plate string) (*entities.Vehicle, error)
-	FindByCustomerID(ctx context.Context, customerID string) ([]*entities.Vehicle, error)
+	FindByRequesterID(ctx context.Context, requesterID string) ([]*entities.Vehicle, error)
 	FindAll(ctx context.Context) ([]*entities.Vehicle, error)
 	Update(ctx context.Context, v *entities.Vehicle) error
 	Delete(ctx context.Context, id string) error
@@ -36,7 +36,7 @@ type ServiceOrderRepository interface {
 	FindByID(ctx context.Context, id string) (*entities.ServiceOrder, error)
 	FindByCode(ctx context.Context, code int) (*entities.ServiceOrder, error)
 	FindAll(ctx context.Context) ([]*entities.ServiceOrder, error)
-	FindByCustomerID(ctx context.Context, customerID string) ([]*entities.ServiceOrder, error)
+	FindByRequesterID(ctx context.Context, requesterID string) ([]*entities.ServiceOrder, error)
 	UpdateStatus(ctx context.Context, id string, status entities.OrderStatus) error
 	Update(ctx context.Context, so *entities.ServiceOrder) error
 	ApplyApprovalTransition(ctx context.Context, so *entities.ServiceOrder) error

@@ -12,11 +12,11 @@ import (
 
 // FindByDocument godoc
 // @Summary     Listar OS do cliente por CPF/CNPJ (endpoint publico do cliente)
-// @Tags        service-orders-customer
+// @Tags        service-orders-requester
 // @Produce     json
 // @Param       document query string true "CPF ou CNPJ do cliente"
 // @Success     200 {array} commands.ServiceOrderResponse
-// @Router      /service-orders/customer [get]
+// @Router      /service-orders/requester [get]
 func (h *ServiceOrderHandler) FindByDocument(c *gin.Context) {
 	raw := c.Query("document")
 	if raw == "" {

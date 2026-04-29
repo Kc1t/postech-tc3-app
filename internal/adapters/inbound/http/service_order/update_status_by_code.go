@@ -12,7 +12,7 @@ import (
 
 // UpdateStatusByCode godoc
 // @Summary     Alterar status da OS pelo codigo (endpoint publico do cliente)
-// @Tags        service-orders-customer
+// @Tags        service-orders-requester
 // @Accept      json
 // @Produce     json
 // @Param       code path int true "Codigo da OS"
@@ -32,7 +32,7 @@ func (h *ServiceOrderHandler) UpdateStatusByCode(c *gin.Context) {
 		return
 	}
 
-	doc, err := entities.NewDocument(req.CustomerDocument)
+	doc, err := entities.NewDocument(req.RequesterDocument)
 	if err != nil {
 		httputil.HandleBadRequest(c, err)
 		return

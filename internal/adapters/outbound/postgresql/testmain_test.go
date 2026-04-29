@@ -34,7 +34,7 @@ func TestMain(m *testing.M) {
 	}
 
 	if err := db.AutoMigrate(
-		&pgmodel.Customer{},
+		&pgmodel.Requester{},
 		&pgmodel.Vehicle{},
 		&pgmodel.Part{},
 		&pgmodel.Service{},

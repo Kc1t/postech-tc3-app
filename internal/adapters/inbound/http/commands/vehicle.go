@@ -7,7 +7,7 @@ import (
 )
 
 type CreateVehicleRequest struct {
-	CustomerDocument string `json:"customer_document" binding:"required"`
+	RequesterDocument string `json:"requester_document" binding:"required"`
 	Plate            string `json:"plate"             binding:"required"`
 	Brand            string `json:"brand"             binding:"required"`
 	Model            string `json:"model"             binding:"required"`
@@ -23,7 +23,7 @@ type UpdateVehicleRequest struct {
 
 type VehicleResponse struct {
 	ID         string `json:"id"`
-	CustomerID string `json:"customer_id"`
+	RequesterID string `json:"requester_id"`
 	Plate      string `json:"plate"`
 	Brand      string `json:"brand"`
 	Model      string `json:"model"`
@@ -34,7 +34,7 @@ type VehicleResponse struct {
 
 func (r *CreateVehicleRequest) ToInput() entities.VehicleInput {
 	return entities.VehicleInput{
-		CustomerDocument: r.CustomerDocument,
+		RequesterDocument: r.RequesterDocument,
 		Plate:            r.Plate,
 		Brand:            r.Brand,
 		Model:            r.Model,
@@ -45,7 +45,7 @@ func (r *CreateVehicleRequest) ToInput() entities.VehicleInput {
 func ToVehicleResponse(v *entities.Vehicle) VehicleResponse {
 	return VehicleResponse{
 		ID:         v.ID(),
-		CustomerID: v.CustomerID(),
+		RequesterID: v.RequesterID(),
 		Plate:      v.Plate(),
 		Brand:      v.Brand(),
 		Model:      v.Model(),

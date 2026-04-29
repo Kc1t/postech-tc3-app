@@ -17,14 +17,14 @@ import (
 	"gorm.io/gorm"
 
 	authhandler "github.com/fiap/postech-tc1/internal/adapters/inbound/http/auth"
-	customerhandler "github.com/fiap/postech-tc1/internal/adapters/inbound/http/customer"
+	requesterhandler "github.com/fiap/postech-tc1/internal/adapters/inbound/http/requester"
 	parthandler "github.com/fiap/postech-tc1/internal/adapters/inbound/http/part"
 	servicehandler "github.com/fiap/postech-tc1/internal/adapters/inbound/http/service"
 	serviceorderhandler "github.com/fiap/postech-tc1/internal/adapters/inbound/http/service_order"
 	vehiclehandler "github.com/fiap/postech-tc1/internal/adapters/inbound/http/vehicle"
 
 	authuc "github.com/fiap/postech-tc1/internal/application/usecase/auth"
-	customeruc "github.com/fiap/postech-tc1/internal/application/usecase/customer"
+	requesteruc "github.com/fiap/postech-tc1/internal/application/usecase/requester"
 	partuc "github.com/fiap/postech-tc1/internal/application/usecase/part"
 	serviceuc "github.com/fiap/postech-tc1/internal/application/usecase/service"
 	serviceorderuc "github.com/fiap/postech-tc1/internal/application/usecase/service_order"
@@ -38,7 +38,7 @@ type Container struct {
 	// Repositories
 	UserRepo         ports.UserRepository         `container:"repository"`
 	RefreshTokenRepo ports.RefreshTokenRepository `container:"repository"`
-	CustomerRepo     ports.CustomerRepository     `container:"repository"`
+	RequesterRepo     ports.RequesterRepository     `container:"repository"`
 	VehicleRepo      ports.VehicleRepository      `container:"repository"`
 	ServiceOrderRepo ports.ServiceOrderRepository `container:"repository"`
 	ServiceRepo      ports.ServiceRepository      `container:"repository"`
@@ -50,19 +50,19 @@ type Container struct {
 	RefreshTokenUseCase ports.RefreshTokenUseCase `container:"usecase"`
 	LogoutUseCase       ports.LogoutUseCase       `container:"usecase"`
 
-	// Use Cases — customer
-	CreateCustomer        ports.CreateCustomerUseCase        `container:"usecase"`
-	GetCustomer           ports.GetCustomerUseCase           `container:"usecase"`
-	GetCustomerByDocument ports.GetCustomerByDocumentUseCase `container:"usecase"`
-	ListCustomers         ports.ListCustomersUseCase         `container:"usecase"`
-	UpdateCustomer        ports.UpdateCustomerUseCase        `container:"usecase"`
-	DeleteCustomer        ports.DeleteCustomerUseCase        `container:"usecase"`
+	// Use Cases — requester
+	CreateRequester        ports.CreateRequesterUseCase        `container:"usecase"`
+	GetRequester           ports.GetRequesterUseCase           `container:"usecase"`
+	GetRequesterByDocument ports.GetRequesterByDocumentUseCase `container:"usecase"`
+	ListRequesters         ports.ListRequestersUseCase         `container:"usecase"`
+	UpdateRequester        ports.UpdateRequesterUseCase        `container:"usecase"`
+	DeleteRequester        ports.DeleteRequesterUseCase        `container:"usecase"`
 
 	// Use Cases — vehicle
 	CreateVehicle          ports.CreateVehicleUseCase          `container:"usecase"`
 	GetVehicle             ports.GetVehicleUseCase             `container:"usecase"`
 	ListVehicles           ports.ListVehiclesUseCase           `container:"usecase"`
-	ListVehiclesByCustomer ports.ListVehiclesByCustomerUseCase `container:"usecase"`
+	ListVehiclesByRequester ports.ListVehiclesByRequesterUseCase `container:"usecase"`
 	UpdateVehicle          ports.UpdateVehicleUseCase          `container:"usecase"`
 	DeleteVehicle          ports.DeleteVehicleUseCase          `container:"usecase"`
 
@@ -71,7 +71,7 @@ type Container struct {
 	GetServiceOrder             ports.GetServiceOrderUseCase             `container:"usecase"`
 	GetServiceOrderByCode       ports.GetServiceOrderByCodeUseCase       `container:"usecase"`
 	ListServiceOrders           ports.ListServiceOrdersUseCase           `container:"usecase"`
-	ListServiceOrdersByCustomer ports.ListServiceOrdersByCustomerUseCase `container:"usecase"`
+	ListServiceOrdersByRequester ports.ListServiceOrdersByRequesterUseCase `container:"usecase"`
 	ListServiceOrdersByDocument ports.ListServiceOrdersByDocumentUseCase `container:"usecase"`
 	UpdateServiceOrderStatus    ports.UpdateServiceOrderStatusUseCase    `container:"usecase"`
 	UpdateServiceOrder          ports.UpdateServiceOrderUseCase          `container:"usecase"`
@@ -96,7 +96,7 @@ type Container struct {
 
 	// Handlers
 	AuthHandler         *authhandler.AuthHandler                 `container:"handler"`
-	CustomerHandler     *customerhandler.CustomerHandler         `container:"handler"`
+	RequesterHandler     *requesterhandler.RequesterHandler         `container:"handler"`
 	VehicleHandler      *vehiclehandler.VehicleHandler           `container:"handler"`
 	ServiceOrderHandler *serviceorderhandler.ServiceOrderHandler `container:"handler"`
 	ServiceHandler      *servicehandler.ServiceHandler           `container:"handler"`
@@ -134,7 +134,7 @@ func (c *Container) setupDatabase() {
 	if err := db.AutoMigrate(
 		&pgmodel.User{},
 		&pgmodel.RefreshToken{},
-		&pgmodel.Customer{},
+		&pgmodel.Requester{},
 		&pgmodel.Vehicle{},
 		&pgmodel.Service{},
 		&pgmodel.Part{},
@@ -150,7 +150,7 @@ func (c *Container) setupDatabase() {
 func (c *Container) setupRepositories() {
 	c.UserRepo = postgresql.NewUserRepository(c.db)
 	c.RefreshTokenRepo = postgresql.NewRefreshTokenRepository(c.db)
-	c.CustomerRepo = postgresql.NewCustomerRepository(c.db)
+	c.RequesterRepo = postgresql.NewRequesterRepository(c.db)
 	c.VehicleRepo = postgresql.NewVehicleRepository(c.db)
 	c.ServiceOrderRepo = postgresql.NewServiceOrderRepository(c.db)
 	c.ServiceRepo = postgresql.NewServiceRepository(c.db)
@@ -175,37 +175,37 @@ func (c *Container) setupUseCases() {
 	c.RefreshTokenUseCase = authuc.NewRefresh(c.UserRepo, c.RefreshTokenRepo, tokenSvc)
 	c.LogoutUseCase = authuc.NewLogout(c.RefreshTokenRepo)
 
-	// Customer
-	c.CreateCustomer = customeruc.NewCreateCustomer(c.CustomerRepo)
-	c.GetCustomer = customeruc.NewGetCustomer(c.CustomerRepo)
-	c.GetCustomerByDocument = customeruc.NewGetCustomerByDocument(c.CustomerRepo)
-	c.ListCustomers = customeruc.NewListCustomers(c.CustomerRepo)
-	c.UpdateCustomer = customeruc.NewUpdateCustomer(c.CustomerRepo)
-	c.DeleteCustomer = customeruc.NewDeleteCustomer(c.CustomerRepo)
+	// Requester
+	c.CreateRequester = requesteruc.NewCreateRequester(c.RequesterRepo)
+	c.GetRequester = requesteruc.NewGetRequester(c.RequesterRepo)
+	c.GetRequesterByDocument = requesteruc.NewGetRequesterByDocument(c.RequesterRepo)
+	c.ListRequesters = requesteruc.NewListRequesters(c.RequesterRepo)
+	c.UpdateRequester = requesteruc.NewUpdateRequester(c.RequesterRepo)
+	c.DeleteRequester = requesteruc.NewDeleteRequester(c.RequesterRepo)
 
 	// Vehicle
-	c.CreateVehicle = vehicleuc.NewCreateVehicle(c.VehicleRepo, c.CustomerRepo)
+	c.CreateVehicle = vehicleuc.NewCreateVehicle(c.VehicleRepo, c.RequesterRepo)
 	c.GetVehicle = vehicleuc.NewGetVehicle(c.VehicleRepo)
 	c.ListVehicles = vehicleuc.NewListVehicles(c.VehicleRepo)
-	c.ListVehiclesByCustomer = vehicleuc.NewListVehiclesByCustomer(c.VehicleRepo)
+	c.ListVehiclesByRequester = vehicleuc.NewListVehiclesByRequester(c.VehicleRepo)
 	c.UpdateVehicle = vehicleuc.NewUpdateVehicle(c.VehicleRepo)
 	c.DeleteVehicle = vehicleuc.NewDeleteVehicle(c.VehicleRepo)
 
 	// ServiceOrder
 	c.CreateServiceOrder = serviceorderuc.NewCreateServiceOrder(
-		c.ServiceOrderRepo, c.CustomerRepo, c.VehicleRepo,
+		c.ServiceOrderRepo, c.RequesterRepo, c.VehicleRepo,
 	)
 	c.GetServiceOrder = serviceorderuc.NewGetServiceOrder(c.ServiceOrderRepo)
-	c.GetServiceOrderByCode = serviceorderuc.NewGetServiceOrderByCode(c.ServiceOrderRepo, c.CustomerRepo)
+	c.GetServiceOrderByCode = serviceorderuc.NewGetServiceOrderByCode(c.ServiceOrderRepo, c.RequesterRepo)
 	c.ListServiceOrders = serviceorderuc.NewListServiceOrders(c.ServiceOrderRepo)
-	c.ListServiceOrdersByCustomer = serviceorderuc.NewListServiceOrdersByCustomer(c.ServiceOrderRepo)
-	c.ListServiceOrdersByDocument = serviceorderuc.NewListServiceOrdersByDocument(c.ServiceOrderRepo, c.CustomerRepo)
+	c.ListServiceOrdersByRequester = serviceorderuc.NewListServiceOrdersByRequester(c.ServiceOrderRepo)
+	c.ListServiceOrdersByDocument = serviceorderuc.NewListServiceOrdersByDocument(c.ServiceOrderRepo, c.RequesterRepo)
 	c.UpdateServiceOrderStatus = serviceorderuc.NewUpdateServiceOrderStatus(
 		c.ServiceOrderRepo, c.ServiceRepo, c.PartRepo,
 	)
 	c.UpdateServiceOrder = serviceorderuc.NewUpdateServiceOrder(c.ServiceOrderRepo)
 	c.DeleteServiceOrder = serviceorderuc.NewDeleteServiceOrder(c.ServiceOrderRepo)
-	c.UpdateServiceOrderStatusByCode = serviceorderuc.NewUpdateServiceOrderStatusByCode(c.ServiceOrderRepo, c.CustomerRepo)
+	c.UpdateServiceOrderStatusByCode = serviceorderuc.NewUpdateServiceOrderStatusByCode(c.ServiceOrderRepo, c.RequesterRepo)
 	c.GetAverageExecutionTime = serviceorderuc.NewGetAverageExecutionTime(c.ServiceOrderRepo)
 
 	// Service
@@ -229,10 +229,10 @@ func (c *Container) setupHandlers() {
 		c.RegisterUseCase, c.LoginUseCase, c.RefreshTokenUseCase,
 		c.LogoutUseCase, c.Config.AccessTokenExpMin,
 	)
-	c.CustomerHandler = customerhandler.NewCustomerHandler(
-		c.CreateCustomer, c.GetCustomer, c.GetCustomerByDocument,
-		c.ListCustomers, c.UpdateCustomer, c.DeleteCustomer,
-		c.ListVehiclesByCustomer,
+	c.RequesterHandler = requesterhandler.NewRequesterHandler(
+		c.CreateRequester, c.GetRequester, c.GetRequesterByDocument,
+		c.ListRequesters, c.UpdateRequester, c.DeleteRequester,
+		c.ListVehiclesByRequester,
 	)
 	c.VehicleHandler = vehiclehandler.NewVehicleHandler(
 		c.CreateVehicle, c.GetVehicle, c.ListVehicles,

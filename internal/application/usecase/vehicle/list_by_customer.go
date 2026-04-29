@@ -7,14 +7,14 @@ import (
 	"github.com/fiap/postech-tc1/internal/ports"
 )
 
-type ListVehiclesByCustomer struct {
+type ListVehiclesByRequester struct {
 	repo ports.VehicleRepository
 }
 
-func NewListVehiclesByCustomer(repo ports.VehicleRepository) *ListVehiclesByCustomer {
-	return &ListVehiclesByCustomer{repo: repo}
+func NewListVehiclesByRequester(repo ports.VehicleRepository) *ListVehiclesByRequester {
+	return &ListVehiclesByRequester{repo: repo}
 }
 
-func (uc *ListVehiclesByCustomer) Execute(ctx context.Context, customerID string) ([]*entities.Vehicle, error) {
-	return uc.repo.FindByCustomerID(ctx, customerID)
+func (uc *ListVehiclesByRequester) Execute(ctx context.Context, requesterID string) ([]*entities.Vehicle, error) {
+	return uc.repo.FindByRequesterID(ctx, requesterID)
 }

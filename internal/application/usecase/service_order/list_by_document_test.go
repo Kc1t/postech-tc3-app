@@ -15,16 +15,16 @@ func TestListServiceOrdersByCPF_Sucesso(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	customer := entities.ReconstituteCustomer("cust-1", "Diego", "52998224725", "d@e.com", "", ft(), ft())
+	requester := entities.ReconstituteRequester("cust-1", "Diego", "52998224725", "d@e.com", "", ft(), ft())
 	expected := []*entities.ServiceOrder{
 		entities.NewServiceOrder("cust-1", "veh-1"),
 	}
 
 	soRepo := mocks.NewMockServiceOrderRepository(ctrl)
-	custRepo := mocks.NewMockCustomerRepository(ctrl)
+	custRepo := mocks.NewMockRequesterRepository(ctrl)
 
-	custRepo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(customer, nil)
-	soRepo.EXPECT().FindByCustomerID(gomock.Any(), "cust-1").Return(expected, nil)
+	custRepo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(requester, nil)
+	soRepo.EXPECT().FindByRequesterID(gomock.Any(), "cust-1").Return(expected, nil)
 
 	uc := NewListServiceOrdersByDocument(soRepo, custRepo)
 	got, err := uc.Execute(context.Background(), "52998224725")
@@ -40,13 +40,13 @@ func TestListServiceOrdersByCPF_ListaVazia(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	customer := entities.ReconstituteCustomer("cust-1", "Diego", "52998224725", "d@e.com", "", ft(), ft())
+	requester := entities.ReconstituteRequester("cust-1", "Diego", "52998224725", "d@e.com", "", ft(), ft())
 
 	soRepo := mocks.NewMockServiceOrderRepository(ctrl)
-	custRepo := mocks.NewMockCustomerRepository(ctrl)
+	custRepo := mocks.NewMockRequesterRepository(ctrl)
 
-	custRepo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(customer, nil)
-	soRepo.EXPECT().FindByCustomerID(gomock.Any(), "cust-1").Return([]*entities.ServiceOrder{}, nil)
+	custRepo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(requester, nil)
+	soRepo.EXPECT().FindByRequesterID(gomock.Any(), "cust-1").Return([]*entities.ServiceOrder{}, nil)
 
 	uc := NewListServiceOrdersByDocument(soRepo, custRepo)
 	got, err := uc.Execute(context.Background(), "52998224725")
@@ -63,7 +63,7 @@ func TestListServiceOrdersByCPF_ClienteNaoEncontrado(t *testing.T) {
 	defer ctrl.Finish()
 
 	soRepo := mocks.NewMockServiceOrderRepository(ctrl)
-	custRepo := mocks.NewMockCustomerRepository(ctrl)
+	custRepo := mocks.NewMockRequesterRepository(ctrl)
 
 	custRepo.EXPECT().FindByDocument(gomock.Any(), "00000000000").Return(nil, domainerrors.ErrNotFound)
 
@@ -81,7 +81,7 @@ func TestListServiceOrdersByCPF_ErroInfraCliente(t *testing.T) {
 	infraErr := errors.New("timeout")
 
 	soRepo := mocks.NewMockServiceOrderRepository(ctrl)
-	custRepo := mocks.NewMockCustomerRepository(ctrl)
+	custRepo := mocks.NewMockRequesterRepository(ctrl)
 
 	custRepo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(nil, infraErr)
 
@@ -96,14 +96,14 @@ func TestListServiceOrdersByCPF_ErroInfraRepo(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	customer := entities.ReconstituteCustomer("cust-1", "Diego", "52998224725", "d@e.com", "", ft(), ft())
+	requester := entities.ReconstituteRequester("cust-1", "Diego", "52998224725", "d@e.com", "", ft(), ft())
 	infraErr := errors.New("db error")
 
 	soRepo := mocks.NewMockServiceOrderRepository(ctrl)
-	custRepo := mocks.NewMockCustomerRepository(ctrl)
+	custRepo := mocks.NewMockRequesterRepository(ctrl)
 
-	custRepo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(customer, nil)
-	soRepo.EXPECT().FindByCustomerID(gomock.Any(), "cust-1").Return(nil, infraErr)
+	custRepo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(requester, nil)
+	soRepo.EXPECT().FindByRequesterID(gomock.Any(), "cust-1").Return(nil, infraErr)
 
 	uc := NewListServiceOrdersByDocument(soRepo, custRepo)
 	_, err := uc.Execute(context.Background(), "52998224725")

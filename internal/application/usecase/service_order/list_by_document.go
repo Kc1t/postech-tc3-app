@@ -9,18 +9,18 @@ import (
 
 type ListServiceOrdersByDocument struct {
 	repo         ports.ServiceOrderRepository
-	customerRepo ports.CustomerRepository
+	requesterRepo ports.RequesterRepository
 }
 
-func NewListServiceOrdersByDocument(repo ports.ServiceOrderRepository, customerRepo ports.CustomerRepository) *ListServiceOrdersByDocument {
-	return &ListServiceOrdersByDocument{repo: repo, customerRepo: customerRepo}
+func NewListServiceOrdersByDocument(repo ports.ServiceOrderRepository, requesterRepo ports.RequesterRepository) *ListServiceOrdersByDocument {
+	return &ListServiceOrdersByDocument{repo: repo, requesterRepo: requesterRepo}
 }
 
 func (uc *ListServiceOrdersByDocument) Execute(ctx context.Context, document string) ([]*entities.ServiceOrder, error) {
-	customer, err := uc.customerRepo.FindByDocument(ctx, document)
+	requester, err := uc.requesterRepo.FindByDocument(ctx, document)
 	if err != nil {
 		return nil, err
 	}
 
-	return uc.repo.FindByCustomerID(ctx, customer.ID())
+	return uc.repo.FindByRequesterID(ctx, requester.ID())
 }

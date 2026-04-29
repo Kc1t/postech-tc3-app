@@ -10,15 +10,15 @@ import (
 
 type GetServiceOrderByCode struct {
 	repo         ports.ServiceOrderRepository
-	customerRepo ports.CustomerRepository
+	requesterRepo ports.RequesterRepository
 }
 
-func NewGetServiceOrderByCode(repo ports.ServiceOrderRepository, customerRepo ports.CustomerRepository) *GetServiceOrderByCode {
-	return &GetServiceOrderByCode{repo: repo, customerRepo: customerRepo}
+func NewGetServiceOrderByCode(repo ports.ServiceOrderRepository, requesterRepo ports.RequesterRepository) *GetServiceOrderByCode {
+	return &GetServiceOrderByCode{repo: repo, requesterRepo: requesterRepo}
 }
 
-func (uc *GetServiceOrderByCode) Execute(ctx context.Context, code int, customerDocument string) (*entities.ServiceOrder, error) {
-	customer, err := uc.customerRepo.FindByDocument(ctx, customerDocument)
+func (uc *GetServiceOrderByCode) Execute(ctx context.Context, code int, requesterDocument string) (*entities.ServiceOrder, error) {
+	requester, err := uc.requesterRepo.FindByDocument(ctx, requesterDocument)
 	if err != nil {
 		return nil, err
 	}
@@ -28,7 +28,7 @@ func (uc *GetServiceOrderByCode) Execute(ctx context.Context, code int, customer
 		return nil, err
 	}
 
-	if so.CustomerID() != customer.ID() {
+	if so.RequesterID() != requester.ID() {
 		return nil, domainerrors.ErrNotFound
 	}
 

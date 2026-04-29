@@ -9,20 +9,20 @@ import (
 
 type CreateVehicle struct {
 	repo         ports.VehicleRepository
-	customerRepo ports.CustomerRepository
+	requesterRepo ports.RequesterRepository
 }
 
-func NewCreateVehicle(repo ports.VehicleRepository, customerRepo ports.CustomerRepository) *CreateVehicle {
-	return &CreateVehicle{repo: repo, customerRepo: customerRepo}
+func NewCreateVehicle(repo ports.VehicleRepository, requesterRepo ports.RequesterRepository) *CreateVehicle {
+	return &CreateVehicle{repo: repo, requesterRepo: requesterRepo}
 }
 
 func (uc *CreateVehicle) Execute(ctx context.Context, input entities.VehicleInput) (*entities.Vehicle, error) {
-	customer, err := uc.customerRepo.FindByDocument(ctx, input.CustomerDocument)
+	requester, err := uc.requesterRepo.FindByDocument(ctx, input.RequesterDocument)
 	if err != nil {
 		return nil, err
 	}
 
-	vehicle, err := entities.NewVehicle(customer.ID(), input.Plate, input.Brand, input.Model, input.Year)
+	vehicle, err := entities.NewVehicle(requester.ID(), input.Plate, input.Brand, input.Model, input.Year)
 	if err != nil {
 		return nil, err
 	}

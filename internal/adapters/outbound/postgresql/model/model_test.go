@@ -7,16 +7,16 @@ import (
 	"github.com/fiap/postech-tc1/internal/domain/entities"
 )
 
-// --- Customer ---
+// --- Requester ---
 
-func TestFromCustomer_ToDomain_RoundTrip(t *testing.T) {
+func TestFromRequester_ToDomain_RoundTrip(t *testing.T) {
 	createdAt := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
 	updatedAt := time.Date(2024, 6, 1, 0, 0, 0, 0, time.UTC)
-	c := entities.ReconstituteCustomer("id-1", "João", "12345678901", "j@j.com", "11999", createdAt, updatedAt)
+	c := entities.ReconstituteRequester("id-1", "João", "12345678901", "j@j.com", "11999", createdAt, updatedAt)
 
-	m := FromCustomer(c)
+	m := FromRequester(c)
 	if m.ID != "id-1" || m.Name != "João" || m.Document != "12345678901" {
-		t.Fatalf("FromCustomer fields mismatch: %+v", m)
+		t.Fatalf("FromRequester fields mismatch: %+v", m)
 	}
 
 	back := m.ToDomain()

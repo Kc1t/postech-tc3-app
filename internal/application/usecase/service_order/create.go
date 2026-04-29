@@ -10,24 +10,24 @@ import (
 
 type CreateServiceOrder struct {
 	repo         ports.ServiceOrderRepository
-	customerRepo ports.CustomerRepository
+	requesterRepo ports.RequesterRepository
 	vehicleRepo  ports.VehicleRepository
 }
 
 func NewCreateServiceOrder(
 	repo ports.ServiceOrderRepository,
-	customerRepo ports.CustomerRepository,
+	requesterRepo ports.RequesterRepository,
 	vehicleRepo ports.VehicleRepository,
 ) *CreateServiceOrder {
 	return &CreateServiceOrder{
 		repo:         repo,
-		customerRepo: customerRepo,
+		requesterRepo: requesterRepo,
 		vehicleRepo:  vehicleRepo,
 	}
 }
 
 func (uc *CreateServiceOrder) Execute(ctx context.Context, input entities.ServiceOrderInput) (*entities.ServiceOrder, error) {
-	customer, err := uc.customerRepo.FindByDocument(ctx, input.CustomerDocument)
+	requester, err := uc.requesterRepo.FindByDocument(ctx, input.RequesterDocument)
 	if err != nil {
 		return nil, err
 	}
@@ -37,11 +37,11 @@ func (uc *CreateServiceOrder) Execute(ctx context.Context, input entities.Servic
 		return nil, err
 	}
 
-	if vehicle.CustomerID() != customer.ID() {
-		return nil, domainerrors.ErrVehicleNotFromCustomer
+	if vehicle.RequesterID() != requester.ID() {
+		return nil, domainerrors.ErrVehicleNotFromRequester
 	}
 
-	so := entities.NewServiceOrder(customer.ID(), vehicle.ID())
+	so := entities.NewServiceOrder(requester.ID(), vehicle.ID())
 	so.SetNotes(input.Notes)
 
 	if err := uc.repo.Create(ctx, so); err != nil {

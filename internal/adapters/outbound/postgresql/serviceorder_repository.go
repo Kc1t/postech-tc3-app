@@ -57,9 +57,9 @@ func (r *serviceOrderRepository) FindAll(ctx context.Context) ([]*entities.Servi
 	return orders, nil
 }
 
-func (r *serviceOrderRepository) FindByCustomerID(ctx context.Context, customerID string) ([]*entities.ServiceOrder, error) {
+func (r *serviceOrderRepository) FindByRequesterID(ctx context.Context, requesterID string) ([]*entities.ServiceOrder, error) {
 	var docs []pgmodel.ServiceOrder
-	if err := r.db.WithContext(ctx).Find(&docs, "customer_id = ?", customerID).Error; err != nil {
+	if err := r.db.WithContext(ctx).Find(&docs, "requester_id = ?", requesterID).Error; err != nil {
 		return nil, mapError(err)
 	}
 	orders := make([]*entities.ServiceOrder, 0, len(docs))
@@ -78,10 +78,6 @@ func (r *serviceOrderRepository) Update(ctx context.Context, so *entities.Servic
 	return mapError(r.db.WithContext(ctx).Save(m).Error)
 }
 
-// ApplyApprovalTransition baixa o estoque das pecas e persiste a OS em uma
-// unica transacao DB. Se qualquer decremento falhar (peca inexistente ou
-// estoque insuficiente) ou o Save da OS falhar, o rollback automatico do
-// GORM reverte todas as escritas.
 func (r *serviceOrderRepository) ApplyApprovalTransition(ctx context.Context, so *entities.ServiceOrder) error {
 	err := r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		for _, p := range so.Parts() {
@@ -95,10 +91,6 @@ func (r *serviceOrderRepository) ApplyApprovalTransition(ctx context.Context, so
 	return mapError(err)
 }
 
-// decrementStockTx aplica o decremento atomico em uma unica peca dentro da
-// transacao fornecida. A clausula "stock - ? >= 0" impede estoque negativo;
-// RowsAffected==0 distingue peca inexistente (ErrNotFound) de estoque
-// insuficiente (ErrInsufficientStock).
 func decrementStockTx(tx *gorm.DB, partID string, quantity int) error {
 	result := tx.Model(&pgmodel.Part{}).
 		Where("id = ? AND stock - ? >= 0", partID, quantity).
@@ -123,10 +115,6 @@ func (r *serviceOrderRepository) Delete(ctx context.Context, id string) error {
 	return mapError(r.db.WithContext(ctx).Delete(&pgmodel.ServiceOrder{}, "id = ?", id).Error)
 }
 
-// AverageExecutionTime retorna a media global do intervalo entre startedAt
-// (momento da aprovacao) e finishedAt (momento da finalizacao). Considera
-// apenas OSs com ambos os timestamps gravados. COALESCE garante 0 quando
-// nao ha amostras (AVG de nenhum row retorna NULL no PostgreSQL).
 func (r *serviceOrderRepository) AverageExecutionTime(ctx context.Context) (time.Duration, error) {
 	var averageSeconds float64
 	err := r.db.WithContext(ctx).

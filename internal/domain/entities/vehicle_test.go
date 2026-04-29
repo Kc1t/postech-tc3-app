@@ -13,8 +13,8 @@ func TestNewVehicle(t *testing.T) {
 	}
 	after := time.Now()
 
-	if v.CustomerID() != "cust-1" {
-		t.Errorf("expected customerID %q, got %q", "cust-1", v.CustomerID())
+	if v.RequesterID() != "cust-1" {
+		t.Errorf("expected requesterID %q, got %q", "cust-1", v.RequesterID())
 	}
 	if v.Plate() != "ABC1234" {
 		t.Errorf("expected plate %q, got %q", "ABC1234", v.Plate())
@@ -71,14 +71,14 @@ func TestVehicle_SetID(t *testing.T) {
 	}
 }
 
-func TestVehicle_SetCustomerID(t *testing.T) {
+func TestVehicle_SetRequesterID(t *testing.T) {
 	v, err := NewVehicle("cust-1", "ABC1234", "Toyota", "Corolla", 2020)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	v.SetCustomerID("cust-2")
-	if v.CustomerID() != "cust-2" {
-		t.Errorf("expected customerID %q, got %q", "cust-2", v.CustomerID())
+	v.SetRequesterID("cust-2")
+	if v.RequesterID() != "cust-2" {
+		t.Errorf("expected requesterID %q, got %q", "cust-2", v.RequesterID())
 	}
 }
 

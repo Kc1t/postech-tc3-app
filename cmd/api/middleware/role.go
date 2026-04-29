@@ -6,8 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// RequireRole retorna um middleware que restringe acesso por role.
-// Exemplo: RequireRole("admin") permite apenas usuarios com role "admin".
 func RequireRole(allowed ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		role, exists := c.Get("user_role")

@@ -80,7 +80,7 @@ func TestUpdateStatus_StatusDesconhecido(t *testing.T) {
 	}
 }
 
-func TestAuthorizeCustomerTransition_StatusPermitidos(t *testing.T) {
+func TestAuthorizeRequesterTransition_StatusPermitidos(t *testing.T) {
 	tests := []struct {
 		name string
 		to   OrderStatus
@@ -92,7 +92,7 @@ func TestAuthorizeCustomerTransition_StatusPermitidos(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			so := newServiceOrderWithStatus(StatusAwaitingApproval)
-			if err := so.AuthorizeCustomerTransition(tt.to); err != nil {
+			if err := so.AuthorizeRequesterTransition(tt.to); err != nil {
 				t.Fatalf("esperava sucesso, obteve erro: %v", err)
 			}
 			if so.Status() != tt.to {
@@ -102,7 +102,7 @@ func TestAuthorizeCustomerTransition_StatusPermitidos(t *testing.T) {
 	}
 }
 
-func TestAuthorizeCustomerTransition_StatusProibidos(t *testing.T) {
+func TestAuthorizeRequesterTransition_StatusProibidos(t *testing.T) {
 	// Status que so o mecanico/atendente (rota autenticada) pode disparar.
 	tests := []struct {
 		name string
@@ -118,9 +118,9 @@ func TestAuthorizeCustomerTransition_StatusProibidos(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			so := newServiceOrderWithStatus(tt.from)
-			err := so.AuthorizeCustomerTransition(tt.to)
-			if err != domainerrors.ErrStatusNotAllowedForCustomer {
-				t.Fatalf("erro = %v, esperava ErrStatusNotAllowedForCustomer", err)
+			err := so.AuthorizeRequesterTransition(tt.to)
+			if err != domainerrors.ErrStatusNotAllowedForRequester {
+				t.Fatalf("erro = %v, esperava ErrStatusNotAllowedForRequester", err)
 			}
 			if so.Status() != tt.from {
 				t.Errorf("Status() = %q, deveria permanecer %q", so.Status(), tt.from)
@@ -129,11 +129,11 @@ func TestAuthorizeCustomerTransition_StatusProibidos(t *testing.T) {
 	}
 }
 
-func TestAuthorizeCustomerTransition_WhitelistPassaMasMaquinaReprova(t *testing.T) {
+func TestAuthorizeRequesterTransition_WhitelistPassaMasMaquinaReprova(t *testing.T) {
 	// in_execution esta na whitelist, mas a transicao received -> in_execution
 	// nao existe na maquina de estados: deve retornar ErrInvalidStatus.
 	so := newServiceOrderWithStatus(StatusReceived)
-	err := so.AuthorizeCustomerTransition(StatusInExecution)
+	err := so.AuthorizeRequesterTransition(StatusInExecution)
 	if err != domainerrors.ErrInvalidStatus {
 		t.Fatalf("erro = %v, esperava ErrInvalidStatus", err)
 	}

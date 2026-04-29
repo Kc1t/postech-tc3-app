@@ -17,16 +17,16 @@ func TestCreateVehicle_Sucesso(t *testing.T) {
 	defer ctrl.Finish()
 
 	now := time.Now()
-	customer := entities.ReconstituteCustomer("cust-1", "Diego", "52998224725", "d@e.com", "", now, now)
+	requester := entities.ReconstituteRequester("cust-1", "Diego", "52998224725", "d@e.com", "", now, now)
 
 	vehicleRepo := mocks.NewMockVehicleRepository(ctrl)
-	customerRepo := mocks.NewMockCustomerRepository(ctrl)
-	customerRepo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(customer, nil)
+	requesterRepo := mocks.NewMockRequesterRepository(ctrl)
+	requesterRepo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(requester, nil)
 	vehicleRepo.EXPECT().Create(gomock.Any(), gomock.Any()).Return(nil)
 
-	uc := NewCreateVehicle(vehicleRepo, customerRepo)
+	uc := NewCreateVehicle(vehicleRepo, requesterRepo)
 	input := entities.VehicleInput{
-		CustomerDocument: "52998224725",
+		RequesterDocument: "52998224725",
 		Plate:            "ABC-1234",
 		Brand:            "Fiat",
 		Model:            "Uno",
@@ -37,7 +37,7 @@ func TestCreateVehicle_Sucesso(t *testing.T) {
 	if err != nil {
 		t.Fatalf("esperava sucesso, obteve: %v", err)
 	}
-	if vehicle == nil || vehicle.CustomerID() != "cust-1" {
+	if vehicle == nil || vehicle.RequesterID() != "cust-1" {
 		t.Fatalf("vehicle retornado invalido: %+v", vehicle)
 	}
 }
@@ -47,13 +47,13 @@ func TestCreateVehicle_ClienteNaoExiste(t *testing.T) {
 	defer ctrl.Finish()
 
 	vehicleRepo := mocks.NewMockVehicleRepository(ctrl)
-	customerRepo := mocks.NewMockCustomerRepository(ctrl)
-	customerRepo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(nil, domainerrors.ErrNotFound)
+	requesterRepo := mocks.NewMockRequesterRepository(ctrl)
+	requesterRepo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(nil, domainerrors.ErrNotFound)
 	// Create NAO deve ser chamado
 
-	uc := NewCreateVehicle(vehicleRepo, customerRepo)
+	uc := NewCreateVehicle(vehicleRepo, requesterRepo)
 	input := entities.VehicleInput{
-		CustomerDocument: "52998224725",
+		RequesterDocument: "52998224725",
 		Plate:            "ABC-1234",
 		Brand:            "Fiat",
 		Model:            "Uno",
@@ -73,12 +73,12 @@ func TestCreateVehicle_ErroInfraNoFindByDocument(t *testing.T) {
 	infraErr := errors.New("timeout")
 
 	vehicleRepo := mocks.NewMockVehicleRepository(ctrl)
-	customerRepo := mocks.NewMockCustomerRepository(ctrl)
-	customerRepo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(nil, infraErr)
+	requesterRepo := mocks.NewMockRequesterRepository(ctrl)
+	requesterRepo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(nil, infraErr)
 
-	uc := NewCreateVehicle(vehicleRepo, customerRepo)
+	uc := NewCreateVehicle(vehicleRepo, requesterRepo)
 	input := entities.VehicleInput{
-		CustomerDocument: "52998224725",
+		RequesterDocument: "52998224725",
 		Plate:            "ABC-1234",
 		Brand:            "Fiat",
 		Model:            "Uno",
@@ -96,16 +96,16 @@ func TestCreateVehicle_PlacaInvalida(t *testing.T) {
 	defer ctrl.Finish()
 
 	now := time.Now()
-	customer := entities.ReconstituteCustomer("cust-1", "Diego", "52998224725", "d@e.com", "", now, now)
+	requester := entities.ReconstituteRequester("cust-1", "Diego", "52998224725", "d@e.com", "", now, now)
 
 	vehicleRepo := mocks.NewMockVehicleRepository(ctrl)
-	customerRepo := mocks.NewMockCustomerRepository(ctrl)
-	customerRepo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(customer, nil)
+	requesterRepo := mocks.NewMockRequesterRepository(ctrl)
+	requesterRepo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(requester, nil)
 	// Create NAO deve ser chamado
 
-	uc := NewCreateVehicle(vehicleRepo, customerRepo)
+	uc := NewCreateVehicle(vehicleRepo, requesterRepo)
 	input := entities.VehicleInput{
-		CustomerDocument: "52998224725",
+		RequesterDocument: "52998224725",
 		Plate:            "INVALID",
 		Brand:            "Fiat",
 		Model:            "Uno",

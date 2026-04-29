@@ -40,8 +40,6 @@ func (r *refreshTokenRepository) FindByTokenHash(ctx context.Context, hash strin
 }
 
 func (r *refreshTokenRepository) Revoke(ctx context.Context, id string) error {
-	// Condicao revoked = false garante single-use real em cenarios concorrentes:
-	// apenas uma transacao consegue marcar o token como revogado.
 	result := r.db.WithContext(ctx).
 		Model(&pgmodel.RefreshToken{}).
 		Where("id = ? AND revoked = false", id).
@@ -62,9 +60,6 @@ func (r *refreshTokenRepository) RevokeByUserID(ctx context.Context, userID stri
 		Update("revoked", true).Error
 }
 
-// RotateToken revoga o token antigo e persiste o novo em uma unica transacao.
-// Usa WHERE revoked = false com verificacao de RowsAffected para garantir
-// single-use real em cenarios de concorrencia.
 func (r *refreshTokenRepository) RotateToken(ctx context.Context, oldID string, newRT *entities.RefreshToken) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		result := tx.Model(&pgmodel.RefreshToken{}).

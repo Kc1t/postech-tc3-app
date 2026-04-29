@@ -1,0 +1,254 @@
+﻿docker : Unable to find image 'securego/gosec:latest' locally
+No linha:1 caractere:1
++ docker run --rm -v "d:/kauam/Documents/Github/FIAP/FIAP-TC1/postech-t ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Unable to find ...latest' locally:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+latest: Pulling from securego/gosec
+620ce275e86e: Pulling fs layer
+4f4fb700ef54: Pulling fs layer
+91d66300301a: Pulling fs layer
+60b801df6bbe: Pulling fs layer
+54e3cee16f61: Pulling fs layer
+8bab3ab745a3: Pulling fs layer
+8ede2856567d: Pulling fs layer
+4f4fb700ef54: Already exists
+60b801df6bbe: Download complete
+54e3cee16f61: Download complete
+620ce275e86e: Download complete
+54e3cee16f61: Pull complete
+8bab3ab745a3: Download complete
+8ede2856567d: Download complete
+91d66300301a: Download complete
+8ede2856567d: Pull complete
+620ce275e86e: Pull complete
+4f4fb700ef54: Pull complete
+91d66300301a: Pull complete
+8bab3ab745a3: Pull complete
+60b801df6bbe: Pull complete
+Digest: sha256:2cf71ea78210c496c65e3a987576a9c8317b68e20f2960520b3f6f8f9f539be5
+Status: Downloaded newer image for securego/gosec:latest
+[gosec] 2026/04/27 06:38:12 Including rules: default
+[gosec] 2026/04/27 06:38:12 Excluding rules: default
+[gosec] 2026/04/27 06:38:12 Including analyzers: default
+[gosec] 2026/04/27 06:38:12 Excluding analyzers: default
+[gosec] 2026/04/27 06:38:28 Import directory: /app/pkg/env
+[gosec] 2026/04/27 06:38:28 Import directory: /app/cmd/api/middleware
+[gosec] 2026/04/27 06:38:28 Import directory: /app/cmd/api/routes
+[gosec] 2026/04/27 06:38:28 Import directory: /app/cmd/api/bootstrap
+[gosec] 2026/04/27 06:38:28 Import directory: /app/internal/ports/mocks
+[gosec] 2026/04/27 06:38:28 Import directory: /app/internal/adapters/inbound/http/commands
+[gosec] 2026/04/27 06:38:28 Import directory: /app/internal/application/usecase/part
+[gosec] 2026/04/27 06:38:28 Import directory: /app/internal/application/usecase/customer
+[gosec] 2026/04/27 06:39:19 Checking package: env
+[gosec] 2026/04/27 06:39:19 Checking file: /app/pkg/env/env.go
+[gosec] 2026/04/27 06:39:19 Import directory: /app/cmd/api
+[gosec] 2026/04/27 06:39:20 Checking package: customeruc
+[gosec] 2026/04/27 06:39:20 Checking file: /app/internal/application/usecase/customer/create.go
+[gosec] 2026/04/27 06:39:20 Checking package: commands
+[gosec] 2026/04/27 06:39:20 Checking file: /app/internal/adapters/inbound/http/commands/auth.go
+[gosec] 2026/04/27 06:39:20 Checking package: mocks
+[gosec] 2026/04/27 06:39:20 Checking file: /app/internal/ports/mocks/auth.go
+[gosec] 2026/04/27 06:39:20 Checking package: partuc
+[gosec] 2026/04/27 06:39:20 Checking file: /app/internal/application/usecase/part/adjust_stock.go
+[gosec] 2026/04/27 06:39:20 Checking file: /app/internal/application/usecase/customer/delete.go
+[gosec] 2026/04/27 06:39:20 Checking file: /app/internal/application/usecase/part/create.go
+[gosec] 2026/04/27 06:39:20 Checking file: /app/internal/ports/mocks/repositories.go
+[gosec] 2026/04/27 06:39:20 Checking file: /app/internal/adapters/inbound/http/commands/customer.go
+[gosec] 2026/04/27 06:39:20 Checking file: /app/internal/application/usecase/customer/get_by_document.go
+[gosec] 2026/04/27 06:39:20 Checking file: /app/internal/application/usecase/part/delete.go
+[gosec] 2026/04/27 06:39:21 Checking file: /app/internal/adapters/inbound/http/commands/part.go
+[gosec] 2026/04/27 06:39:21 Checking file: /app/internal/application/usecase/customer/get_by_id.go
+[gosec] 2026/04/27 06:39:21 Checking file: /app/internal/application/usecase/part/get_by_id.go
+[gosec] 2026/04/27 06:39:21 Checking file: /app/internal/adapters/inbound/http/commands/service.go
+[gosec] 2026/04/27 06:39:21 Checking file: /app/internal/ports/mocks/usecases.go
+[gosec] 2026/04/27 06:39:21 Checking file: /app/internal/application/usecase/customer/list.go
+[gosec] 2026/04/27 06:39:21 Checking file: /app/internal/application/usecase/part/list.go
+[gosec] 2026/04/27 06:39:21 Checking file: /app/internal/adapters/inbound/http/commands/serviceorder.go
+[gosec] 2026/04/27 06:39:21 Checking file: /app/internal/application/usecase/part/update.go
+[gosec] 2026/04/27 06:39:21 Checking file: /app/internal/application/usecase/customer/update.go
+[gosec] 2026/04/27 06:39:21 Checking file: /app/internal/adapters/inbound/http/commands/vehicle.go
+[gosec] 2026/04/27 06:39:21 Import directory: /app/config
+[gosec] 2026/04/27 06:39:21 Import directory: /app/internal/adapters/inbound/http
+[gosec] 2026/04/27 06:39:21 Import directory: /app/internal/adapters/inbound/http/service
+[gosec] 2026/04/27 06:39:21 Import directory: /app/internal/application/usecase/service
+[gosec] 2026/04/27 06:39:23 Checking package: config
+[gosec] 2026/04/27 06:39:23 Checking file: /app/config/config.go
+[gosec] 2026/04/27 06:39:23 Import directory: /app/internal/adapters/inbound/http/customer
+[gosec] 2026/04/27 06:39:27 Checking package: serviceuc
+[gosec] 2026/04/27 06:39:27 Checking file: /app/internal/application/usecase/service/create.go
+[gosec] 2026/04/27 06:39:27 Checking file: /app/internal/application/usecase/service/delete.go
+[gosec] 2026/04/27 06:39:27 Checking file: /app/internal/application/usecase/service/get_by_id.go
+[gosec] 2026/04/27 06:39:27 Checking file: /app/internal/application/usecase/service/list.go
+[gosec] 2026/04/27 06:39:27 Checking file: /app/internal/application/usecase/service/update.go
+[gosec] 2026/04/27 06:39:27 Import directory: /app/internal/application/usecase/service_order
+[gosec] 2026/04/27 06:40:05 Checking package: serviceorderuc
+[gosec] 2026/04/27 06:40:05 Checking file: /app/internal/application/usecase/service_order/create.go
+[gosec] 2026/04/27 06:40:06 Checking file: /app/internal/application/usecase/service_order/delete.go
+[gosec] 2026/04/27 06:40:07 Checking file: 
+/app/internal/application/usecase/service_order/get_average_execution_time.go
+[gosec] 2026/04/27 06:40:07 Checking file: /app/internal/application/usecase/service_order/get_by_code.go
+[gosec] 2026/04/27 06:40:08 Checking file: /app/internal/application/usecase/service_order/get_by_id.go
+[gosec] 2026/04/27 06:40:08 Checking file: /app/internal/application/usecase/service_order/list.go
+[gosec] 2026/04/27 06:40:08 Checking file: /app/internal/application/usecase/service_order/list_by_customer.go
+[gosec] 2026/04/27 06:40:08 Checking file: /app/internal/application/usecase/service_order/list_by_document.go
+[gosec] 2026/04/27 06:40:08 Checking file: /app/internal/application/usecase/service_order/update.go
+[gosec] 2026/04/27 06:40:09 Checking file: /app/internal/application/usecase/service_order/update_status.go
+[gosec] 2026/04/27 06:40:09 Checking file: /app/internal/application/usecase/service_order/update_status_by_code.go
+[gosec] 2026/04/27 06:40:10 Import directory: /app/internal/domain/entities
+[gosec] 2026/04/27 06:41:01 Checking package: entities
+[gosec] 2026/04/27 06:41:01 Checking file: /app/internal/domain/entities/customer.go
+[gosec] 2026/04/27 06:41:02 Checking file: /app/internal/domain/entities/document.go
+[gosec] 2026/04/27 06:41:02 Checking file: /app/internal/domain/entities/part.go
+[gosec] 2026/04/27 06:41:02 Checking file: /app/internal/domain/entities/plate.go
+[gosec] 2026/04/27 06:41:02 Checking file: /app/internal/domain/entities/refresh_token.go
+[gosec] 2026/04/27 06:41:03 Checking file: /app/internal/domain/entities/service.go
+[gosec] 2026/04/27 06:41:03 Checking file: /app/internal/domain/entities/service_order.go
+[gosec] 2026/04/27 06:41:03 Checking file: /app/internal/domain/entities/user.go
+[gosec] 2026/04/27 06:41:03 Checking file: /app/internal/domain/entities/vehicle.go
+[gosec] 2026/04/27 06:41:05 Import directory: /app/docs
+[gosec] 2026/04/27 06:43:06 Checking package: docs
+[gosec] 2026/04/27 06:43:06 Checking file: /app/docs/docs.go
+[gosec] 2026/04/27 06:43:06 Import directory: /app/internal/adapters/inbound/http/part
+[gosec] 2026/04/27 06:43:11 Checking package: customerhandler
+[gosec] 2026/04/27 06:43:11 Checking file: /app/internal/adapters/inbound/http/customer/create.go
+[gosec] 2026/04/27 06:43:11 Checking file: /app/internal/adapters/inbound/http/customer/delete.go
+[gosec] 2026/04/27 06:43:11 Checking file: /app/internal/adapters/inbound/http/customer/find_by_document.go
+[gosec] 2026/04/27 06:43:11 Checking package: middleware
+[gosec] 2026/04/27 06:43:11 Checking file: /app/cmd/api/middleware/auth.go
+[gosec] 2026/04/27 06:43:11 Checking file: /app/internal/adapters/inbound/http/customer/find_by_id.go
+[gosec] 2026/04/27 06:43:11 Checking file: /app/cmd/api/middleware/cors.go
+[gosec] 2026/04/27 06:43:11 Checking file: /app/internal/adapters/inbound/http/customer/handler.go
+[gosec] 2026/04/27 06:43:11 Checking file: /app/cmd/api/middleware/role.go
+[gosec] 2026/04/27 06:43:11 Checking file: /app/internal/adapters/inbound/http/customer/list.go
+[gosec] 2026/04/27 06:43:11 Import directory: /app/internal/adapters/outbound/jwt
+[gosec] 2026/04/27 06:43:11 Checking package: httputil
+[gosec] 2026/04/27 06:43:11 Checking file: /app/internal/adapters/inbound/http/errors.go
+[gosec] 2026/04/27 06:43:11 Checking file: /app/internal/adapters/inbound/http/customer/list_vehicles.go
+[gosec] 2026/04/27 06:43:11 Checking file: /app/internal/adapters/inbound/http/customer/messages.go
+[gosec] 2026/04/27 06:43:11 Checking package: servicehandler
+[gosec] 2026/04/27 06:43:11 Checking file: /app/internal/adapters/inbound/http/service/create.go
+[gosec] 2026/04/27 06:43:11 Import directory: /app/internal/application/usecase/vehicle
+[gosec] 2026/04/27 06:43:11 Checking file: /app/internal/adapters/inbound/http/customer/update.go
+[gosec] 2026/04/27 06:43:11 Checking file: /app/internal/adapters/inbound/http/service/delete.go
+[gosec] 2026/04/27 06:43:11 Checking file: /app/internal/adapters/inbound/http/service/find_by_id.go
+[gosec] 2026/04/27 06:43:11 Checking file: /app/internal/adapters/inbound/http/service/handler.go
+[gosec] 2026/04/27 06:43:11 Import directory: /app/pkg/ioc
+[gosec] 2026/04/27 06:43:11 Checking file: /app/internal/adapters/inbound/http/service/list.go
+[gosec] 2026/04/27 06:43:11 Checking file: /app/internal/adapters/inbound/http/service/messages.go
+[gosec] 2026/04/27 06:43:11 Checking file: /app/internal/adapters/inbound/http/service/update.go
+[gosec] 2026/04/27 06:43:11 Import directory: /app/internal/adapters/outbound/postgresql/model
+[gosec] 2026/04/27 06:43:11 Checking package: parthandler
+[gosec] 2026/04/27 06:43:11 Checking file: /app/internal/adapters/inbound/http/part/adjust_stock.go
+[gosec] 2026/04/27 06:43:11 Checking file: /app/internal/adapters/inbound/http/part/create.go
+[gosec] 2026/04/27 06:43:12 Checking file: /app/internal/adapters/inbound/http/part/delete.go
+[gosec] 2026/04/27 06:43:12 Checking file: /app/internal/adapters/inbound/http/part/find_by_id.go
+[gosec] 2026/04/27 06:43:12 Checking file: /app/internal/adapters/inbound/http/part/handler.go
+[gosec] 2026/04/27 06:43:12 Checking file: /app/internal/adapters/inbound/http/part/list.go
+[gosec] 2026/04/27 06:43:12 Checking file: /app/internal/adapters/inbound/http/part/messages.go
+[gosec] 2026/04/27 06:43:12 Checking file: /app/internal/adapters/inbound/http/part/update.go
+[gosec] 2026/04/27 06:43:12 Import directory: /app/internal/application/usecase/auth
+[gosec] 2026/04/27 06:43:12 Checking package: ioc
+[gosec] 2026/04/27 06:43:12 Checking file: /app/pkg/ioc/builder.go
+[gosec] 2026/04/27 06:43:12 Checking file: /app/pkg/ioc/ioc.go
+[gosec] 2026/04/27 06:43:12 Import directory: /app/internal/domain/errors
+[gosec] 2026/04/27 06:43:12 Checking package: bootstrap
+[gosec] 2026/04/27 06:43:12 Checking file: /app/cmd/api/bootstrap/container.go
+[gosec] 2026/04/27 06:43:12 Checking file: /app/cmd/api/bootstrap/singleton.go
+[gosec] 2026/04/27 06:43:12 Checking package: routes
+[gosec] 2026/04/27 06:43:12 Checking file: /app/cmd/api/routes/routes.go
+[gosec] 2026/04/27 06:43:12 Import directory: /app/scripts
+[gosec] 2026/04/27 06:43:12 Import directory: /app/internal/adapters/inbound/http/service_order
+[gosec] 2026/04/27 06:43:12 Checking package: domainerrors
+[gosec] 2026/04/27 06:43:12 Checking file: /app/internal/domain/errors/errors.go
+[gosec] 2026/04/27 06:43:12 Import directory: /app/internal/ports
+[gosec] 2026/04/27 06:43:12 Checking package: jwt
+[gosec] 2026/04/27 06:43:12 Checking file: /app/internal/adapters/outbound/jwt/service.go
+[gosec] 2026/04/27 06:43:13 Import directory: /app/internal/adapters/outbound/postgresql
+[gosec] 2026/04/27 06:43:13 Checking package: main
+[gosec] 2026/04/27 06:43:13 Checking file: /app/cmd/api/main.go
+[gosec] 2026/04/27 06:43:13 Import directory: /app/pkg/hasher
+[gosec] 2026/04/27 06:43:13 Checking package: main
+[gosec] 2026/04/27 06:43:13 Checking file: /app/scripts/gen_token.go
+[gosec] 2026/04/27 06:43:13 Checking package: vehicleuc
+[gosec] 2026/04/27 06:43:13 Checking file: /app/internal/application/usecase/vehicle/create.go
+[gosec] 2026/04/27 06:43:13 Checking file: /app/internal/application/usecase/vehicle/delete.go
+[gosec] 2026/04/27 06:43:13 Import directory: /app/internal/adapters/inbound/http/auth
+[gosec] 2026/04/27 06:43:13 Checking file: /app/internal/application/usecase/vehicle/get_by_id.go
+[gosec] 2026/04/27 06:43:13 Checking file: /app/internal/application/usecase/vehicle/list.go
+[gosec] 2026/04/27 06:43:13 Checking file: /app/internal/application/usecase/vehicle/list_by_customer.go
+[gosec] 2026/04/27 06:43:13 Checking file: /app/internal/application/usecase/vehicle/update.go
+[gosec] 2026/04/27 06:43:13 Import directory: /app/internal/adapters/inbound/http/vehicle
+[gosec] 2026/04/27 06:43:13 Checking package: authuc
+[gosec] 2026/04/27 06:43:13 Checking file: /app/internal/application/usecase/auth/login.go
+[gosec] 2026/04/27 06:43:13 Checking file: /app/internal/application/usecase/auth/logout.go
+[gosec] 2026/04/27 06:43:13 Checking package: pgmodel
+[gosec] 2026/04/27 06:43:13 Checking file: /app/internal/adapters/outbound/postgresql/model/customer.go
+[gosec] 2026/04/27 06:43:13 Checking file: /app/internal/application/usecase/auth/refresh.go
+[gosec] 2026/04/27 06:43:13 Checking file: /app/internal/adapters/outbound/postgresql/model/part.go
+[gosec] 2026/04/27 06:43:13 Checking file: /app/internal/application/usecase/auth/register.go
+[gosec] 2026/04/27 06:43:13 Checking file: /app/internal/adapters/outbound/postgresql/model/refresh_token.go
+[gosec] 2026/04/27 06:43:13 Checking file: /app/internal/adapters/outbound/postgresql/model/service.go
+[gosec] 2026/04/27 06:43:13 Checking file: /app/internal/adapters/outbound/postgresql/model/serviceorder.go
+[gosec] 2026/04/27 06:43:13 Checking file: /app/internal/adapters/outbound/postgresql/model/user.go
+[gosec] 2026/04/27 06:43:13 Checking file: /app/internal/adapters/outbound/postgresql/model/vehicle.go
+[gosec] 2026/04/27 06:43:13 Checking package: hasher
+[gosec] 2026/04/27 06:43:13 Checking file: /app/pkg/hasher/bcrypt.go
+[gosec] 2026/04/27 06:43:13 Checking package: ports
+[gosec] 2026/04/27 06:43:13 Checking file: /app/internal/ports/repositories.go
+[gosec] 2026/04/27 06:43:13 Checking file: /app/internal/ports/security.go
+[gosec] 2026/04/27 06:43:13 Checking file: /app/internal/ports/usecases.go
+[gosec] 2026/04/27 06:43:14 Checking package: authhandler
+[gosec] 2026/04/27 06:43:14 Checking file: /app/internal/adapters/inbound/http/auth/handler.go
+[gosec] 2026/04/27 06:43:14 Checking file: /app/internal/adapters/inbound/http/auth/login.go
+[gosec] 2026/04/27 06:43:14 Checking file: /app/internal/adapters/inbound/http/auth/logout.go
+[gosec] 2026/04/27 06:43:14 Checking file: /app/internal/adapters/inbound/http/auth/refresh.go
+[gosec] 2026/04/27 06:43:14 Checking file: /app/internal/adapters/inbound/http/auth/register.go
+[gosec] 2026/04/27 06:43:14 Checking package: postgresql
+[gosec] 2026/04/27 06:43:14 Checking file: /app/internal/adapters/outbound/postgresql/customer_repository.go
+[gosec] 2026/04/27 06:43:14 Checking file: /app/internal/adapters/outbound/postgresql/errors.go
+[gosec] 2026/04/27 06:43:14 Checking file: /app/internal/adapters/outbound/postgresql/part_repository.go
+[gosec] 2026/04/27 06:43:14 Checking file: /app/internal/adapters/outbound/postgresql/refresh_token_repository.go
+[gosec] 2026/04/27 06:43:14 Checking file: /app/internal/adapters/outbound/postgresql/service_repository.go
+[gosec] 2026/04/27 06:43:14 Checking file: /app/internal/adapters/outbound/postgresql/serviceorder_repository.go
+[gosec] 2026/04/27 06:43:14 Checking file: /app/internal/adapters/outbound/postgresql/user_repository.go
+[gosec] 2026/04/27 06:43:14 Checking file: /app/internal/adapters/outbound/postgresql/vehicle_repository.go
+[gosec] 2026/04/27 06:43:15 Checking package: serviceorderhandler
+[gosec] 2026/04/27 06:43:15 Checking file: /app/internal/adapters/inbound/http/service_order/create.go
+[gosec] 2026/04/27 06:43:15 Checking file: /app/internal/adapters/inbound/http/service_order/delete.go
+[gosec] 2026/04/27 06:43:15 Checking package: vehiclehandler
+[gosec] 2026/04/27 06:43:15 Checking file: /app/internal/adapters/inbound/http/vehicle/create.go
+[gosec] 2026/04/27 06:43:15 Checking file: /app/internal/adapters/inbound/http/service_order/find_by_code.go
+[gosec] 2026/04/27 06:43:15 Checking file: /app/internal/adapters/inbound/http/vehicle/delete.go
+[gosec] 2026/04/27 06:43:15 Checking file: /app/internal/adapters/inbound/http/service_order/find_by_document.go
+[gosec] 2026/04/27 06:43:15 Checking file: /app/internal/adapters/inbound/http/vehicle/find_by_id.go
+[gosec] 2026/04/27 06:43:15 Checking file: /app/internal/adapters/inbound/http/service_order/find_by_id.go
+[gosec] 2026/04/27 06:43:15 Checking file: /app/internal/adapters/inbound/http/vehicle/handler.go
+[gosec] 2026/04/27 06:43:15 Checking file: /app/internal/adapters/inbound/http/service_order/handler.go
+[gosec] 2026/04/27 06:43:15 Checking file: /app/internal/adapters/inbound/http/vehicle/list.go
+[gosec] 2026/04/27 06:43:15 Checking file: /app/internal/adapters/inbound/http/service_order/list.go
+[gosec] 2026/04/27 06:43:15 Checking file: /app/internal/adapters/inbound/http/service_order/messages.go
+[gosec] 2026/04/27 06:43:15 Checking file: /app/internal/adapters/inbound/http/vehicle/messages.go
+[gosec] 2026/04/27 06:43:15 Checking file: /app/internal/adapters/inbound/http/vehicle/update.go
+[gosec] 2026/04/27 06:43:15 Checking file: /app/internal/adapters/inbound/http/service_order/metrics.go
+[gosec] 2026/04/27 06:43:15 Checking file: /app/internal/adapters/inbound/http/service_order/update.go
+[gosec] 2026/04/27 06:43:15 Checking file: /app/internal/adapters/inbound/http/service_order/update_status.go
+[gosec] 2026/04/27 06:43:15 Checking file: /app/internal/adapters/inbound/http/service_order/update_status_by_code.go
+Results:
+
+
+[/app/cmd/api/bootstrap/container.go:284] - G706 (CWE): Log injection via taint analysis (Confidence: HIGH, Severity: LOW)
+    283: 	}
+  > 284: 	log.Printf("bootstrap: admin user seeded (%s)", email)
+    285: }
+
+Autofix: 
+
+Summary:
+  Gosec  : dev
+  Files  : 139
+  Lines  : 9579
+  Nosec  : 0
+  Issues : 1
+

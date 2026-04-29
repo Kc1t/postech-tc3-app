@@ -15,14 +15,14 @@ func TestGetServiceOrderByCode_Sucesso(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	customer := entities.ReconstituteCustomer("cust-1", "Diego", "52998224725", "d@e.com", "", ft(), ft())
+	requester := entities.ReconstituteRequester("cust-1", "Diego", "52998224725", "d@e.com", "", ft(), ft())
 	expected := entities.ReconstituteServiceOrder("order-1", 100, "cust-1", "veh-1",
 		entities.StatusReceived, nil, nil, 0, "", ft(), ft(), nil, nil)
 
 	soRepo := mocks.NewMockServiceOrderRepository(ctrl)
-	custRepo := mocks.NewMockCustomerRepository(ctrl)
+	custRepo := mocks.NewMockRequesterRepository(ctrl)
 
-	custRepo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(customer, nil)
+	custRepo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(requester, nil)
 	soRepo.EXPECT().FindByCode(gomock.Any(), 100).Return(expected, nil)
 
 	uc := NewGetServiceOrderByCode(soRepo, custRepo)
@@ -40,7 +40,7 @@ func TestGetServiceOrderByCode_ClienteNaoEncontrado(t *testing.T) {
 	defer ctrl.Finish()
 
 	soRepo := mocks.NewMockServiceOrderRepository(ctrl)
-	custRepo := mocks.NewMockCustomerRepository(ctrl)
+	custRepo := mocks.NewMockRequesterRepository(ctrl)
 
 	custRepo.EXPECT().FindByDocument(gomock.Any(), "00000000000").Return(nil, domainerrors.ErrNotFound)
 
@@ -55,12 +55,12 @@ func TestGetServiceOrderByCode_OSNaoEncontrada(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	customer := entities.ReconstituteCustomer("cust-1", "Diego", "52998224725", "d@e.com", "", ft(), ft())
+	requester := entities.ReconstituteRequester("cust-1", "Diego", "52998224725", "d@e.com", "", ft(), ft())
 
 	soRepo := mocks.NewMockServiceOrderRepository(ctrl)
-	custRepo := mocks.NewMockCustomerRepository(ctrl)
+	custRepo := mocks.NewMockRequesterRepository(ctrl)
 
-	custRepo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(customer, nil)
+	custRepo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(requester, nil)
 	soRepo.EXPECT().FindByCode(gomock.Any(), 999).Return(nil, domainerrors.ErrNotFound)
 
 	uc := NewGetServiceOrderByCode(soRepo, custRepo)
@@ -74,14 +74,14 @@ func TestGetServiceOrderByCode_OSDeOutroCliente(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	customer := entities.ReconstituteCustomer("cust-1", "Diego", "52998224725", "d@e.com", "", ft(), ft())
+	requester := entities.ReconstituteRequester("cust-1", "Diego", "52998224725", "d@e.com", "", ft(), ft())
 	so := entities.ReconstituteServiceOrder("order-1", 100, "outro-cliente", "veh-1",
 		entities.StatusReceived, nil, nil, 0, "", ft(), ft(), nil, nil)
 
 	soRepo := mocks.NewMockServiceOrderRepository(ctrl)
-	custRepo := mocks.NewMockCustomerRepository(ctrl)
+	custRepo := mocks.NewMockRequesterRepository(ctrl)
 
-	custRepo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(customer, nil)
+	custRepo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(requester, nil)
 	soRepo.EXPECT().FindByCode(gomock.Any(), 100).Return(so, nil)
 
 	uc := NewGetServiceOrderByCode(soRepo, custRepo)
@@ -98,7 +98,7 @@ func TestGetServiceOrderByCode_ErroInfraCliente(t *testing.T) {
 	infraErr := errors.New("timeout")
 
 	soRepo := mocks.NewMockServiceOrderRepository(ctrl)
-	custRepo := mocks.NewMockCustomerRepository(ctrl)
+	custRepo := mocks.NewMockRequesterRepository(ctrl)
 
 	custRepo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(nil, infraErr)
 

@@ -7,9 +7,9 @@ import (
 )
 
 type CreateServiceOrderRequest struct {
-	CustomerDocument string `json:"customer_document" binding:"required"`
-	VehiclePlate     string `json:"vehicle_plate"     binding:"required"`
-	Notes            string `json:"notes"`
+	RequesterDocument string `json:"requester_document" binding:"required"`
+	VehiclePlate      string `json:"vehicle_plate"     binding:"required"`
+	Notes             string `json:"notes"`
 }
 
 type UpdateServiceOrderRequest struct {
@@ -45,16 +45,16 @@ type PartItemResponse struct {
 }
 
 type UpdateStatusByCodeRequest struct {
-	CustomerDocument string               `json:"customer_document" binding:"required"`
-	Status           entities.OrderStatus `json:"status"            binding:"required"`
+	RequesterDocument string               `json:"requester_document" binding:"required"`
+	Status            entities.OrderStatus `json:"status"            binding:"required"`
 }
 
 type ServiceOrderResponse struct {
 	ID          string                `json:"id"`
 	Code        int                   `json:"code"`
-	CustomerID  string                `json:"customer_id"`
+	RequesterID string                `json:"requester_id"`
 	VehicleID   string                `json:"vehicle_id"`
-	Status      entities.OrderStatus   `json:"status"`
+	Status      entities.OrderStatus  `json:"status"`
 	Services    []ServiceItemResponse `json:"services"`
 	Parts       []PartItemResponse    `json:"parts"`
 	TotalAmount float64               `json:"total_amount"`
@@ -65,8 +65,6 @@ type ServiceOrderResponse struct {
 	FinishedAt  *string               `json:"finished_at,omitempty"`
 }
 
-// AverageExecutionTimeResponse expoe o tempo medio de execucao dos servicos
-// (intervalo entre aprovacao e finalizacao da OS).
 type AverageExecutionTimeResponse struct {
 	AverageSeconds float64 `json:"average_seconds" example:"5400"`
 	AverageHuman   string  `json:"average_human"   example:"1h30m0s"`
@@ -105,7 +103,7 @@ func ToServiceOrderResponse(so *entities.ServiceOrder) ServiceOrderResponse {
 	return ServiceOrderResponse{
 		ID:          so.ID(),
 		Code:        so.Code(),
-		CustomerID:  so.CustomerID(),
+		RequesterID: so.RequesterID(),
 		VehicleID:   so.VehicleID(),
 		Status:      so.Status(),
 		Services:    services,

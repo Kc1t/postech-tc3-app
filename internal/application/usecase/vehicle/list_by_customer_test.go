@@ -11,7 +11,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func TestListVehiclesByCustomer_Execute_Success(t *testing.T) {
+func TestListVehiclesByRequester_Execute_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -19,9 +19,9 @@ func TestListVehiclesByCustomer_Execute_Success(t *testing.T) {
 		entities.ReconstituteVehicle("", "cust-1", "ABC1234", "Toyota", "Corolla", 2020, time.Now(), time.Now()),
 	}
 	repo := mocks.NewMockVehicleRepository(ctrl)
-	repo.EXPECT().FindByCustomerID(gomock.Any(), "cust-1").Return(expected, nil)
+	repo.EXPECT().FindByRequesterID(gomock.Any(), "cust-1").Return(expected, nil)
 
-	uc := NewListVehiclesByCustomer(repo)
+	uc := NewListVehiclesByRequester(repo)
 	got, err := uc.Execute(context.Background(), "cust-1")
 	if err != nil {
 		t.Fatalf("expected nil error, got %v", err)
@@ -31,15 +31,15 @@ func TestListVehiclesByCustomer_Execute_Success(t *testing.T) {
 	}
 }
 
-func TestListVehiclesByCustomer_Execute_RepoError(t *testing.T) {
+func TestListVehiclesByRequester_Execute_RepoError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	repoErr := errors.New("db error")
 	repo := mocks.NewMockVehicleRepository(ctrl)
-	repo.EXPECT().FindByCustomerID(gomock.Any(), "cust-1").Return(nil, repoErr)
+	repo.EXPECT().FindByRequesterID(gomock.Any(), "cust-1").Return(nil, repoErr)
 
-	uc := NewListVehiclesByCustomer(repo)
+	uc := NewListVehiclesByRequester(repo)
 	_, err := uc.Execute(context.Background(), "cust-1")
 	if !errors.Is(err, repoErr) {
 		t.Fatalf("expected %v, got %v", repoErr, err)
