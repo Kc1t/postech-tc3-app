@@ -39,7 +39,6 @@ func Auth(jwtSecret string) gin.HandlerFunc {
 			return
 		}
 
-		// Valida claims obrigatorias
 		sub, subOk := claims["sub"].(string)
 		role, roleOk := claims["role"].(string)
 		if !subOk || sub == "" || !roleOk || role == "" {
