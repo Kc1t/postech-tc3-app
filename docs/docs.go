@@ -15,38 +15,8 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/requesters": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "requesters"
-                ],
-                "summary": "Listar clientes",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/commands.RequesterResponse"
-                            }
-                        }
-                    }
-                }
-            },
+        "/auth/login": {
             "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -54,17 +24,107 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "requesters"
+                    "auth"
                 ],
-                "summary": "Criar cliente",
+                "summary": "Autenticar usuario",
                 "parameters": [
                     {
-                        "description": "Dados do cliente",
+                        "description": "Credenciais",
                         "name": "body",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/commands.CreateRequesterRequest"
+                            "$ref": "#/definitions/commands.LoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/commands.AuthResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/logout": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Encerrar sessao (revoga todos os refresh tokens)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/commands.MessageResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/refresh": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Renovar tokens (refresh token rotation)",
+                "parameters": [
+                    {
+                        "description": "Refresh token",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/commands.RefreshRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/commands.AuthResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/register": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Registrar usuario",
+                "parameters": [
+                    {
+                        "description": "Dados do usuario",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/commands.RegisterRequest"
                         }
                     }
                 ],
@@ -72,135 +132,8 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/commands.RequesterResponse"
+                            "$ref": "#/definitions/commands.MessageResponse"
                         }
-                    }
-                }
-            }
-        },
-        "/requesters/document/{document}": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "requesters"
-                ],
-                "summary": "Buscar cliente por documento",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Requester Document",
-                        "name": "document",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {}
-            }
-        },
-        "/requesters/{id}": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "requesters"
-                ],
-                "summary": "Buscar cliente por ID",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Requester ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/commands.RequesterResponse"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "requesters"
-                ],
-                "summary": "Atualizar cliente",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Requester ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Dados para atualizar",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/commands.UpdateRequesterRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/commands.RequesterResponse"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "tags": [
-                    "requesters"
-                ],
-                "summary": "Deletar cliente",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Requester ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
                     }
                 }
             }
@@ -411,6 +344,239 @@ const docTemplate = `{
                 }
             }
         },
+        "/requesters": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "requesters"
+                ],
+                "summary": "Listar clientes",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/commands.RequesterResponse"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "requesters"
+                ],
+                "summary": "Criar cliente",
+                "parameters": [
+                    {
+                        "description": "Dados do cliente",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/commands.CreateRequesterRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/commands.RequesterResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/requesters/document/{document}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "requesters"
+                ],
+                "summary": "Buscar cliente por documento",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Requester Document",
+                        "name": "document",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/requesters/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "requesters"
+                ],
+                "summary": "Buscar cliente por ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Requester ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/commands.RequesterResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "requesters"
+                ],
+                "summary": "Atualizar cliente",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Requester ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Dados para atualizar",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/commands.UpdateRequesterRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/commands.RequesterResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "tags": [
+                    "requesters"
+                ],
+                "summary": "Deletar cliente",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Requester ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/requesters/{id}/vehicles": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retorna todos os veiculos cadastrados para o cliente identificado pelo ID.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "requesters"
+                ],
+                "summary": "Listar veiculos de um cliente",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID do cliente (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/commands.VehicleResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/service-orders": {
             "get": {
                 "security": [
@@ -425,7 +591,17 @@ const docTemplate = `{
                     "service-orders"
                 ],
                 "summary": "Listar ordens de servico",
-                "responses": {}
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/commands.ServiceOrderResponse"
+                            }
+                        }
+                    }
+                }
             },
             "post": {
                 "security": [
@@ -443,7 +619,159 @@ const docTemplate = `{
                     "service-orders"
                 ],
                 "summary": "Criar ordem de servico",
-                "responses": {}
+                "parameters": [
+                    {
+                        "description": "Dados da OS",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/commands.CreateServiceOrderRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/commands.ServiceOrderResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/service-orders/code/{code}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "service-orders-requester"
+                ],
+                "summary": "Consultar OS pelo codigo (endpoint publico do cliente)",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Codigo da OS",
+                        "name": "code",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "CPF ou CNPJ do cliente",
+                        "name": "document",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/commands.ServiceOrderResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/service-orders/code/{code}/status": {
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "service-orders-requester"
+                ],
+                "summary": "Alterar status da OS pelo codigo (endpoint publico do cliente)",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Codigo da OS",
+                        "name": "code",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Novo status e documento do cliente",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/commands.UpdateStatusByCodeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/service-orders/metrics/execution-time": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Media global do intervalo entre aprovacao (started_at) e finalizacao (finished_at) das OSs. Retorna 0 se nenhuma OS foi finalizada ainda.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "service-orders"
+                ],
+                "summary": "Tempo medio de execucao dos servicos",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/commands.AverageExecutionTimeResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httputil.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/service-orders/requester": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "service-orders-requester"
+                ],
+                "summary": "Listar OS do cliente por CPF/CNPJ (endpoint publico do cliente)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "CPF ou CNPJ do cliente",
+                        "name": "document",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/commands.ServiceOrderResponse"
+                            }
+                        }
+                    }
+                }
             }
         },
         "/service-orders/{id}": {
@@ -469,7 +797,14 @@ const docTemplate = `{
                         "required": true
                     }
                 ],
-                "responses": {}
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/commands.ServiceOrderResponse"
+                        }
+                    }
+                }
             },
             "put": {
                 "security": [
@@ -494,9 +829,25 @@ const docTemplate = `{
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "Dados para atualizar",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/commands.UpdateServiceOrderRequest"
+                        }
                     }
                 ],
-                "responses": {}
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/commands.ServiceOrderResponse"
+                        }
+                    }
+                }
             },
             "delete": {
                 "security": [
@@ -520,7 +871,11 @@ const docTemplate = `{
                         "required": true
                     }
                 ],
-                "responses": {}
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
             }
         },
         "/service-orders/{id}/status": {
@@ -547,9 +902,22 @@ const docTemplate = `{
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "Novo status (services e parts obrigatorios para awaiting_approval)",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/commands.UpdateStatusRequest"
+                        }
                     }
                 ],
-                "responses": {}
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
             }
         },
         "/services": {
@@ -887,6 +1255,68 @@ const docTemplate = `{
                 }
             }
         },
+        "commands.AuthResponse": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "expires_in": {
+                    "description": "segundos ate expirar",
+                    "type": "integer"
+                },
+                "refresh_token": {
+                    "type": "string"
+                },
+                "token_type": {
+                    "description": "\"Bearer\"",
+                    "type": "string"
+                }
+            }
+        },
+        "commands.AverageExecutionTimeResponse": {
+            "type": "object",
+            "properties": {
+                "average_human": {
+                    "type": "string",
+                    "example": "1h30m0s"
+                },
+                "average_seconds": {
+                    "type": "number",
+                    "example": 5400
+                }
+            }
+        },
+        "commands.CreatePartRequest": {
+            "type": "object",
+            "required": [
+                "manufacturer_code",
+                "name",
+                "price",
+                "unit"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "manufacturer_code": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "stock": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "unit": {
+                    "type": "string"
+                }
+            }
+        },
         "commands.CreateRequesterRequest": {
             "type": "object",
             "required": [
@@ -909,28 +1339,20 @@ const docTemplate = `{
                 }
             }
         },
-        "commands.CreatePartRequest": {
+        "commands.CreateServiceOrderRequest": {
             "type": "object",
             "required": [
-                "name",
-                "price",
-                "unit"
+                "requester_document",
+                "vehicle_plate"
             ],
             "properties": {
-                "description": {
+                "notes": {
                     "type": "string"
                 },
-                "name": {
+                "requester_document": {
                     "type": "string"
                 },
-                "price": {
-                    "type": "number"
-                },
-                "stock": {
-                    "type": "integer",
-                    "minimum": 0
-                },
-                "unit": {
+                "vehicle_plate": {
                     "type": "string"
                 }
             }
@@ -938,11 +1360,15 @@ const docTemplate = `{
         "commands.CreateServiceRequest": {
             "type": "object",
             "required": [
+                "code",
                 "duration_min",
                 "name",
                 "price"
             ],
             "properties": {
+                "code": {
+                    "type": "integer"
+                },
                 "description": {
                     "type": "string"
                 },
@@ -961,16 +1387,13 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "brand",
-                "requester_document",
                 "model",
                 "plate",
+                "requester_document",
                 "year"
             ],
             "properties": {
                 "brand": {
-                    "type": "string"
-                },
-                "requester_document": {
                     "type": "string"
                 },
                 "model": {
@@ -979,8 +1402,135 @@ const docTemplate = `{
                 "plate": {
                     "type": "string"
                 },
+                "requester_document": {
+                    "type": "string"
+                },
                 "year": {
                     "type": "integer"
+                }
+            }
+        },
+        "commands.LoginRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "password": {
+                    "type": "string",
+                    "maxLength": 128
+                }
+            }
+        },
+        "commands.MessageResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "commands.PartItemRequest": {
+            "type": "object",
+            "required": [
+                "manufacturer_code",
+                "quantity"
+            ],
+            "properties": {
+                "manufacturer_code": {
+                    "type": "string"
+                },
+                "quantity": {
+                    "type": "integer"
+                }
+            }
+        },
+        "commands.PartItemResponse": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "part_id": {
+                    "type": "string"
+                },
+                "quantity": {
+                    "type": "integer"
+                },
+                "unit_price": {
+                    "type": "number"
+                }
+            }
+        },
+        "commands.PartResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "manufacturer_code": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "stock": {
+                    "type": "integer"
+                },
+                "unit": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "commands.RefreshRequest": {
+            "type": "object",
+            "required": [
+                "refresh_token"
+            ],
+            "properties": {
+                "refresh_token": {
+                    "type": "string",
+                    "maxLength": 255
+                }
+            }
+        },
+        "commands.RegisterRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "name",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "password": {
+                    "type": "string",
+                    "maxLength": 128,
+                    "minLength": 8
                 }
             }
         },
@@ -1010,31 +1560,77 @@ const docTemplate = `{
                 }
             }
         },
-        "commands.PartResponse": {
+        "commands.ServiceItemRequest": {
+            "type": "object",
+            "required": [
+                "code"
+            ],
+            "properties": {
+                "code": {
+                    "type": "integer"
+                }
+            }
+        },
+        "commands.ServiceItemResponse": {
             "type": "object",
             "properties": {
-                "created_at": {
-                    "type": "string"
-                },
                 "description": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name": {
                     "type": "string"
                 },
                 "price": {
                     "type": "number"
                 },
-                "stock": {
+                "service_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "commands.ServiceOrderResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
                     "type": "integer"
                 },
-                "unit": {
+                "created_at": {
                     "type": "string"
                 },
+                "finished_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "parts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/commands.PartItemResponse"
+                    }
+                },
+                "requester_id": {
+                    "type": "string"
+                },
+                "services": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/commands.ServiceItemResponse"
+                    }
+                },
+                "started_at": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/entities.OrderStatus"
+                },
+                "total_amount": {
+                    "type": "number"
+                },
                 "updated_at": {
+                    "type": "string"
+                },
+                "vehicle_id": {
                     "type": "string"
                 }
             }
@@ -1042,6 +1638,9 @@ const docTemplate = `{
         "commands.ServiceResponse": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "integer"
+                },
                 "created_at": {
                     "type": "string"
                 },
@@ -1061,6 +1660,30 @@ const docTemplate = `{
                     "type": "number"
                 },
                 "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "commands.UpdatePartRequest": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "manufacturer_code": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "stock": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "unit": {
                     "type": "string"
                 }
             }
@@ -1079,23 +1702,10 @@ const docTemplate = `{
                 }
             }
         },
-        "commands.UpdatePartRequest": {
+        "commands.UpdateServiceOrderRequest": {
             "type": "object",
             "properties": {
-                "description": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "price": {
-                    "type": "number"
-                },
-                "stock": {
-                    "type": "integer",
-                    "minimum": 0
-                },
-                "unit": {
+                "notes": {
                     "type": "string"
                 }
             }
@@ -1103,6 +1713,9 @@ const docTemplate = `{
         "commands.UpdateServiceRequest": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "integer"
+                },
                 "description": {
                     "type": "string"
                 },
@@ -1114,6 +1727,44 @@ const docTemplate = `{
                 },
                 "price": {
                     "type": "number"
+                }
+            }
+        },
+        "commands.UpdateStatusByCodeRequest": {
+            "type": "object",
+            "required": [
+                "requester_document",
+                "status"
+            ],
+            "properties": {
+                "requester_document": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/entities.OrderStatus"
+                }
+            }
+        },
+        "commands.UpdateStatusRequest": {
+            "type": "object",
+            "required": [
+                "status"
+            ],
+            "properties": {
+                "parts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/commands.PartItemRequest"
+                    }
+                },
+                "services": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/commands.ServiceItemRequest"
+                    }
+                },
+                "status": {
+                    "$ref": "#/definitions/entities.OrderStatus"
                 }
             }
         },
@@ -1143,9 +1794,6 @@ const docTemplate = `{
                 "created_at": {
                     "type": "string"
                 },
-                "requester_id": {
-                    "type": "string"
-                },
                 "id": {
                     "type": "string"
                 },
@@ -1155,11 +1803,44 @@ const docTemplate = `{
                 "plate": {
                     "type": "string"
                 },
+                "requester_id": {
+                    "type": "string"
+                },
                 "updated_at": {
                     "type": "string"
                 },
                 "year": {
                     "type": "integer"
+                }
+            }
+        },
+        "entities.OrderStatus": {
+            "type": "string",
+            "enum": [
+                "received",
+                "in_diagnosis",
+                "awaiting_approval",
+                "in_execution",
+                "finished",
+                "delivered"
+            ],
+            "x-enum-varnames": [
+                "StatusReceived",
+                "StatusInDiagnosis",
+                "StatusAwaitingApproval",
+                "StatusInExecution",
+                "StatusFinished",
+                "StatusDelivered"
+            ]
+        },
+        "httputil.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
                 }
             }
         }

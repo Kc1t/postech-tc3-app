@@ -4,7 +4,7 @@ Sistema Integrado de Atendimento e Execucao de Servicos para oficina mecanica.
 
 ## Tecnologias
 
-- **Go 1.23** — linguagem principal
+- **Go 1.25** — linguagem principal
 - **Gin** — framework HTTP
 - **PostgreSQL 16** — banco de dados relacional (via GORM)
 - **Swagger** — documentacao da API (`swaggo/swag`)
@@ -80,10 +80,13 @@ go run ./cmd/api
 | `APP_PORT`               | `8080`                                                                 | Porta da API                        |
 | `APP_ENV`                | `development`                                                          | Ambiente (development/prod)         |
 | `POSTGRES_DSN`           | `postgres://postgres:postgres@localhost:5432/workshop?sslmode=disable` | DSN do PostgreSQL                   |
-| `JWT_SECRET`             | `secret`                                                               | Chave secreta JWT                   |
+| `JWT_SECRET`             | `change-me-in-production`                                              | Chave secreta JWT                   |
+| `JWT_EXPIRATION_HOURS`   | `24`                                                                   | Expiracao do token JWT (horas)      |
 | `ACCESS_TOKEN_EXP_MIN`   | `15`                                                                   | Expiracao do access token (minutos) |
 | `REFRESH_TOKEN_EXP_DAYS` | `7`                                                                    | Expiracao do refresh token (dias)   |
 | `BCRYPT_COST`            | `12`                                                                   | Custo do hash de senha com bcrypt   |
+| `MAX_FAILED_LOGINS`      | `5`                                                                    | Tentativas antes de bloquear login  |
+| `LOGIN_LOCK_MIN`         | `15`                                                                   | Tempo de bloqueio apos falhas (min) |
 
 ## Endpoints
 
@@ -126,11 +129,11 @@ As rotas `/api/v1/auth/register`, `/login` e `/refresh` sao publicas. Todas as d
 | PATCH  | `/api/v1/parts/:id/stock`                     | admin    | Ajustar estoque (delta +/-)            |
 | **Service Orders** | | | |
 | POST   | `/api/v1/service-orders`                      | admin    | Criar ordem de servico                 |
-| GET    | `/api/v1/service-orders`                      | JWT      | Listar ordens de servico               |
-| GET    | `/api/v1/service-orders/:id`                  | JWT      | Buscar ordem por ID                    |
+| GET    | `/api/v1/service-orders`                      | admin    | Listar ordens de servico               |
+| GET    | `/api/v1/service-orders/:id`                  | admin    | Buscar ordem por ID                    |
 | GET    | `/api/v1/service-orders/metrics/execution-time` | admin  | Tempo medio de execucao das OSs        |
 | GET    | `/api/v1/service-orders/code/:code`           | publico  | Buscar OS por codigo (portal cliente)  |
-| GET    | `/api/v1/service-orders/customer`             | publico  | Listar OSs por documento do solicitante|
+| GET    | `/api/v1/service-orders/requester`            | publico  | Listar OSs por documento do solicitante|
 | PUT    | `/api/v1/service-orders/code/:code/status`    | publico  | Atualizar status por codigo            |
 | PUT    | `/api/v1/service-orders/:id/status`           | admin    | Atualizar status da OS                 |
 | PUT    | `/api/v1/service-orders/:id`                  | admin    | Atualizar OS                           |
