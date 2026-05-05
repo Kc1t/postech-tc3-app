@@ -244,15 +244,15 @@ make test
       </a>
     </td>
     <td align="center">
-      <a href="https://github.com/diegoliveiraa">
-        <img src="https://github.com/diegoliveiraa.png?size=100" width="100px;" alt="Avatar de diegoliveiraa"/><br />
-        <sub><b>diegoliveiraa</b></sub>
-      </a>
-    </td>
-    <td align="center">
       <a href="https://github.com/PedroHCarlini">
         <img src="https://github.com/PedroHCarlini.png?size=100" width="100px;" alt="Avatar de PedroHCarlini"/><br />
         <sub><b>PedroHCarlini</b></sub>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/diegoliveiraa">
+        <img src="https://github.com/diegoliveiraa.png?size=100" width="100px;" alt="Avatar de diegoliveiraa"/><br />
+        <sub><b>diegoliveiraa</b></sub>
       </a>
     </td>
   </tr>
