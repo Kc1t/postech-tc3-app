@@ -1,4 +1,4 @@
-# ADR-0001: Arquitetura hexagonal (Ports & Adapters)
+# ADR-0002: Arquitetura hexagonal (Ports & Adapters)
 
 - **Status:** Accepted
 - **Data:** 2026-04

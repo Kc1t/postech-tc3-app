@@ -30,7 +30,7 @@ Implementar autenticação em duas camadas:
 - Armazenado no banco (`refresh_tokens`) com referência ao usuário, IP de emissão e hash do token.
 - A cada uso, o refresh token antigo é **revogado** e um novo é emitido.
 - Endpoint público: `POST /api/v1/auth/refresh`.
-- Operação atômica no repositório (`RotateToken`) — ver [ADR-0007](./0007-domain-errors-sentinels.md) sobre transações no repositório.
+- Operação atômica no repositório (`RotateToken`) — ver [ADR-0006](./0006-domain-errors-sentinels.md) sobre transações no repositório.
 
 ### 3. Logout explícito
 
@@ -70,7 +70,7 @@ Endpoints `GET /api/v1/service-orders/code/:code`, `GET /api/v1/service-orders/c
 ## Notas de implementação
 
 - Implementação do `TokenService` em `internal/adapters/outbound/jwt/service.go` (não em `pkg/`, pois depende de `entities.User`).
-- Use cases recebem `ports.TokenService` (interface), nunca a biblioteca de JWT diretamente — preserva o domínio limpo (ver [ADR-0001](./0001-hexagonal-architecture.md)).
+- Use cases recebem `ports.TokenService` (interface), nunca a biblioteca de JWT diretamente — preserva o domínio limpo (ver [ADR-0002](./0002-hexagonal-architecture.md)).
 - `BCRYPT_COST=12` para hashing de senhas (configurável via env).
 
 ## Referências

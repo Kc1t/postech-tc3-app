@@ -1,4 +1,4 @@
-# ADR-0007: Erros sentinela centralizados em `domainerrors`
+# ADR-0006: Erros sentinela centralizados em `domainerrors`
 
 - **Status:** Accepted
 - **Data:** 2026-04
@@ -6,7 +6,7 @@
 
 ## Contexto
 
-Em arquitetura hexagonal (ver [ADR-0001](./0001-hexagonal-architecture.md)), o domínio precisa expressar falhas de negócio sem vazar detalhes de infraestrutura. Por exemplo:
+Em arquitetura hexagonal (ver [ADR-0002](./0002-hexagonal-architecture.md)), o domínio precisa expressar falhas de negócio sem vazar detalhes de infraestrutura. Por exemplo:
 
 - O repositório recebe `gorm.ErrRecordNotFound` ao buscar um cliente inexistente. Esse erro **não pode** subir até o handler como está, senão o use case e o handler ficam acoplados ao GORM.
 - Use cases precisam sinalizar invariantes violadas (estoque insuficiente, transição de status inválida, documento inválido) sem inventar `errors.New()` espalhados pelo código.

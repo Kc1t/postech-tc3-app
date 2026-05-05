@@ -6,7 +6,7 @@
 
 ## Contexto
 
-A Workshop API tem um modelo de dados relacional não trivial (ver [ADR-0002](./0002-postgresql.md)) e precisa de:
+A Workshop API tem um modelo de dados relacional não trivial (ver [ADR-0003](./0003-postgresql.md)) e precisa de:
 
 - Mapeamento entre entidades de domínio e tabelas do banco.
 - Suporte a transações para operações atômicas (ex.: criação de OS com ajuste de estoque).

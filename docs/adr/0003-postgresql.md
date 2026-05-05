@@ -1,4 +1,4 @@
-# ADR-0002: PostgreSQL como banco de dados relacional
+# ADR-0003: PostgreSQL como banco de dados relacional
 
 - **Status:** Accepted
 - **Data:** 2026-04
