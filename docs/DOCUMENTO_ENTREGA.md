@@ -1,13 +1,11 @@
 # Tech Challenge — Fase 1 · Reservoir Devs
 ## Documento de Entrega
 
-**Grupo:** Reservoir Devs · **Pós-Tech FIAP — SOAT (15SOAT)** · **Data:** 2026-05-03
+**Grupo:** Reservoir Devs · **Pós-Tech FIAP — SOAT (15SOAT)** · **Data:** 2026-05-05
 
 ---
 
 ## 1. Grupo
-
-**Nome:** Reservoir Devs
 
 | Nome | Discord |
 |---|---|
@@ -31,11 +29,12 @@
 
 | Entregável (PDF Fase 1) | Link |
 |---|---|
-| 🎬 Vídeo de apresentação (até 15 min) | https://www.youtube.com/watch?v=UtZBA1bVbcs |
+| 🎬 Vídeo de apresentação (até 15 min) | https://www.youtube.com/watch?v=ZnEZUI8KDfY |
 | 📂 Repositório (privado, acesso `soat-architecture`) | https://github.com/Kc1t/postech-tc1 |
 | 🧠 Documentação DDD — Event Storming, diagramas e Linguagem Ubíqua (Miro) | https://miro.com/app/board/uXjVHcNJp-s=/?share_link_id=374317179210 |
 | 📖 README com instruções de execução | https://github.com/Kc1t/postech-tc1/blob/main/README.md |
-| 🔧 Swagger (após `docker compose up`) | http://localhost:8080/swagger/index.html |
+| 🔧 Swagger interativo (após `docker compose up`) | http://localhost:8080/swagger/index.html |
+| 📄 Swagger estático (visualizar sem subir o ambiente) | [`docs/swagger.yaml`](https://github.com/Kc1t/postech-tc1/blob/main/docs/swagger.yaml) |
 | 🏛️ Documentação completa (hub) | https://tc1-doc.vercel.app/ |
 
 ---
@@ -44,16 +43,17 @@
 
 | Requisito | Onde verificar |
 |---|---|
-| Back-end monolítico em Go (Gin + GORM + PostgreSQL) | Repositório + seção *Stack* do site |
-| Arquitetura em camadas / Hexagonal (Ports & Adapters) | Site → *Arquitetura Hexagonal* / *Estrutura do projeto* / *ADRs* |
-| Justificativa do banco (PostgreSQL) | Site → *Banco de dados* + ADR correspondente |
+| Back-end monolítico em **Go 1.25** (Gin + GORM + PostgreSQL 16) | Repositório (`go.mod`, `Dockerfile`) + seção *Stack* do site |
+| Justificativa da linguagem (Go vs Java) | [ADR-0001](https://github.com/Kc1t/postech-tc1/blob/main/docs/adr/0001-go-language.md) |
+| Arquitetura Hexagonal (Ports & Adapters) | Site → *Arquitetura Hexagonal* / *Estrutura do projeto* + [ADR-0002](https://github.com/Kc1t/postech-tc1/blob/main/docs/adr/0002-hexagonal-architecture.md) |
+| Justificativa do banco (PostgreSQL) | Site → *Banco de dados* + [ADR-0003](https://github.com/Kc1t/postech-tc1/blob/main/docs/adr/0003-postgresql.md) |
 | Fluxos da OS (criação, status, acompanhamento) | Site → *Ordem de Serviço* + Swagger |
-| CRUDs (clientes, veículos, serviços, peças com estoque) | Swagger + Postman collection no repositório |
+| CRUDs (clientes, veículos, serviços, peças com estoque) | Swagger + `postman_collection.json` no repositório |
 | Tempo médio de execução dos serviços | Site → *Endpoints de métricas* |
-| JWT em rotas administrativas + validação CPF/CNPJ/placa | Site → *Segurança* |
+| JWT em rotas administrativas + validação CPF/CNPJ/placa | Site → *Segurança* + [ADR-0005](https://github.com/Kc1t/postech-tc1/blob/main/docs/adr/0005-jwt-refresh-token.md) |
 | Testes unitários e integração (≥ 80% domínios críticos) | Site → *Testes* + `make test` |
 | Dockerfile + docker-compose | Raiz do repositório |
-| Event Storming + Linguagem Ubíqua | Miro (link acima) |
+| Event Storming, Domain Storytelling e Linguagem Ubíqua | Miro (link acima) + Site → *Bounded Contexts* / *Linguagem Ubíqua* |
 
 ---
 
