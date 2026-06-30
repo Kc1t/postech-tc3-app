@@ -2,6 +2,7 @@ package serviceorderuc
 
 import (
 	"context"
+	"log"
 
 	"github.com/fiap/postech-tc1/internal/domain/entities"
 	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
@@ -9,20 +10,26 @@ import (
 )
 
 type UpdateServiceOrderStatus struct {
-	repo        ports.ServiceOrderRepository
-	serviceRepo ports.ServiceRepository
-	partRepo    ports.PartRepository
+	repo          ports.ServiceOrderRepository
+	serviceRepo   ports.ServiceRepository
+	partRepo      ports.PartRepository
+	requesterRepo ports.RequesterRepository
+	notifier      ports.EmailNotifier
 }
 
 func NewUpdateServiceOrderStatus(
 	repo ports.ServiceOrderRepository,
 	serviceRepo ports.ServiceRepository,
 	partRepo ports.PartRepository,
+	requesterRepo ports.RequesterRepository,
+	notifier ports.EmailNotifier,
 ) *UpdateServiceOrderStatus {
 	return &UpdateServiceOrderStatus{
-		repo:        repo,
-		serviceRepo: serviceRepo,
-		partRepo:    partRepo,
+		repo:          repo,
+		serviceRepo:   serviceRepo,
+		partRepo:      partRepo,
+		requesterRepo: requesterRepo,
+		notifier:      notifier,
 	}
 }
 
@@ -44,16 +51,41 @@ func (uc *UpdateServiceOrderStatus) Execute(ctx context.Context, input entities.
 		if err := uc.buildParts(ctx, so, input.Parts); err != nil {
 			return err
 		}
-		return uc.repo.Update(ctx, so)
+		if err := uc.repo.Update(ctx, so); err != nil {
+			return err
+		}
 
 	case entities.StatusInExecution:
-		return uc.repo.ApplyApprovalTransition(ctx, so)
+		if err := uc.repo.ApplyApprovalTransition(ctx, so); err != nil {
+			return err
+		}
 
 	case entities.StatusFinished:
-		return uc.repo.Update(ctx, so)
+		if err := uc.repo.Update(ctx, so); err != nil {
+			return err
+		}
 
 	default:
-		return uc.repo.UpdateStatus(ctx, input.ID, input.Status)
+		if err := uc.repo.UpdateStatus(ctx, input.ID, input.Status); err != nil {
+			return err
+		}
+	}
+
+	uc.notify(ctx, so)
+	return nil
+}
+
+func (uc *UpdateServiceOrderStatus) notify(ctx context.Context, so *entities.ServiceOrder) {
+	if uc.notifier == nil || uc.requesterRepo == nil {
+		return
+	}
+	requester, err := uc.requesterRepo.FindByID(ctx, so.RequesterID())
+	if err != nil {
+		log.Printf("email notify: requester lookup failed for OS %d: %v", so.Code(), err)
+		return
+	}
+	if err := uc.notifier.NotifyStatusChange(ctx, requester.Email(), requester.Name(), so.Code(), so.Status()); err != nil {
+		log.Printf("email notify: send failed for OS %d to %s: %v", so.Code(), requester.Email(), err)
 	}
 }
 

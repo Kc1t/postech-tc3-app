@@ -2,6 +2,7 @@ package serviceorderuc
 
 import (
 	"context"
+	"log"
 
 	"github.com/fiap/postech-tc1/internal/domain/entities"
 	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
@@ -11,13 +12,15 @@ import (
 type UpdateServiceOrderStatusByCode struct {
 	repo          ports.ServiceOrderRepository
 	requesterRepo ports.RequesterRepository
+	notifier      ports.EmailNotifier
 }
 
 func NewUpdateServiceOrderStatusByCode(
 	repo ports.ServiceOrderRepository,
 	requesterRepo ports.RequesterRepository,
+	notifier ports.EmailNotifier,
 ) *UpdateServiceOrderStatusByCode {
-	return &UpdateServiceOrderStatusByCode{repo: repo, requesterRepo: requesterRepo}
+	return &UpdateServiceOrderStatusByCode{repo: repo, requesterRepo: requesterRepo, notifier: notifier}
 }
 
 func (uc *UpdateServiceOrderStatusByCode) Execute(ctx context.Context, code int, requesterDocument string, newStatus entities.OrderStatus) error {
@@ -40,8 +43,20 @@ func (uc *UpdateServiceOrderStatusByCode) Execute(ctx context.Context, code int,
 	}
 
 	if newStatus == entities.StatusInExecution {
-		return uc.repo.ApplyApprovalTransition(ctx, so)
+		if err := uc.repo.ApplyApprovalTransition(ctx, so); err != nil {
+			return err
+		}
+	} else {
+		if err := uc.repo.UpdateStatus(ctx, so.ID(), newStatus); err != nil {
+			return err
+		}
 	}
 
-	return uc.repo.UpdateStatus(ctx, so.ID(), newStatus)
+	if uc.notifier != nil {
+		if err := uc.notifier.NotifyStatusChange(ctx, requester.Email(), requester.Name(), so.Code(), so.Status()); err != nil {
+			log.Printf("email notify: send failed for OS %d to %s: %v", so.Code(), requester.Email(), err)
+		}
+	}
+
+	return nil
 }
