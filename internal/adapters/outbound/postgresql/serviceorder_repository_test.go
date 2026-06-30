@@ -86,18 +86,65 @@ func TestServiceOrderRepository_FindByID_NotFound(t *testing.T) {
 func TestServiceOrderRepository_FindAll(t *testing.T) {
 	c, v := seedVehicle(t, "OS00003")
 	repo := NewServiceOrderRepository(testDB)
-	so := newTestOrder(c.ID(), v.ID())
-	if err := repo.Create(context.Background(), so); err != nil {
-		t.Fatalf("setup failed: %v", err)
+
+	soReceived := newTestOrder(c.ID(), v.ID())
+	soInDiagnosis := newTestOrder(c.ID(), v.ID())
+	soAwaiting := newTestOrder(c.ID(), v.ID())
+	soInExecution := newTestOrder(c.ID(), v.ID())
+	soFinished := newTestOrder(c.ID(), v.ID())
+	soDelivered := newTestOrder(c.ID(), v.ID())
+
+	for _, so := range []*entities.ServiceOrder{soReceived, soInDiagnosis, soAwaiting, soInExecution, soFinished, soDelivered} {
+		if err := repo.Create(context.Background(), so); err != nil {
+			t.Fatalf("setup Create: %v", err)
+		}
+		id := so.ID()
+		t.Cleanup(func() { testDB.Delete(&pgmodel.ServiceOrder{}, "id = ?", id) })
 	}
-	t.Cleanup(func() { testDB.Delete(&pgmodel.ServiceOrder{}, "id = ?", so.ID()) })
+
+	testDB.Model(&pgmodel.ServiceOrder{}).Where("id = ?", soInDiagnosis.ID()).Update("status", entities.StatusInDiagnosis)
+	testDB.Model(&pgmodel.ServiceOrder{}).Where("id = ?", soAwaiting.ID()).Update("status", entities.StatusAwaitingApproval)
+	testDB.Model(&pgmodel.ServiceOrder{}).Where("id = ?", soInExecution.ID()).Update("status", entities.StatusInExecution)
+	testDB.Model(&pgmodel.ServiceOrder{}).Where("id = ?", soFinished.ID()).Update("status", entities.StatusFinished)
+	testDB.Model(&pgmodel.ServiceOrder{}).Where("id = ?", soDelivered.ID()).Update("status", entities.StatusDelivered)
 
 	all, err := repo.FindAll(context.Background())
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
-	if len(all) == 0 {
-		t.Fatal("expected at least one service order")
+
+	for _, so := range all {
+		if so.Status() == entities.StatusFinished || so.Status() == entities.StatusDelivered {
+			t.Errorf("FindAll retornou OS com status %s — deveria ser excluida", so.Status())
+		}
+	}
+
+	indexOf := func(id string) int {
+		for i, so := range all {
+			if so.ID() == id {
+				return i
+			}
+		}
+		return -1
+	}
+
+	idxExec := indexOf(soInExecution.ID())
+	idxAwait := indexOf(soAwaiting.ID())
+	idxDiag := indexOf(soInDiagnosis.ID())
+	idxRecv := indexOf(soReceived.ID())
+
+	if idxExec == -1 || idxAwait == -1 || idxDiag == -1 || idxRecv == -1 {
+		t.Fatal("uma ou mais OS ativas nao foram retornadas")
+	}
+
+	if idxExec >= idxAwait {
+		t.Errorf("in_execution (pos %d) deveria vir antes de awaiting_approval (pos %d)", idxExec, idxAwait)
+	}
+	if idxAwait >= idxDiag {
+		t.Errorf("awaiting_approval (pos %d) deveria vir antes de in_diagnosis (pos %d)", idxAwait, idxDiag)
+	}
+	if idxDiag >= idxRecv {
+		t.Errorf("in_diagnosis (pos %d) deveria vir antes de received (pos %d)", idxDiag, idxRecv)
 	}
 }
 
