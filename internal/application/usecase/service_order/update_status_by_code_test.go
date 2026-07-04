@@ -27,7 +27,7 @@ func TestUpdateStatusByCode_Aprovacao_Sucesso(t *testing.T) {
 	// Aprovacao: use case delega persistencia + decremento atomicos ao repo.
 	soRepo.EXPECT().ApplyApprovalTransition(gomock.Any(), gomock.Any()).Return(nil)
 
-	uc := NewUpdateServiceOrderStatusByCode(soRepo, custRepo)
+	uc := NewUpdateServiceOrderStatusByCode(soRepo, custRepo, nil)
 	if err := uc.Execute(context.Background(), 100, "52998224725", entities.StatusInExecution); err != nil {
 		t.Fatalf("esperava sucesso, obteve: %v", err)
 	}
@@ -48,7 +48,7 @@ func TestUpdateStatusByCode_Rejeicao_Sucesso(t *testing.T) {
 	soRepo.EXPECT().FindByCode(gomock.Any(), 100).Return(so, nil)
 	soRepo.EXPECT().UpdateStatus(gomock.Any(), "order-1", entities.StatusReceived).Return(nil)
 
-	uc := NewUpdateServiceOrderStatusByCode(soRepo, custRepo)
+	uc := NewUpdateServiceOrderStatusByCode(soRepo, custRepo, nil)
 	if err := uc.Execute(context.Background(), 100, "52998224725", entities.StatusReceived); err != nil {
 		t.Fatalf("esperava sucesso, obteve: %v", err)
 	}
@@ -63,7 +63,7 @@ func TestUpdateStatusByCode_ClienteNaoEncontrado(t *testing.T) {
 
 	custRepo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(nil, domainerrors.ErrNotFound)
 
-	uc := NewUpdateServiceOrderStatusByCode(soRepo, custRepo)
+	uc := NewUpdateServiceOrderStatusByCode(soRepo, custRepo, nil)
 	err := uc.Execute(context.Background(), 100, "52998224725", entities.StatusInExecution)
 	if !errors.Is(err, domainerrors.ErrNotFound) {
 		t.Fatalf("erro = %v, esperava ErrNotFound", err)
@@ -81,7 +81,7 @@ func TestUpdateStatusByCode_OSNaoEncontrada(t *testing.T) {
 	custRepo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(requester, nil)
 	soRepo.EXPECT().FindByCode(gomock.Any(), 999).Return(nil, domainerrors.ErrNotFound)
 
-	uc := NewUpdateServiceOrderStatusByCode(soRepo, custRepo)
+	uc := NewUpdateServiceOrderStatusByCode(soRepo, custRepo, nil)
 	err := uc.Execute(context.Background(), 999, "52998224725", entities.StatusInExecution)
 	if !errors.Is(err, domainerrors.ErrNotFound) {
 		t.Fatalf("erro = %v, esperava ErrNotFound", err)
@@ -102,7 +102,7 @@ func TestUpdateStatusByCode_OSDeOutroCliente(t *testing.T) {
 	custRepo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(requester, nil)
 	soRepo.EXPECT().FindByCode(gomock.Any(), 100).Return(so, nil)
 
-	uc := NewUpdateServiceOrderStatusByCode(soRepo, custRepo)
+	uc := NewUpdateServiceOrderStatusByCode(soRepo, custRepo, nil)
 	err := uc.Execute(context.Background(), 100, "52998224725", entities.StatusInExecution)
 	if !errors.Is(err, domainerrors.ErrNotFound) {
 		t.Fatalf("erro = %v, esperava ErrNotFound (ownership)", err)
@@ -123,7 +123,7 @@ func TestUpdateStatusByCode_TransicaoInvalida(t *testing.T) {
 	custRepo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(requester, nil)
 	soRepo.EXPECT().FindByCode(gomock.Any(), 100).Return(so, nil)
 
-	uc := NewUpdateServiceOrderStatusByCode(soRepo, custRepo)
+	uc := NewUpdateServiceOrderStatusByCode(soRepo, custRepo, nil)
 	err := uc.Execute(context.Background(), 100, "52998224725", entities.StatusInExecution)
 	if !errors.Is(err, domainerrors.ErrInvalidStatus) {
 		t.Fatalf("erro = %v, esperava ErrInvalidStatus", err)
@@ -146,7 +146,7 @@ func TestUpdateStatusByCode_StatusNaoPermitidoParaCliente(t *testing.T) {
 	soRepo.EXPECT().FindByCode(gomock.Any(), 100).Return(so, nil)
 	// Nao deve chamar UpdateStatus no repositorio.
 
-	uc := NewUpdateServiceOrderStatusByCode(soRepo, custRepo)
+	uc := NewUpdateServiceOrderStatusByCode(soRepo, custRepo, nil)
 	err := uc.Execute(context.Background(), 100, "52998224725", entities.StatusFinished)
 	if !errors.Is(err, domainerrors.ErrStatusNotAllowedForRequester) {
 		t.Fatalf("erro = %v, esperava ErrStatusNotAllowedForRequester", err)
@@ -163,7 +163,7 @@ func TestUpdateStatusByCode_ErroInfraCliente(t *testing.T) {
 
 	custRepo.EXPECT().FindByDocument(gomock.Any(), "52998224725").Return(nil, infraErr)
 
-	uc := NewUpdateServiceOrderStatusByCode(soRepo, custRepo)
+	uc := NewUpdateServiceOrderStatusByCode(soRepo, custRepo, nil)
 	err := uc.Execute(context.Background(), 100, "52998224725", entities.StatusInExecution)
 	if !errors.Is(err, infraErr) {
 		t.Fatalf("erro = %v, esperava erro de infra propagado", err)
@@ -202,7 +202,7 @@ func TestUpdateStatusByCode_Aprovacao_DelegaParaApplyApprovalTransition(t *testi
 		}),
 	)
 
-	uc := NewUpdateServiceOrderStatusByCode(soRepo, custRepo)
+	uc := NewUpdateServiceOrderStatusByCode(soRepo, custRepo, nil)
 	if err := uc.Execute(context.Background(), 100, "52998224725", entities.StatusInExecution); err != nil {
 		t.Fatalf("esperava sucesso, obteve: %v", err)
 	}
@@ -228,7 +228,7 @@ func TestUpdateStatusByCode_Rejeicao_NaoInvocaApplyApprovalTransition(t *testing
 	soRepo.EXPECT().UpdateStatus(gomock.Any(), "order-1", entities.StatusReceived).Return(nil)
 	// ApplyApprovalTransition NAO deve ser chamado.
 
-	uc := NewUpdateServiceOrderStatusByCode(soRepo, custRepo)
+	uc := NewUpdateServiceOrderStatusByCode(soRepo, custRepo, nil)
 	if err := uc.Execute(context.Background(), 100, "52998224725", entities.StatusReceived); err != nil {
 		t.Fatalf("esperava sucesso, obteve: %v", err)
 	}
@@ -255,7 +255,7 @@ func TestUpdateStatusByCode_Aprovacao_PropagaErroDoRepo(t *testing.T) {
 		soRepo.EXPECT().ApplyApprovalTransition(gomock.Any(), gomock.Any()).Return(domainerrors.ErrInsufficientStock),
 	)
 
-	uc := NewUpdateServiceOrderStatusByCode(soRepo, custRepo)
+	uc := NewUpdateServiceOrderStatusByCode(soRepo, custRepo, nil)
 	err := uc.Execute(context.Background(), 100, "52998224725", entities.StatusInExecution)
 	if !errors.Is(err, domainerrors.ErrInsufficientStock) {
 		t.Fatalf("erro = %v, esperava ErrInsufficientStock", err)

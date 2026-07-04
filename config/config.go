@@ -23,6 +23,11 @@ type Config struct {
 	BcryptCost          int
 	MaxFailedLogins     int
 	LoginLockMin        int
+	SMTPHost            string
+	SMTPPort            string
+	SMTPUsername        string
+	SMTPPassword        string
+	SMTPFrom            string
 }
 
 func Load() *Config {
@@ -39,5 +44,10 @@ func Load() *Config {
 		BcryptCost:          env.GetIntOrDefault("BCRYPT_COST", 12),
 		MaxFailedLogins:     env.GetIntOrDefault("MAX_FAILED_LOGINS", 5),
 		LoginLockMin:        env.GetIntOrDefault("LOGIN_LOCK_MIN", 15),
+		SMTPHost:            env.GetOrDefault("SMTP_HOST", ""),
+		SMTPPort:            env.GetOrDefault("SMTP_PORT", "587"),
+		SMTPUsername:        env.GetOrDefault("SMTP_USERNAME", ""),
+		SMTPPassword:        env.GetOrDefault("SMTP_PASSWORD", ""),
+		SMTPFrom:            env.GetOrDefault("SMTP_FROM", "noreply@workshop.com"),
 	}
 }

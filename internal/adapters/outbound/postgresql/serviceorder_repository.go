@@ -47,7 +47,20 @@ func (r *serviceOrderRepository) FindByCode(ctx context.Context, code int) (*ent
 
 func (r *serviceOrderRepository) FindAll(ctx context.Context) ([]*entities.ServiceOrder, error) {
 	var docs []pgmodel.ServiceOrder
-	if err := r.db.WithContext(ctx).Find(&docs).Error; err != nil {
+	err := r.db.WithContext(ctx).
+		Where("status NOT IN ?", []string{
+			string(entities.StatusFinished),
+			string(entities.StatusDelivered),
+		}).
+		Order("CASE status" +
+			" WHEN 'in_execution' THEN 1" +
+			" WHEN 'awaiting_approval' THEN 2" +
+			" WHEN 'in_diagnosis' THEN 3" +
+			" WHEN 'received' THEN 4" +
+			" END").
+		Order("created_at ASC").
+		Find(&docs).Error
+	if err != nil {
 		return nil, mapError(err)
 	}
 	orders := make([]*entities.ServiceOrder, 0, len(docs))

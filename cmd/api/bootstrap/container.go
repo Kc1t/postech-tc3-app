@@ -9,6 +9,7 @@ import (
 	"github.com/fiap/postech-tc1/config"
 	"github.com/fiap/postech-tc1/internal/adapters/outbound/jwt"
 	"github.com/fiap/postech-tc1/internal/adapters/outbound/postgresql"
+	smtpadapter "github.com/fiap/postech-tc1/internal/adapters/outbound/smtp"
 	pgmodel "github.com/fiap/postech-tc1/internal/adapters/outbound/postgresql/model"
 	"github.com/fiap/postech-tc1/internal/domain/entities"
 	"github.com/fiap/postech-tc1/internal/ports"
@@ -34,6 +35,9 @@ import (
 type Container struct {
 	Config *config.Config
 	db     *gorm.DB
+
+	// Notifiers
+	EmailNotifier ports.EmailNotifier `container:"notifier"`
 
 	// Repositories
 	UserRepo         ports.UserRepository         `container:"repository"`
@@ -119,6 +123,7 @@ func GetContainer() *Container {
 func (c *Container) initialize() {
 	c.Config = config.Load()
 	c.setupDatabase()
+	c.setupNotifiers()
 	c.setupRepositories()
 	c.setupUseCases()
 	c.setupHandlers()
@@ -145,6 +150,16 @@ func (c *Container) setupDatabase() {
 
 	c.db = db
 	log.Printf("bootstrap: connected to postgresql and migrations applied")
+}
+
+func (c *Container) setupNotifiers() {
+	c.EmailNotifier = smtpadapter.New(
+		c.Config.SMTPHost,
+		c.Config.SMTPPort,
+		c.Config.SMTPUsername,
+		c.Config.SMTPPassword,
+		c.Config.SMTPFrom,
+	)
 }
 
 func (c *Container) setupRepositories() {
@@ -202,10 +217,11 @@ func (c *Container) setupUseCases() {
 	c.ListServiceOrdersByDocument = serviceorderuc.NewListServiceOrdersByDocument(c.ServiceOrderRepo, c.RequesterRepo)
 	c.UpdateServiceOrderStatus = serviceorderuc.NewUpdateServiceOrderStatus(
 		c.ServiceOrderRepo, c.ServiceRepo, c.PartRepo,
+		c.RequesterRepo, c.EmailNotifier,
 	)
 	c.UpdateServiceOrder = serviceorderuc.NewUpdateServiceOrder(c.ServiceOrderRepo)
 	c.DeleteServiceOrder = serviceorderuc.NewDeleteServiceOrder(c.ServiceOrderRepo)
-	c.UpdateServiceOrderStatusByCode = serviceorderuc.NewUpdateServiceOrderStatusByCode(c.ServiceOrderRepo, c.RequesterRepo)
+	c.UpdateServiceOrderStatusByCode = serviceorderuc.NewUpdateServiceOrderStatusByCode(c.ServiceOrderRepo, c.RequesterRepo, c.EmailNotifier)
 	c.GetAverageExecutionTime = serviceorderuc.NewGetAverageExecutionTime(c.ServiceOrderRepo)
 
 	// Service
