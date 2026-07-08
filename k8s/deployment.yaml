@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: workshop-api
+  namespace: postech
+  labels:
+    app: workshop-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: workshop-api
+  template:
+    metadata:
+      labels:
+        app: workshop-api
+    spec:
+      containers:
+        - name: workshop-api
+          image: IMAGE_PLACEHOLDER
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: workshop-api-config
+            - secretRef:
+                name: workshop-api-secret
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20

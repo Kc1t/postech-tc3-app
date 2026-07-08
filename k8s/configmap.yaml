@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: workshop-api-config
+  namespace: postech
+data:
+  APP_PORT: "8080"
+  APP_ENV: "production"
+  SMTP_HOST: "smtp-relay.brevo.com"
+  SMTP_PORT: "587"
+  SMTP_FROM: "noreply@reservoirdevs.online"
+  ACCESS_TOKEN_EXP_MIN: "15"
+  REFRESH_TOKEN_EXP_DAYS: "7"
+  BCRYPT_COST: "12"
+  MAX_FAILED_LOGINS: "5"
+  LOGIN_LOCK_MIN: "15"
+  ADMIN_EMAIL: "admin@workshop.com"
