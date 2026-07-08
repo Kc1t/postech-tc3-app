@@ -155,7 +155,11 @@ jobs:
       - name: Substituir imagem no manifesto e aplicar
         run: |
           sed -i "s|IMAGE_PLACEHOLDER|$IMAGE|g" k8s/deployment.yaml
-          kubectl apply -f k8s/
+          kubectl apply -f k8s/namespace.yaml
+          kubectl apply -f k8s/configmap.yaml
+          kubectl apply -f k8s/deployment.yaml
+          kubectl apply -f k8s/service.yaml
+          kubectl apply -f k8s/hpa.yaml
 
       - name: Aguardar rollout
         run: kubectl rollout status deployment/workshop-api -n postech --timeout=120s
