@@ -5,7 +5,8 @@ module "eks" {
   cluster_name    = var.cluster_name
   cluster_version = "1.30"
 
-  cluster_endpoint_public_access = true
+  cluster_endpoint_public_access           = true
+  enable_cluster_creator_admin_permissions = false
 
   vpc_id     = module.vpc.vpc_id
   subnet_ids = module.vpc.private_subnets
