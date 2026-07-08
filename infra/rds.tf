@@ -1,6 +1,13 @@
+data "aws_subnets" "eks_vpc" {
+  filter {
+    name   = "vpc-id"
+    values = [var.vpc_id]
+  }
+}
+
 resource "aws_db_subnet_group" "workshop" {
   name       = "${var.cluster_name}-db-subnet"
-  subnet_ids = module.vpc.private_subnets
+  subnet_ids = data.aws_subnets.eks_vpc.ids
 
   tags = {
     Project = var.cluster_name
@@ -9,14 +16,14 @@ resource "aws_db_subnet_group" "workshop" {
 
 resource "aws_security_group" "rds" {
   name   = "${var.cluster_name}-rds-sg"
-  vpc_id = module.vpc.vpc_id
+  vpc_id = var.vpc_id
 
   ingress {
     description = "PostgreSQL from inside VPC"
     from_port   = 5432
     to_port     = 5432
     protocol    = "tcp"
-    cidr_blocks = [module.vpc.vpc_cidr_block]
+    cidr_blocks = ["10.0.0.0/8", "172.31.0.0/16"]
   }
 
   egress {

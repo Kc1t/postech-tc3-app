@@ -51,3 +51,9 @@ variable "db_password" {
   type        = string
   sensitive   = true
 }
+
+variable "vpc_id" {
+  description = "ID da VPC onde o EKS está rodando"
+  type        = string
+  default     = "vpc-039d2bdb052aea5a8"
+}
