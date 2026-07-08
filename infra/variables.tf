@@ -7,7 +7,7 @@ variable "aws_region" {
 variable "cluster_name" {
   description = "Nome do cluster EKS"
   type        = string
-  default     = "postech-tc1"
+  default     = "workshop-api"
 }
 
 variable "node_instance_type" {
