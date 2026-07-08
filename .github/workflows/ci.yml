@@ -162,4 +162,4 @@ jobs:
           kubectl apply -f k8s/hpa.yaml
 
       - name: Aguardar rollout
-        run: kubectl rollout status deployment/workshop-api -n postech --timeout=120s
+        run: kubectl rollout status deployment/workshop-api -n postech --timeout=300s
