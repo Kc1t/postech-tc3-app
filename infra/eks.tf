@@ -7,8 +7,8 @@ module "eks" {
 
   cluster_endpoint_public_access = true
 
-  vpc_id     = module.vpc.vpc_id
-  subnet_ids = module.vpc.private_subnets
+  vpc_id     = var.vpc_id
+  subnet_ids = data.aws_subnets.eks_vpc.ids
 
   eks_managed_node_groups = {
     workers = {
