@@ -138,6 +138,9 @@ jobs:
       - name: Configurar kubectl para o EKS
         run: aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }}
 
+      - name: Criar namespace
+        run: kubectl apply -f k8s/namespace.yaml
+
       - name: Criar/atualizar Secret no Kubernetes
         run: |
           kubectl create secret generic workshop-api-secret \
