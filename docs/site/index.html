@@ -14,7 +14,7 @@
       <span class="brand-icon">🔧</span>
       <div>
         <div class="brand-name">Workshop API</div>
-        <div class="brand-sub">FIAP Pós Tech · TC1</div>
+        <div class="brand-sub">FIAP Pós Tech · TC1 + TC2</div>
       </div>
     </a>
   </div>
@@ -34,6 +34,17 @@
       <a href="#structure">Estrutura do projeto</a>
       <a href="#database">Banco de dados</a>
       <a href="#adrs">Decisões (ADRs)</a>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-title">Fase 2 · Infra &amp; DevOps</div>
+      <a href="#fase2">Objetivos da Fase 2</a>
+      <a href="#cloud-arch">Arquitetura na nuvem</a>
+      <a href="#docker">Containerização</a>
+      <a href="#kubernetes">Kubernetes &amp; HPA</a>
+      <a href="#terraform">Terraform (IaC)</a>
+      <a href="#cicd">CI/CD</a>
+      <a href="#entrega-fase2">Entrega da Fase 2</a>
     </div>
 
     <div class="nav-group">
@@ -71,12 +82,14 @@
 
     <!-- HERO -->
     <header class="page-header">
-      <div class="badge">📦 Tech Challenge — Fase 1</div>
+      <div class="badge">🚀 Tech Challenge — Fases 1 &amp; 2</div>
       <h1>Workshop API</h1>
       <p class="lead">
         Documentação técnica do Sistema Integrado de Atendimento e Execução
         de Serviços para oficina mecânica. Back-end em Go com arquitetura
-        hexagonal, PostgreSQL e DDD.
+        hexagonal, PostgreSQL e DDD (Fase 1) — agora containerizado e implantado
+        em Kubernetes na AWS, provisionado com Terraform e entregue por uma
+        pipeline de CI/CD (Fase 2).
       </p>
       <div class="quick-links">
         <a href="https://github.com/Kc1t/postech-tc1" target="_blank" class="btn btn-primary">
@@ -118,6 +131,18 @@
             <li><a href="#structure">Estrutura do projeto</a></li>
             <li><a href="#database">Banco de dados <span class="toc-badge">FIAP</span></a></li>
             <li><a href="#adrs">Decisões (ADRs)</a></li>
+          </ol>
+        </div>
+
+        <div class="toc-group">
+          <div class="toc-group-title">Fase 2 · Infra &amp; DevOps</div>
+          <ol class="toc-list">
+            <li><a href="#fase2">Objetivos da Fase 2 <span class="toc-badge">FIAP</span></a></li>
+            <li><a href="#cloud-arch">Arquitetura na nuvem (AWS)</a></li>
+            <li><a href="#docker">Containerização <span class="toc-badge">FIAP</span></a></li>
+            <li><a href="#kubernetes">Kubernetes &amp; HPA <span class="toc-badge">FIAP</span></a></li>
+            <li><a href="#terraform">Terraform (IaC) <span class="toc-badge">FIAP</span></a></li>
+            <li><a href="#cicd">CI/CD <span class="toc-badge">FIAP</span></a></li>
           </ol>
         </div>
 
@@ -244,7 +269,7 @@
       <table class="info-table">
         <thead><tr><th>Camada</th><th>Tecnologia</th><th>Versão</th></tr></thead>
         <tbody>
-          <tr><td>Linguagem</td><td>Go</td><td>1.23+</td></tr>
+          <tr><td>Linguagem</td><td>Go</td><td>1.25</td></tr>
           <tr><td>Framework HTTP</td><td>Gin</td><td>—</td></tr>
           <tr><td>ORM</td><td>GORM</td><td>—</td></tr>
           <tr><td>Banco de dados</td><td>PostgreSQL</td><td>16</td></tr>
@@ -252,6 +277,11 @@
           <tr><td>Hash de senhas</td><td>bcrypt</td><td>cost 12</td></tr>
           <tr><td>Documentação API</td><td>Swagger (<code>swaggo/swag</code>)</td><td>—</td></tr>
           <tr><td>Containerização</td><td>Docker + docker-compose</td><td>—</td></tr>
+          <tr><td>Orquestração</td><td>Kubernetes (AWS EKS)</td><td>1.36</td></tr>
+          <tr><td>IaC</td><td>Terraform</td><td>&gt;= 1.5</td></tr>
+          <tr><td>CI/CD</td><td>GitHub Actions</td><td>—</td></tr>
+          <tr><td>Registry / Banco gerenciado</td><td>AWS ECR · AWS RDS</td><td>—</td></tr>
+          <tr><td>Notificação</td><td>SMTP (Brevo)</td><td>—</td></tr>
         </tbody>
       </table>
     </section>
@@ -414,6 +444,139 @@ docs/
       </a>
     </section>
 
+    <!-- ============================ FASE 2 ============================ -->
+
+    <!-- OBJETIVOS FASE 2 -->
+    <section id="fase2">
+      <span class="kicker">Fase 2 · Infra &amp; DevOps</span>
+      <h2>Objetivos da Fase 2</h2>
+      <p>A Fase 2 evolui a aplicação da Fase 1 para garantir <strong>qualidade, resiliência e escalabilidade</strong>, incorporando containerização, orquestração com Kubernetes, Infraestrutura como Código e uma pipeline de CI/CD completa. O núcleo de domínio continua o mesmo monolito hexagonal — o que muda é <em>como ele é empacotado, provisionado e implantado</em>.</p>
+
+      <div class="card-grid">
+        <div class="card"><div class="card-icon">🛡️</div><h3>Reduzir riscos operacionais</h3><p>Infraestrutura escalável em Kubernetes (AWS EKS) com autoscaling e health checks.</p></div>
+        <div class="card"><div class="card-icon">⚙️</div><h3>Automatizar provisionamento</h3><p>Terraform (IaC) para o cluster e o banco; GitHub Actions para build e deploy.</p></div>
+        <div class="card"><div class="card-icon">🧹</div><h3>Evolução sustentável</h3><p>Clean Code + Arquitetura Hexagonal + testes automatizados com gate de 80% de cobertura.</p></div>
+        <div class="card"><div class="card-icon">📈</div><h3>Suportar picos de demanda</h3><p>Horizontal Pod Autoscaler escala de 2 a 10 pods conforme CPU e memória.</p></div>
+      </div>
+    </section>
+
+    <!-- ARQUITETURA NA NUVEM -->
+    <section id="cloud-arch">
+      <span class="kicker">Fase 2 · Infra &amp; DevOps</span>
+      <h2>Arquitetura na nuvem (AWS)</h2>
+      <p>O ambiente de produção roda na AWS, provisionado por Terraform e orquestrado por Kubernetes (EKS). O tráfego externo entra por um Network Load Balancer; o HPA escala os pods conforme a carga; a aplicação persiste no RDS PostgreSQL e consome as imagens publicadas no ECR.</p>
+<pre><code>Internet
+   │
+   ▼
+NLB (Service LoadBalancer)
+   │
+   ▼
+┌──── EKS Cluster · namespace: postech ─────────────┐
+│  Deployment: workshop-api (2..10 réplicas)        │
+│    ├─ ConfigMap  (config não sensível)            │
+│    ├─ Secret     (JWT, DSN, SMTP, admin)          │
+│    └─ HPA        (CPU 70% / Mem 80% → 2..10 pods) │
+│           readiness/liveness em /health           │
+└──────────────────┬────────────────────────────────┘
+                   ▼
+        RDS PostgreSQL 16 (db.t3.micro)
+        ECR — imagens Docker (workshop-api)</code></pre>
+      <div class="callout"><strong>Endpoint público:</strong> exposto via NLB; a URL base é obtida com <code>kubectl get svc workshop-api -n postech</code>. Em ambiente de laboratório (AWS Academy), o DNS do LoadBalancer é recriado a cada provisionamento.</div>
+    </section>
+
+    <!-- DOCKER -->
+    <section id="docker">
+      <span class="kicker">Fase 2 · Infra &amp; DevOps</span>
+      <h2>Containerização</h2>
+      <p>A aplicação é empacotada com um <strong>Dockerfile multi-stage</strong> (build em <code>golang:1.25-alpine</code>, runtime enxuto em <code>alpine:3.20</code>) e um <strong>docker-compose</strong> para desenvolvimento local com todos os serviços de apoio.</p>
+      <table class="info-table">
+        <thead><tr><th>Serviço (compose)</th><th>Porta</th><th>Papel</th></tr></thead>
+        <tbody>
+          <tr><td><code>api</code></td><td>8080</td><td>Workshop API (Go/Gin)</td></tr>
+          <tr><td><code>postgres</code></td><td>5432</td><td>PostgreSQL 16 com healthcheck</td></tr>
+          <tr><td><code>pgadmin</code></td><td>8082</td><td>Administração visual do banco</td></tr>
+          <tr><td><code>docs</code></td><td>8083</td><td>Este site de documentação (nginx)</td></tr>
+        </tbody>
+      </table>
+<pre><code>cp .env.example .env
+docker compose up --build</code></pre>
+    </section>
+
+    <!-- KUBERNETES -->
+    <section id="kubernetes">
+      <span class="kicker">Fase 2 · Infra &amp; DevOps</span>
+      <h2>Kubernetes &amp; HPA</h2>
+      <p>Os manifestos em <code>k8s/</code> implantam a aplicação no namespace <code>postech</code>. Variáveis não sensíveis vão no ConfigMap; segredos (JWT, DSN, SMTP, senha do admin) no Secret.</p>
+      <table class="info-table">
+        <thead><tr><th>Manifesto</th><th>Recurso</th><th>Descrição</th></tr></thead>
+        <tbody>
+          <tr><td><code>namespace.yaml</code></td><td>Namespace</td><td>Isola os recursos no namespace <code>postech</code>.</td></tr>
+          <tr><td><code>configmap.yaml</code></td><td>ConfigMap</td><td>Porta, ambiente, host/porta/remetente SMTP, expiração de tokens.</td></tr>
+          <tr><td><code>secret.yaml</code></td><td>Secret</td><td><code>JWT_SECRET</code>, <code>POSTGRES_DSN</code>, <code>SMTP_*</code>, <code>ADMIN_PASSWORD</code>.</td></tr>
+          <tr><td><code>deployment.yaml</code></td><td>Deployment</td><td>2 réplicas, requests/limits de CPU e memória, readiness/liveness em <code>/health</code>.</td></tr>
+          <tr><td><code>service.yaml</code></td><td>Service</td><td>LoadBalancer (NLB) expondo 80 → 8080.</td></tr>
+          <tr><td><code>hpa.yaml</code></td><td>HorizontalPodAutoscaler</td><td>2 a 10 réplicas · CPU 70% / memória 80%.</td></tr>
+        </tbody>
+      </table>
+      <div class="callout"><strong>Escalabilidade dinâmica:</strong> o HPA observa o consumo dos pods e adiciona réplicas nos horários de pico (ex.: muitas ordens de serviço simultâneas), voltando ao mínimo quando a carga cai. Requer o <code>metrics-server</code> instalado no cluster.</div>
+    </section>
+
+    <!-- TERRAFORM -->
+    <section id="terraform">
+      <span class="kicker">Fase 2 · Infra &amp; DevOps</span>
+      <h2>Terraform (Infraestrutura como Código)</h2>
+      <p>Os scripts em <code>infra/</code> provisionam o cluster e o banco na AWS de forma idempotente e versionada.</p>
+      <table class="info-table">
+        <thead><tr><th>Arquivo</th><th>Recurso</th><th>Descrição</th></tr></thead>
+        <tbody>
+          <tr><td><code>eks.tf</code></td><td>EKS</td><td>Cluster <code>workshop-api</code> (módulo <code>terraform-aws-modules/eks</code>) com managed node group.</td></tr>
+          <tr><td><code>rds.tf</code></td><td>RDS + SG</td><td>PostgreSQL 16 (<code>db.t3.micro</code>), subnet group e security group liberando 5432 na VPC.</td></tr>
+          <tr><td><code>variables.tf</code></td><td>Variáveis</td><td>Região, nós, credenciais do banco e VPC.</td></tr>
+          <tr><td><code>outputs.tf</code></td><td>Outputs</td><td>Endpoint do cluster, comando de kubeconfig e <code>POSTGRES_DSN</code>.</td></tr>
+        </tbody>
+      </table>
+<pre><code>cd infra
+terraform init
+terraform apply -var="db_password=&lt;senha-forte&gt;"
+aws eks update-kubeconfig --name workshop-api --region us-east-1</code></pre>
+    </section>
+
+    <!-- CI/CD -->
+    <section id="cicd">
+      <span class="kicker">Fase 2 · Infra &amp; DevOps</span>
+      <h2>CI/CD (GitHub Actions)</h2>
+      <p>A pipeline em <code>.github/workflows/ci.yml</code> valida cada Pull Request e faz o deploy automático em push na <code>main</code>.</p>
+      <div class="arch-stack">
+        <div class="arch-layer arch-inbound"><div class="arch-tag">lint</div><div><h4>golangci-lint</h4><p>Análise estática do código Go.</p></div></div>
+        <div class="arch-arrow">↓</div>
+        <div class="arch-layer arch-ports"><div class="arch-tag">deps</div><div><h4>go mod tidy + govulncheck</h4><p>Dependências consistentes e sem vulnerabilidades conhecidas.</p></div></div>
+        <div class="arch-arrow">↓</div>
+        <div class="arch-layer arch-app"><div class="arch-tag">tests</div><div><h4>Testes &amp; cobertura</h4><p>Sobe um Postgres, roda a suíte e falha se a cobertura ficar abaixo de 80%.</p></div></div>
+        <div class="arch-arrow">↓</div>
+        <div class="arch-layer arch-outbound"><div class="arch-tag">deploy</div><div><h4>Build → ECR → EKS</h4><p>Build/push da imagem (tag = git SHA), <code>kubectl apply</code> dos manifestos e <code>rollout status</code>. Só em push na <code>main</code>.</p></div></div>
+      </div>
+    </section>
+
+    <!-- ENTREGA FASE 2 -->
+    <section id="entrega-fase2">
+      <span class="kicker">Fase 2 · Infra &amp; DevOps</span>
+      <h2>Entrega da Fase 2</h2>
+      <table class="info-table">
+        <thead><tr><th>Artefato</th><th>Onde encontrar</th></tr></thead>
+        <tbody>
+          <tr><td>Código-fonte refatorado (Hexagonal + Clean Code)</td><td><a href="https://github.com/Kc1t/postech-tc1" target="_blank">github.com/Kc1t/postech-tc1</a></td></tr>
+          <tr><td>Dockerfile + docker-compose</td><td>Raiz do repositório</td></tr>
+          <tr><td>Manifestos Kubernetes (Deployment, Service, ConfigMap, Secret, HPA)</td><td><a href="https://github.com/Kc1t/postech-tc1/tree/main/k8s" target="_blank">/k8s</a></td></tr>
+          <tr><td>Scripts Terraform (EKS + RDS)</td><td><a href="https://github.com/Kc1t/postech-tc1/tree/main/infra" target="_blank">/infra</a></td></tr>
+          <tr><td>Pipeline CI/CD</td><td><a href="https://github.com/Kc1t/postech-tc1/blob/main/.github/workflows/ci.yml" target="_blank">.github/workflows/ci.yml</a></td></tr>
+          <tr><td>Collection das APIs (Postman)</td><td><a href="https://github.com/Kc1t/postech-tc1/blob/main/postman_collection.json" target="_blank">postman_collection.json</a></td></tr>
+          <tr><td>Documento de entrega (Fase 2)</td><td><a href="https://github.com/Kc1t/postech-tc1/blob/main/docs/DOCUMENTO_ENTREGA_FASE2.md" target="_blank">docs/DOCUMENTO_ENTREGA_FASE2.md</a></td></tr>
+          <tr><td>Vídeo demonstrativo (Fase 2 · até 15 min)</td><td><em>a publicar — adicionar link do YouTube/Vimeo</em></td></tr>
+        </tbody>
+      </table>
+      <div class="callout"><strong>O vídeo da Fase 2</strong> deve demonstrar: deploy da aplicação, execução do CI/CD, consumo das APIs e escalabilidade automática (simulação de carga com o HPA subindo réplicas).</div>
+    </section>
+
     <!-- BOUNDED CONTEXTS -->
     <section id="bounded-contexts">
       <span class="kicker">Domínio</span>
@@ -431,9 +594,20 @@ docs/
     <section id="service-order">
       <span class="kicker">Domínio</span>
       <h2>Ordem de Serviço — Máquina de Estados</h2>
-      <p>Os estados da OS e suas transições são controlados pela própria entidade <code>ServiceOrder</code>, nunca pelo handler HTTP.</p>
-      <pre><code>Recebida → Em diagnóstico → Aguardando aprovação → Em execução → Finalizada → Entregue</code></pre>
-      <p>Transições inválidas retornam <code>ErrInvalidStatusTransition</code> e o handler traduz para <code>422 Unprocessable Entity</code>.</p>
+      <p>Os estados da OS e suas transições são controlados pela própria entidade <code>ServiceOrder</code>, nunca pelo handler HTTP. Cada status do enunciado mapeia um valor interno (enum):</p>
+      <table class="info-table">
+        <thead><tr><th>Status (enunciado)</th><th>Enum interno</th><th>Transições permitidas</th></tr></thead>
+        <tbody>
+          <tr><td>Recebida</td><td><code>received</code></td><td>→ Diagnóstico</td></tr>
+          <tr><td>Diagnóstico</td><td><code>in_diagnosis</code></td><td>→ Aguardando Aprovação</td></tr>
+          <tr><td>Aguardando Aprovação</td><td><code>awaiting_approval</code></td><td>→ Execução (aprovar) · → Recebida (recusar)</td></tr>
+          <tr><td>Execução</td><td><code>in_execution</code></td><td>→ Finalizada</td></tr>
+          <tr><td>Finalizada</td><td><code>finished</code></td><td>→ Entregue</td></tr>
+          <tr><td>Entregue</td><td><code>delivered</code></td><td>—</td></tr>
+        </tbody>
+      </table>
+      <p>Transições inválidas retornam um erro de domínio (<code>ErrInvalidStatus</code>), traduzido pelo handler para o status HTTP adequado.</p>
+      <div class="callout"><strong>Novidades da Fase 2:</strong> a <strong>aprovação/recusa do orçamento</strong> é feita pelo próprio cliente em um endpoint público (informando código da OS + documento); cada mudança de status relevante dispara uma <strong>notificação por e-mail</strong> ao solicitante (adapter SMTP); e a <strong>listagem</strong> ordena por Execução → Aguardando Aprovação → Diagnóstico → Recebida (mais antigas primeiro), excluindo logicamente as OS finalizadas e entregues.</div>
     </section>
 
     <!-- LINGUAGEM UBÍQUA -->
@@ -582,7 +756,7 @@ docs/
     <section id="api-overview">
       <span class="kicker">API</span>
       <h2>Visão geral da API</h2>
-      <p>API REST sob o prefixo <code>/api/v1</code>. As rotas <code>/auth/register</code>, <code>/auth/login</code>, <code>/auth/refresh</code> e endpoints do <em>portal cliente</em> (consulta de OS por código) são <strong>públicas</strong>. Todas as demais exigem <code>Authorization: Bearer &lt;token&gt;</code>; rotas administrativas exigem <code>role=admin</code> nas claims do JWT.</p>
+      <p>API REST sob o prefixo <code>/api/v1</code>. As rotas <code>/auth/register</code>, <code>/auth/login</code>, <code>/auth/refresh</code> e endpoints do <em>portal cliente</em> (consulta de status e aprovação/recusa do orçamento por código + documento) são <strong>públicas</strong>. Todas as demais exigem <code>Authorization: Bearer &lt;token&gt;</code>; rotas administrativas exigem <code>role=admin</code> nas claims do JWT.</p>
 
       <div class="card-grid">
         <div class="card"><h3>Auth</h3><p><code>POST /auth/{register,login,refresh,logout}</code></p></div>
@@ -590,7 +764,7 @@ docs/
         <div class="card"><h3>Vehicles</h3><p>CRUD de veículos.</p></div>
         <div class="card"><h3>Services</h3><p>CRUD do catálogo de serviços.</p></div>
         <div class="card"><h3>Parts</h3><p>CRUD + ajuste de estoque (<code>PATCH /parts/:id/stock</code>).</p></div>
-        <div class="card"><h3>Service Orders</h3><p>CRUD, mudança de status, métrica de tempo médio e portal público.</p></div>
+        <div class="card"><h3>Service Orders</h3><p>Abertura de OS, consulta e mudança de status, aprovação pública do orçamento, listagem ordenada, métrica de tempo médio e notificação por e-mail.</p></div>
       </div>
     </section>
 
@@ -733,9 +907,25 @@ go tool cover -func=coverage.out</code></pre>
           <div class="link-card-icon">🛡️</div>
           <div><h4>Relatório de vulnerabilidades</h4><p>Análise consolidada dos scans (gosec, govulncheck, trivy).</p></div>
         </a>
-        <a class="link-card" target="_blank" href="https://github.com/Kc1t/postech-tc1/blob/main/DOCUMENTO_ENTREGA.md">
+        <a class="link-card" target="_blank" href="https://github.com/Kc1t/postech-tc1/blob/main/docs/DOCUMENTO_ENTREGA.md">
           <div class="link-card-icon">📝</div>
-          <div><h4>Documento de entrega</h4><p>Capa oficial: grupo, participantes, links e resumo de segurança.</p></div>
+          <div><h4>Documento de entrega (Fase 1)</h4><p>Capa oficial: grupo, participantes, links e resumo de segurança.</p></div>
+        </a>
+        <a class="link-card" target="_blank" href="https://github.com/Kc1t/postech-tc1/tree/main/k8s">
+          <div class="link-card-icon">☸️</div>
+          <div><h4>Manifestos Kubernetes</h4><p>Deployment, Service, ConfigMap, Secret e HPA (<code>/k8s</code>).</p></div>
+        </a>
+        <a class="link-card" target="_blank" href="https://github.com/Kc1t/postech-tc1/tree/main/infra">
+          <div class="link-card-icon">🌍</div>
+          <div><h4>Terraform (IaC)</h4><p>Provisionamento do EKS e do RDS (<code>/infra</code>).</p></div>
+        </a>
+        <a class="link-card" target="_blank" href="https://github.com/Kc1t/postech-tc1/blob/main/.github/workflows/ci.yml">
+          <div class="link-card-icon">🔄</div>
+          <div><h4>Pipeline CI/CD</h4><p>Lint, testes, build da imagem e deploy no EKS.</p></div>
+        </a>
+        <a class="link-card" target="_blank" href="https://github.com/Kc1t/postech-tc1/blob/main/docs/DOCUMENTO_ENTREGA_FASE2.md">
+          <div class="link-card-icon">🚀</div>
+          <div><h4>Documento de entrega (Fase 2)</h4><p>Cobertura dos requisitos de infra, links e roteiro do vídeo.</p></div>
         </a>
         <a class="link-card" target="_blank" href="https://www.youtube.com/watch?v=ZnEZUI8KDfY">
           <div class="link-card-icon">🎬</div>
@@ -745,7 +935,7 @@ go tool cover -func=coverage.out</code></pre>
     </section>
 
     <footer class="page-footer">
-      <p>Workshop API · FIAP Pós Tech (15SOAT) · Tech Challenge — Fase 1</p>
+      <p>Workshop API · FIAP Pós Tech (15SOAT) · Tech Challenge — Fases 1 &amp; 2</p>
     </footer>
 
   </div>
