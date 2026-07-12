@@ -18,8 +18,8 @@ import (
 // @in              header
 // @name            Authorization
 func main() {
+	
 	// Comentario de teste para validar o fluxo de deploy via CI/CD.
-	// Comentario de teste.
 	container := bootstrap.GetContainer()
 
 	if container.Config.AppEnv == config.EnvProduction {
