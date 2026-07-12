@@ -17,8 +17,7 @@ import (
 // @securityDefinitions.apikey BearerAuth
 // @in              header
 // @name            Authorization
-func main() {
-	
+func main() {	
 	// Comentario de teste para validar o fluxo de deploy via CI/CD.
 	container := bootstrap.GetContainer()
 
