@@ -18,7 +18,7 @@
 
 ## 2. Hub central da entrega
 
-> ### 📚 **https://tc1-doc.vercel.app/**
+> ### 📚 **https://tc-doc.vercel.app/**
 > Site único de documentação. A partir dele se navega para **todos** os artefatos da entrega: arquitetura hexagonal, ADRs, modelo de dados, bounded contexts, linguagem ubíqua, Swagger, relatório de segurança, instruções de execução e mais.
 >
 > **Use este link como ponto de partida da avaliação.** Os links abaixo estão duplicados aqui apenas para acesso direto aos itens cobrados pelo enunciado.
@@ -35,7 +35,7 @@
 | 📖 README com instruções de execução | https://github.com/Kc1t/postech-tc1/blob/main/README.md |
 | 🔧 Swagger interativo (após `docker compose up`) | http://localhost:8080/swagger/index.html |
 | 📄 Swagger estático (visualizar sem subir o ambiente) | [`docs/swagger.yaml`](https://github.com/Kc1t/postech-tc1/blob/main/docs/swagger.yaml) |
-| 🏛️ Documentação completa (hub) | https://tc1-doc.vercel.app/ |
+| 🏛️ Documentação completa (hub) | https://tc-doc.vercel.app/ |
 
 ---
 

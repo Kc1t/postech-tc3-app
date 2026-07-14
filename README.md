@@ -413,8 +413,8 @@ Ou via Makefile: `make test`. A cobertura é validada na pipeline com **gate mí
 | 📂 Repositório (privado, acesso `soat-architecture`) | https://github.com/Kc1t/postech-tc1 |
 | 🔧 Collection das APIs (Postman) | [`postman_collection.json`](postman_collection.json) |
 | 📄 Swagger estático | [`docs/swagger.yaml`](docs/swagger.yaml) |
-| 🏛️ Hub de documentação | https://tc1-doc.vercel.app/ |
-| 🎬 Vídeo demonstrativo (Fase 2 · até 15 min) | _adicionar link do YouTube/Vimeo aqui_ |
+| 🏛️ Hub de documentação | https://tc-doc.vercel.app/ |
+| 🎬 Vídeo demonstrativo (Fase 2 · até 15 min) | https://www.youtube.com/watch?v=PiraAX3RVzg |
 
 O vídeo deve demonstrar: deploy da aplicação, execução do CI/CD, consumo das APIs e escalabilidade automática (simulação de carga).
 
@@ -429,15 +429,15 @@ O vídeo deve demonstrar: deploy da aplicação, execução do CI/CD, consumo da
       </a>
     </td>
     <td align="center">
-      <a href="https://github.com/kc1t">
-        <img src="https://github.com/kc1t.png?size=100" width="100px;" alt="Avatar de kc1t"/><br />
-        <sub><b>kc1t</b></sub>
-      </a>
-    </td>
-    <td align="center">
       <a href="https://github.com/PedroHCarlini">
         <img src="https://github.com/PedroHCarlini.png?size=100" width="100px;" alt="Avatar de PedroHCarlini"/><br />
         <sub><b>PedroHCarlini</b></sub>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/kc1t">
+        <img src="https://github.com/kc1t.png?size=100" width="100px;" alt="Avatar de kc1t"/><br />
+        <sub><b>kc1t</b></sub>
       </a>
     </td>
     <td align="center">

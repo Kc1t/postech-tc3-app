@@ -24,8 +24,8 @@
 | 📖 README (solução, arquitetura, deploy e instruções) | https://github.com/Kc1t/postech-tc1/blob/main/README.md |
 | 🔧 Collection das APIs (Postman) | [`postman_collection.json`](https://github.com/Kc1t/postech-tc1/blob/main/postman_collection.json) |
 | 📄 Swagger estático | [`docs/swagger.yaml`](https://github.com/Kc1t/postech-tc1/blob/main/docs/swagger.yaml) |
-| 🏛️ Hub de documentação | https://tc1-doc.vercel.app/ |
-| 🎬 Vídeo demonstrativo (até 15 min) | _adicionar link do YouTube/Vimeo_ |
+| 🏛️ Hub de documentação | https://tc-doc.vercel.app/ |
+| 🎬 Vídeo demonstrativo (até 15 min) | https://www.youtube.com/watch?v=PiraAX3RVzg |
 
 ---
 
@@ -66,7 +66,7 @@
 | Instruções de deploy em Kubernetes | ✅ |
 | Instruções de provisionamento com Terraform | ✅ |
 | Link para a collection das APIs | ✅ (`postman_collection.json` / Swagger) |
-| Link para o vídeo demonstrativo | ⏳ adicionar |
+| Link para o vídeo demonstrativo | ✅ https://www.youtube.com/watch?v=PiraAX3RVzg |
 
 ---
 

@@ -29,22 +29,22 @@
     </div>
 
     <div class="nav-group">
-      <div class="nav-group-title">Arquitetura</div>
-      <a href="#hexagonal">Arquitetura Hexagonal</a>
-      <a href="#structure">Estrutura do projeto</a>
-      <a href="#database">Banco de dados</a>
-      <a href="#adrs">Decisões (ADRs)</a>
-    </div>
-
-    <div class="nav-group">
-      <div class="nav-group-title">Fase 2 · Infra &amp; DevOps</div>
+      <div class="nav-group-title">Fase 2 · Deploy na AWS ★</div>
+      <a href="#entrega-fase2">Entrega &amp; vídeo da Fase 2</a>
       <a href="#fase2">Objetivos da Fase 2</a>
       <a href="#cloud-arch">Arquitetura na nuvem</a>
       <a href="#docker">Containerização</a>
       <a href="#kubernetes">Kubernetes &amp; HPA</a>
       <a href="#terraform">Terraform (IaC)</a>
       <a href="#cicd">CI/CD</a>
-      <a href="#entrega-fase2">Entrega da Fase 2</a>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-title">Arquitetura (base · Fase 1)</div>
+      <a href="#hexagonal">Arquitetura Hexagonal</a>
+      <a href="#structure">Estrutura do projeto</a>
+      <a href="#database">Banco de dados</a>
+      <a href="#adrs">Decisões (ADRs)</a>
     </div>
 
     <div class="nav-group">
@@ -82,16 +82,22 @@
 
     <!-- HERO -->
     <header class="page-header">
-      <div class="badge">🚀 Tech Challenge — Fases 1 &amp; 2</div>
+      <div class="badge">🚀 Tech Challenge — Fase 2 · Deploy na AWS</div>
       <h1>Workshop API</h1>
       <p class="lead">
         Documentação técnica do Sistema Integrado de Atendimento e Execução
-        de Serviços para oficina mecânica. Back-end em Go com arquitetura
-        hexagonal, PostgreSQL e DDD (Fase 1) — agora containerizado e implantado
-        em Kubernetes na AWS, provisionado com Terraform e entregue por uma
-        pipeline de CI/CD (Fase 2).
+        de Serviços para oficina mecânica. Nesta <strong>Fase 2</strong>, o back-end
+        Go (arquitetura hexagonal + DDD) é containerizado e implantado em
+        <strong>Kubernetes na AWS (EKS)</strong>, com banco <strong>RDS PostgreSQL</strong>,
+        infraestrutura provisionada com <strong>Terraform</strong>, entrega por
+        <strong>pipeline de CI/CD</strong> e escalabilidade automática via <strong>HPA</strong>.
+        A base de domínio da Fase 1 permanece documentada abaixo.
       </p>
       <div class="quick-links">
+        <a href="https://www.youtube.com/watch?v=PiraAX3RVzg" target="_blank" class="btn btn-primary">
+          <svg class="btn-logo" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>
+          Vídeo Fase 2
+        </a>
         <a href="https://github.com/Kc1t/postech-tc1" target="_blank" class="btn btn-primary">
           <svg class="btn-logo" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.56v-2c-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.18-3.1-.12-.29-.51-1.46.11-3.04 0 0 .97-.31 3.18 1.18.92-.26 1.91-.39 2.9-.39.99 0 1.98.13 2.9.39 2.21-1.49 3.18-1.18 3.18-1.18.62 1.58.23 2.75.11 3.04.74.81 1.18 1.84 1.18 3.1 0 4.42-2.69 5.4-5.25 5.68.41.36.78 1.05.78 2.13v3.16c0 .31.21.67.8.56C20.21 21.39 23.5 17.08 23.5 12 23.5 5.65 18.35.5 12 .5z"/></svg>
           Repositório
@@ -111,7 +117,7 @@
     <section id="sumario" class="toc">
       <span class="kicker">Sumário</span>
       <h2>Índice da documentação</h2>
-      <p>Itens marcados com <span class="toc-badge">FIAP</span> mapeiam diretamente para um requisito do Tech Challenge — Fase 1.</p>
+      <p>Itens marcados com <span class="toc-badge">FIAP</span> mapeiam diretamente para um requisito do Tech Challenge. O foco desta entrega é a <strong>Fase 2 · Deploy na AWS</strong> — vá direto para <a href="#entrega-fase2">Entrega &amp; vídeo da Fase 2</a>.</p>
 
       <div class="toc-grid">
         <div class="toc-group">
@@ -571,10 +577,26 @@ aws eks update-kubeconfig --name workshop-api --region us-east-1</code></pre>
           <tr><td>Pipeline CI/CD</td><td><a href="https://github.com/Kc1t/postech-tc1/blob/main/.github/workflows/ci.yml" target="_blank">.github/workflows/ci.yml</a></td></tr>
           <tr><td>Collection das APIs (Postman)</td><td><a href="https://github.com/Kc1t/postech-tc1/blob/main/postman_collection.json" target="_blank">postman_collection.json</a></td></tr>
           <tr><td>Documento de entrega (Fase 2)</td><td><a href="https://github.com/Kc1t/postech-tc1/blob/main/docs/DOCUMENTO_ENTREGA_FASE2.md" target="_blank">docs/DOCUMENTO_ENTREGA_FASE2.md</a></td></tr>
-          <tr><td>Vídeo demonstrativo (Fase 2 · até 15 min)</td><td><em>a publicar — adicionar link do YouTube/Vimeo</em></td></tr>
+          <tr><td>Vídeo demonstrativo (Fase 2 · até 15 min)</td><td><a href="https://www.youtube.com/watch?v=PiraAX3RVzg" target="_blank">YouTube · Deploy na AWS · Reservoir Devs</a></td></tr>
         </tbody>
       </table>
-      <div class="callout"><strong>O vídeo da Fase 2</strong> deve demonstrar: deploy da aplicação, execução do CI/CD, consumo das APIs e escalabilidade automática (simulação de carga com o HPA subindo réplicas).</div>
+      <div class="callout"><strong>O vídeo da Fase 2</strong> demonstra: deploy da aplicação (Terraform + manifestos K8s), execução do CI/CD, consumo das APIs em fluxo completo de OS e escalabilidade automática (teste de carga com o HPA subindo réplicas).</div>
+
+      <a class="video-card" href="https://www.youtube.com/watch?v=PiraAX3RVzg" target="_blank" rel="noopener" style="margin-top:1rem;">
+        <img src="https://img.youtube.com/vi/PiraAX3RVzg/maxresdefault.jpg"
+             alt="Capa do vídeo de deploy da Fase 2 — Reservoir Devs"
+             loading="lazy"
+             onerror="this.src='https://img.youtube.com/vi/PiraAX3RVzg/hqdefault.jpg'" />
+        <div class="video-card-overlay">
+          <div class="video-card-play" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          </div>
+          <div class="video-card-meta">
+            <div class="video-card-title">Deploy web na AWS — Infra, K8s, CI/CD e HPA</div>
+            <div class="video-card-sub">Tech Challenge FIAP — Fase 2 · Reservoir Devs</div>
+          </div>
+        </div>
+      </a>
     </section>
 
     <!-- BOUNDED CONTEXTS -->
@@ -927,9 +949,13 @@ go tool cover -func=coverage.out</code></pre>
           <div class="link-card-icon">🚀</div>
           <div><h4>Documento de entrega (Fase 2)</h4><p>Cobertura dos requisitos de infra, links e roteiro do vídeo.</p></div>
         </a>
-        <a class="link-card" target="_blank" href="https://www.youtube.com/watch?v=ZnEZUI8KDfY">
+        <a class="link-card" target="_blank" href="https://www.youtube.com/watch?v=PiraAX3RVzg">
           <div class="link-card-icon">🎬</div>
-          <div><h4>Vídeo de apresentação</h4><p>Demonstração completa no YouTube (até 15 min).</p></div>
+          <div><h4>Vídeo de deploy (Fase 2)</h4><p>Deploy na AWS, CI/CD, consumo das APIs e HPA (até 15 min).</p></div>
+        </a>
+        <a class="link-card" target="_blank" href="https://www.youtube.com/watch?v=ZnEZUI8KDfY">
+          <div class="link-card-icon">🎞️</div>
+          <div><h4>Vídeo de apresentação (Fase 1)</h4><p>Arquitetura, fluxos da OS e vulnerabilidades (até 15 min).</p></div>
         </a>
       </div>
     </section>
