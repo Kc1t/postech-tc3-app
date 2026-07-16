@@ -15,10 +15,41 @@ Sistema integrado de atendimento e execução de serviços para oficinas mecâni
 
 </div>
 
+## Guia rápido para avaliação
+
+Este README funciona como o **hub técnico da entrega da Fase 2**. Ele resume a solução, aponta onde cada requisito pode ser verificado e indexa os demais documentos do repositório para facilitar uma avaliação completa e objetiva.
+
+Para avaliar o projeto com mais contexto, recomenda-se seguir esta ordem:
+
+1. **Entendimento da entrega:** [`docs/DOCUMENTO_ENTREGA_FASE2.md`](docs/DOCUMENTO_ENTREGA_FASE2.md)
+2. **Visão da solução:** [Sobre o projeto](#sobre-o-projeto), [Objetivos da Fase 2](#objetivos-da-fase-2) e [Arquitetura](#arquitetura)
+3. **Fluxo de negócio da Fase 2:** [Ordem de Serviço](#ordem-de-serviço-fluxo-da-fase-2) e [`postman_collection.json`](postman_collection.json)
+4. **Infraestrutura e deploy:** [`infra/README.md`](infra/README.md), [`k8s/README.md`](k8s/README.md) e [CI/CD](#cicd)
+5. **Decisões técnicas:** [`docs/adr/README.md`](docs/adr/README.md)
+6. **Segurança e qualidade:** [`docs/security-reports/RELATORIO.md`](docs/security-reports/RELATORIO.md) e [Testes](#testes)
+7. **Demonstração em vídeo:** https://www.youtube.com/watch?v=PiraAX3RVzg
+
+## Checklist da entrega
+
+| Item exigido | Referência |
+|--------------|------------|
+| Repositório do projeto | https://github.com/Kc1t/postech-tc1 |
+| README com solução, arquitetura, deploy e execução | Este arquivo |
+| Desenho da arquitetura com componentes, infraestrutura e fluxo de deploy | [Arquitetura](#arquitetura) e [`docs/documentation-diagram.drawio`](docs/documentation-diagram.drawio) |
+| Collection das APIs | [`postman_collection.json`](postman_collection.json) |
+| Swagger estático | [`docs/swagger.yaml`](docs/swagger.yaml) |
+| Hub de documentação | https://tc-doc.vercel.app/ |
+| Vídeo demonstrativo da Fase 2 | https://www.youtube.com/watch?v=PiraAX3RVzg |
+| Documento formal da entrega | [`docs/DOCUMENTO_ENTREGA_FASE2.md`](docs/DOCUMENTO_ENTREGA_FASE2.md) |
+| Conteúdo para o PDF do portal | Repositório, desenho da arquitetura e link do vídeo estão consolidados neste checklist e no documento formal da entrega. |
+
 ## Sumário
 
+- [Guia rápido para avaliação](#guia-rápido-para-avaliação)
+- [Checklist da entrega](#checklist-da-entrega)
 - [Sobre o projeto](#sobre-o-projeto)
 - [Objetivos da Fase 2](#objetivos-da-fase-2)
+- [Rastreabilidade da Fase 2](#rastreabilidade-da-fase-2)
 - [Principais recursos](#principais-recursos)
 - [Tecnologias](#tecnologias)
 - [Arquitetura](#arquitetura)
@@ -27,6 +58,7 @@ Sistema integrado de atendimento e execução de serviços para oficinas mecâni
   - [Fluxo de deploy (CI/CD)](#fluxo-de-deploy-cicd)
 - [Ordem de Serviço (fluxo da Fase 2)](#ordem-de-serviço-fluxo-da-fase-2)
 - [Banco de dados](#banco-de-dados)
+- [Índice de documentação](#índice-de-documentação)
 - [Como rodar](#como-rodar)
   - [Execução local com Docker](#execução-local-com-docker)
   - [Deploy em Kubernetes](#deploy-em-kubernetes)
@@ -52,6 +84,28 @@ A Fase 2 evolui a aplicação da Fase 1 com práticas modernas de infraestrutura
 - **Automatizar provisionamento e deploy** do ambiente (Terraform + GitHub Actions).
 - **Melhorar a qualidade e a organização do código**, mantendo a evolução sustentável (Clean Code + Arquitetura Hexagonal + testes com cobertura mínima de 80%).
 - **Suportar picos de demanda** com escalabilidade dinâmica (Horizontal Pod Autoscaler por CPU e memória).
+
+## Rastreabilidade da Fase 2
+
+| Requisito avaliado | Implementação / evidência |
+|--------------------|---------------------------|
+| Evolução da aplicação da Fase 1 | Monolito Go com Arquitetura Hexagonal, novos fluxos de OS, autenticação JWT, notificação por e-mail e endpoints públicos para cliente. |
+| Clean Code e organização | Separação entre `internal/domain`, `internal/application/usecase`, `internal/ports` e `internal/adapters`; um use case por operação; ADRs registrando decisões. |
+| Testes automatizados e cobertura | Arquivos `_test.go` por domínio/use case/adapter; pipeline com gate de cobertura mínima de 80%. |
+| Abertura de Ordem de Serviço | `POST /api/v1/service-orders`, use case `internal/application/usecase/service_order/create.go` e handler HTTP correspondente. |
+| Consulta de status da OS | `GET /api/v1/service-orders/code/:code?document=<cpf/cnpj>` e `GET /api/v1/service-orders/:id`. |
+| Aprovação/recusa de orçamento | `PUT /api/v1/service-orders/code/:code/status`, endpoint público com validação do documento do solicitante. |
+| Listagem ordenada de OS | `GET /api/v1/service-orders`, ordenação por prioridade de status e data de criação, excluindo finalizadas/entregues da visão operacional. |
+| Notificação por e-mail | Adapter SMTP em `internal/adapters/outbound/smtp/email_notifier.go`. |
+| Docker e execução local | [`Dockerfile`](Dockerfile), [`docker-compose.yml`](docker-compose.yml), [Execução local com Docker](#execução-local-com-docker). |
+| Kubernetes | Manifestos em [`k8s/`](k8s/) com Namespace, Deployment, Service, ConfigMap, Secret e HPA. |
+| Escalabilidade automática | [`k8s/hpa.yaml`](k8s/hpa.yaml), 2 a 10 réplicas por CPU/memória. |
+| Infraestrutura como Código | [`infra/`](infra/) provisionando EKS e RDS PostgreSQL via Terraform. |
+| CI/CD | [`.github/workflows/ci.yml`](.github/workflows/ci.yml) com lint, dependências, testes, build/push no ECR, deploy no EKS e aplicação dos manifestos YAML. |
+| Banco de dados em infraestrutura | RDS PostgreSQL 16 provisionado por Terraform em [`infra/rds.tf`](infra/rds.tf), com DSN consumido pelo Secret do Kubernetes. |
+| APIs documentadas | Swagger UI, [`docs/swagger.yaml`](docs/swagger.yaml) e [`postman_collection.json`](postman_collection.json). |
+| Entrega formal da Fase 2 | [`docs/DOCUMENTO_ENTREGA_FASE2.md`](docs/DOCUMENTO_ENTREGA_FASE2.md), [Checklist da entrega](#checklist-da-entrega), vídeo e links oficiais em [Entregáveis](#entregáveis). |
+| Vídeo demonstrativo | Demonstra deploy, execução da pipeline, consumo das APIs e escalabilidade automática: https://www.youtube.com/watch?v=PiraAX3RVzg |
 
 ## Principais recursos
 
@@ -226,6 +280,28 @@ O PostgreSQL foi escolhido por oferecer recursos importantes para o domínio da 
 - **JSONB:** armazenamento flexível de value objects (serviços e peças da OS) sem perder capacidade de consulta.
 - **Transações ACID:** consistência em operações críticas como atualização de estoque e mudança de status.
 - **Ecossistema maduro:** integração com Go via `pgx`, GORM e ferramentas como pgAdmin. Em produção, o mesmo engine roda no **AWS RDS**.
+
+## Índice de documentação
+
+| Documento / artefato | Finalidade |
+|----------------------|------------|
+| [`docs/DOCUMENTO_ENTREGA_FASE2.md`](docs/DOCUMENTO_ENTREGA_FASE2.md) | Documento objetivo da entrega da Fase 2, com grupo, links, requisitos e roteiro do vídeo. |
+| [`docs/DOCUMENTO_ENTREGA.md`](docs/DOCUMENTO_ENTREGA.md) | Documento da Fase 1, útil para entender a origem do domínio e a evolução da solução. |
+| [`infra/README.md`](infra/README.md) | Explica os recursos Terraform, variáveis, pré-requisitos, aplicação e destruição da infraestrutura. |
+| [`k8s/README.md`](k8s/README.md) | Detalha os manifestos Kubernetes, ordem de aplicação, HPA, metrics-server e Secret da pipeline. |
+| [`docs/adr/README.md`](docs/adr/README.md) | Índice das decisões arquiteturais registradas no projeto. |
+| [`docs/adr/0001-go-language.md`](docs/adr/0001-go-language.md) | Justificativa da escolha de Go. |
+| [`docs/adr/0002-hexagonal-architecture.md`](docs/adr/0002-hexagonal-architecture.md) | Justificativa da Arquitetura Hexagonal. |
+| [`docs/adr/0003-postgresql.md`](docs/adr/0003-postgresql.md) | Justificativa da escolha do PostgreSQL. |
+| [`docs/adr/0004-gorm-orm.md`](docs/adr/0004-gorm-orm.md) | Justificativa do uso do GORM. |
+| [`docs/adr/0005-jwt-refresh-token.md`](docs/adr/0005-jwt-refresh-token.md) | Decisão sobre autenticação JWT com refresh token rotativo. |
+| [`docs/adr/0006-domain-errors-sentinels.md`](docs/adr/0006-domain-errors-sentinels.md) | Decisão sobre erros de domínio centralizados. |
+| [`docs/security-reports/RELATORIO.md`](docs/security-reports/RELATORIO.md) | Relatório de análise de vulnerabilidades com `gosec`, `govulncheck` e `trivy`. |
+| [`docs/swagger.yaml`](docs/swagger.yaml) | Especificação OpenAPI estática. |
+| [`postman_collection.json`](postman_collection.json) | Collection para validação prática dos endpoints. |
+| [`docs/database-model.dbml`](docs/database-model.dbml) | Modelo de dados em DBML. |
+| [`docs/documentation-diagram.drawio`](docs/documentation-diagram.drawio) | Diagrama editável da documentação/arquitetura. |
+| [`docs/site/`](docs/site/) | Site estático de documentação publicado no hub da entrega. |
 
 ## Como rodar
 
@@ -448,5 +524,3 @@ O vídeo deve demonstrar: deploy da aplicação, execução do CI/CD, consumo da
     </td>
   </tr>
 </table>
-</content>
-</invoke>

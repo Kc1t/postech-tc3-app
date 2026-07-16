@@ -22,6 +22,7 @@
 |---|---|
 | 📂 Repositório (privado, acesso `soat-architecture`) | https://github.com/Kc1t/postech-tc1 |
 | 📖 README (solução, arquitetura, deploy e instruções) | https://github.com/Kc1t/postech-tc1/blob/main/README.md |
+| 🧭 Desenho da arquitetura (componentes, infra e fluxo de deploy) | README → seção *Arquitetura* + [`docs/documentation-diagram.drawio`](https://github.com/Kc1t/postech-tc1/blob/main/docs/documentation-diagram.drawio) |
 | 🔧 Collection das APIs (Postman) | [`postman_collection.json`](https://github.com/Kc1t/postech-tc1/blob/main/postman_collection.json) |
 | 📄 Swagger estático | [`docs/swagger.yaml`](https://github.com/Kc1t/postech-tc1/blob/main/docs/swagger.yaml) |
 | 🏛️ Hub de documentação | https://tc-doc.vercel.app/ |
@@ -54,7 +55,7 @@
 | Horizontal Pod Autoscaler (CPU/memória) | [`k8s/hpa.yaml`](https://github.com/Kc1t/postech-tc1/blob/main/k8s/hpa.yaml) (2–10 réplicas) |
 | Terraform: cluster K8s + banco de dados | [`infra/`](https://github.com/Kc1t/postech-tc1/tree/main/infra) (EKS + RDS) + `infra/README.md` |
 | Documentação dos recursos IaC e como aplicar | [`infra/README.md`](https://github.com/Kc1t/postech-tc1/blob/main/infra/README.md) |
-| Pipeline CI/CD (build, testes, imagem, deploy K8s + banco) | [`.github/workflows/ci.yml`](https://github.com/Kc1t/postech-tc1/blob/main/.github/workflows/ci.yml) |
+| Pipeline CI/CD (build, testes, imagem, deploy K8s + banco) | [`.github/workflows/ci.yml`](https://github.com/Kc1t/postech-tc1/blob/main/.github/workflows/ci.yml) + Terraform em `infra/` para o RDS |
 
 ### README
 
@@ -67,6 +68,16 @@
 | Instruções de provisionamento com Terraform | ✅ |
 | Link para a collection das APIs | ✅ (`postman_collection.json` / Swagger) |
 | Link para o vídeo demonstrativo | ✅ https://www.youtube.com/watch?v=PiraAX3RVzg |
+
+### Entrega no portal do aluno
+
+O PDF de submissão no portal deve consolidar:
+
+| Item solicitado no enunciado | Referência para preencher o PDF |
+|---|---|
+| Link do repositório GitHub compartilhado com `soat-architecture` | https://github.com/Kc1t/postech-tc1 |
+| Desenho da arquitetura com os recursos escolhidos | README → seção *Arquitetura* + `docs/documentation-diagram.drawio` |
+| Link do vídeo de até 15 minutos | https://www.youtube.com/watch?v=PiraAX3RVzg |
 
 ---
 
@@ -87,4 +98,3 @@ O diagrama completo está no README e em `docs/documentation-diagram.drawio`.
 2. **Execução do CI/CD** — push na `main` disparando a pipeline (lint, testes, build, deploy).
 3. **Consumo das APIs** — abertura de OS, consulta de status, aprovação de orçamento, listagem ordenada e e-mail de notificação.
 4. **Escalabilidade automática** — simular carga e mostrar o HPA subindo réplicas (`kubectl get hpa -w` / `kubectl get pods -w`).
-</content>
