@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: workshop-api
+  labels:
+    app: workshop-api
+data:
+  APP_ENV: staging
+  APP_PORT: "8080"
+  LOG_LEVEL: info
+  LOG_FORMAT: json
