@@ -1,0 +1,36 @@
+package pgmodel
+
+import (
+	"time"
+
+	"github.com/fiap/postech-tc1/internal/domain/entities"
+)
+
+type Vehicle struct {
+	ID         string    `gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
+	RequesterID string    `gorm:"type:uuid;not null;index;constraint:OnDelete:RESTRICT"`
+	Requester   Requester  `gorm:"foreignKey:RequesterID"`
+	Plate      string    `gorm:"uniqueIndex;not null"`
+	Brand      string    `gorm:"not null"`
+	Model      string    `gorm:"not null"`
+	Year       int       `gorm:"not null"`
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
+}
+
+func FromVehicle(v *entities.Vehicle) *Vehicle {
+	return &Vehicle{
+		ID:         v.ID(),
+		RequesterID: v.RequesterID(),
+		Plate:      v.Plate(),
+		Brand:      v.Brand(),
+		Model:      v.Model(),
+		Year:       v.Year(),
+		CreatedAt:  v.CreatedAt(),
+		UpdatedAt:  v.UpdatedAt(),
+	}
+}
+
+func (m *Vehicle) ToDomain() *entities.Vehicle {
+	return entities.ReconstituteVehicle(m.ID, m.RequesterID, m.Plate, m.Brand, m.Model, m.Year, m.CreatedAt, m.UpdatedAt)
+}

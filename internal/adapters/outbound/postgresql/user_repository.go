@@ -1,0 +1,57 @@
+package postgresql
+
+import (
+	"context"
+	"errors"
+
+	pgmodel "github.com/fiap/postech-tc1/internal/adapters/outbound/postgresql/model"
+	"github.com/fiap/postech-tc1/internal/domain/entities"
+	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
+	"github.com/fiap/postech-tc1/internal/ports"
+	"gorm.io/gorm"
+)
+
+type userRepository struct {
+	db *gorm.DB
+}
+
+func NewUserRepository(db *gorm.DB) ports.UserRepository {
+	return &userRepository{db: db}
+}
+
+func (r *userRepository) Create(ctx context.Context, u *entities.User) error {
+	m := pgmodel.FromUser(u)
+	if err := r.db.WithContext(ctx).Create(m).Error; err != nil {
+		return err
+	}
+	u.SetID(m.ID)
+	return nil
+}
+
+func (r *userRepository) FindByEmail(ctx context.Context, email string) (*entities.User, error) {
+	var m pgmodel.User
+	if err := r.db.WithContext(ctx).First(&m, "email = ?", email).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, domainerrors.ErrNotFound
+		}
+		return nil, err
+	}
+	return m.ToDomain(), nil
+}
+
+func (r *userRepository) FindByID(ctx context.Context, id string) (*entities.User, error) {
+	var m pgmodel.User
+	if err := r.db.WithContext(ctx).First(&m, "id = ?", id).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, domainerrors.ErrNotFound
+		}
+		return nil, err
+	}
+	return m.ToDomain(), nil
+}
+
+func (r *userRepository) Update(ctx context.Context, u *entities.User) error {
+	m := pgmodel.FromUser(u)
+
+	return r.db.WithContext(ctx).Save(m).Error
+}

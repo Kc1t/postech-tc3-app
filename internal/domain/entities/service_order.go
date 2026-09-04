@@ -1,0 +1,236 @@
+package entities
+
+import (
+	"time"
+
+	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
+)
+
+type OrderStatus string
+
+const (
+	StatusReceived         OrderStatus = "received"
+	StatusInDiagnosis      OrderStatus = "in_diagnosis"
+	StatusAwaitingApproval OrderStatus = "awaiting_approval"
+	StatusInExecution      OrderStatus = "in_execution"
+	StatusFinished         OrderStatus = "finished"
+	StatusDelivered        OrderStatus = "delivered"
+)
+
+// validTransitions define a maquina de estados da Ordem de Servico.
+var validTransitions = map[OrderStatus][]OrderStatus{
+	StatusReceived:         {StatusInDiagnosis},
+	StatusInDiagnosis:      {StatusAwaitingApproval},
+	StatusAwaitingApproval: {StatusInExecution, StatusReceived},
+	StatusInExecution:      {StatusFinished},
+	StatusFinished:         {StatusDelivered},
+	StatusDelivered:        {},
+}
+
+// requesterAllowedStatuses define os status cuja transicao pode ser iniciada
+// pelo cliente: aceitar o orcamento (in_execution) ou recusa-lo (received).
+// As demais transicoes pertencem ao fluxo operacional da oficina
+// (mecanico/atendente).
+var requesterAllowedStatuses = map[OrderStatus]bool{
+	StatusInExecution: true,
+	StatusReceived:    true,
+}
+
+// allStatuses permite validar se um status informado e conhecido.
+var allStatuses = map[OrderStatus]bool{
+	StatusReceived:         true,
+	StatusInDiagnosis:      true,
+	StatusAwaitingApproval: true,
+	StatusInExecution:      true,
+	StatusFinished:         true,
+	StatusDelivered:        true,
+}
+
+// IsValidStatus verifica se o status informado e um valor conhecido.
+func IsValidStatus(s OrderStatus) bool {
+	return allStatuses[s]
+}
+
+// ServiceOrderInput carrega os dados necessarios para abrir uma nova OS.
+type ServiceOrderInput struct {
+	RequesterDocument string
+	VehiclePlate      string
+	Notes             string
+}
+
+// OrderPartItem representa uma peca e sua quantidade dentro de uma transicao de status.
+type OrderPartItem struct {
+	ManufacturerCode string
+	Quantity         int
+}
+
+// StatusUpdate carrega os dados necessarios para transicionar o status de uma OS.
+type StatusUpdate struct {
+	ID           string
+	Status       OrderStatus
+	ServiceCodes []int
+	Parts        []OrderPartItem
+}
+
+// ServiceItem e PartItem sao value objects — identificados por valor, sem identidade propria.
+type ServiceItem struct {
+	ServiceID   string
+	Description string
+	Price       float64
+}
+
+type PartItem struct {
+	PartID      string
+	Description string
+	Quantity    int
+	UnitPrice   float64
+}
+
+type ServiceOrder struct {
+	id          string
+	code        int
+	requesterID string
+	vehicleID   string
+	status      OrderStatus
+	services    []ServiceItem
+	parts       []PartItem
+	totalAmount float64
+	notes       string
+	createdAt   time.Time
+	updatedAt   time.Time
+	startedAt   *time.Time
+	finishedAt  *time.Time
+}
+
+func NewServiceOrder(requesterID, vehicleID string) *ServiceOrder {
+	now := time.Now()
+	return &ServiceOrder{
+		requesterID: requesterID,
+		vehicleID:   vehicleID,
+		status:      StatusReceived,
+		services:    []ServiceItem{},
+		parts:       []PartItem{},
+		createdAt:   now,
+		updatedAt:   now,
+	}
+}
+
+// ReconstituteServiceOrder restaura uma entidade a partir de dados persistidos (uso exclusivo de repositories).
+func ReconstituteServiceOrder(
+	id string, code int,
+	requesterID, vehicleID string,
+	status OrderStatus,
+	services []ServiceItem,
+	parts []PartItem,
+	totalAmount float64,
+	notes string,
+	createdAt, updatedAt time.Time,
+	startedAt, finishedAt *time.Time,
+) *ServiceOrder {
+	return &ServiceOrder{
+		id:          id,
+		code:        code,
+		requesterID: requesterID,
+		vehicleID:   vehicleID,
+		status:      status,
+		services:    services,
+		parts:       parts,
+		totalAmount: totalAmount,
+		notes:       notes,
+		createdAt:   createdAt,
+		updatedAt:   updatedAt,
+		startedAt:   startedAt,
+		finishedAt:  finishedAt,
+	}
+}
+
+func (so *ServiceOrder) ID() string              { return so.id }
+func (so *ServiceOrder) Code() int               { return so.code }
+func (so *ServiceOrder) RequesterID() string     { return so.requesterID }
+func (so *ServiceOrder) VehicleID() string       { return so.vehicleID }
+func (so *ServiceOrder) Status() OrderStatus     { return so.status }
+func (so *ServiceOrder) Services() []ServiceItem { return so.services }
+func (so *ServiceOrder) Parts() []PartItem       { return so.parts }
+func (so *ServiceOrder) TotalAmount() float64    { return so.totalAmount }
+func (so *ServiceOrder) Notes() string           { return so.notes }
+func (so *ServiceOrder) CreatedAt() time.Time    { return so.createdAt }
+func (so *ServiceOrder) UpdatedAt() time.Time    { return so.updatedAt }
+func (so *ServiceOrder) StartedAt() *time.Time   { return so.startedAt }
+func (so *ServiceOrder) FinishedAt() *time.Time  { return so.finishedAt }
+
+func (so *ServiceOrder) SetID(id string)   { so.id = id }
+func (so *ServiceOrder) SetCode(code int)  { so.code = code }
+func (so *ServiceOrder) SetNotes(n string) { so.notes = n; so.touch() }
+
+func (so *ServiceOrder) UpdateStatus(s OrderStatus) error {
+	if !IsValidStatus(s) {
+		return domainerrors.ErrInvalidStatusValue
+	}
+	allowed, exists := validTransitions[so.status]
+	if !exists {
+		return domainerrors.ErrInvalidStatus
+	}
+	for _, a := range allowed {
+		if a == s {
+			so.status = s
+			now := time.Now()
+			if s == StatusInExecution && so.startedAt == nil {
+				so.startedAt = &now
+			}
+			if s == StatusFinished && so.finishedAt == nil {
+				so.finishedAt = &now
+			}
+			so.touch()
+			return nil
+		}
+	}
+	return domainerrors.ErrInvalidStatus
+}
+
+func (so *ServiceOrder) AuthorizeRequesterTransition(s OrderStatus) error {
+	if !requesterAllowedStatuses[s] {
+		return domainerrors.ErrStatusNotAllowedForRequester
+	}
+	return so.UpdateStatus(s)
+}
+
+// SetServices substitui a lista de servicos e recalcula o total.
+func (so *ServiceOrder) SetServices(items []ServiceItem) {
+	so.services = items
+	so.recalcTotal()
+}
+
+// SetParts substitui a lista de pecas e recalcula o total.
+func (so *ServiceOrder) SetParts(items []PartItem) {
+	so.parts = items
+	so.recalcTotal()
+}
+
+func (so *ServiceOrder) AddService(item ServiceItem) {
+	so.services = append(so.services, item)
+	so.recalcTotal()
+}
+
+func (so *ServiceOrder) AddPart(item PartItem) {
+	so.parts = append(so.parts, item)
+	so.recalcTotal()
+}
+
+// RecalcTotal forca o recalculo do total (uso apos ajustes externos).
+func (so *ServiceOrder) RecalcTotal() {
+	so.recalcTotal()
+}
+
+func (so *ServiceOrder) recalcTotal() {
+	total := 0.0
+	for _, s := range so.services {
+		total += s.Price
+	}
+	for _, p := range so.parts {
+		total += float64(p.Quantity) * p.UnitPrice
+	}
+	so.totalAmount = total
+	so.touch()
+}
+
+func (so *ServiceOrder) touch() { so.updatedAt = time.Now() }

@@ -1,0 +1,271 @@
+<mxfile host="app.diagrams.net" pages="3">
+  <diagram id="page_c1" name="C1 - System Context">
+    <mxGraphModel dx="3535" dy="1943" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1;" value="C1 — System Context: Workshop API" vertex="1">
+          <mxGeometry height="40" width="700" x="477" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="c1_admin" parent="1" style="shape=mxgraph.c4.person2;whiteSpace=wrap;html=1;fillColor=#08427b;strokeColor=#052E56;fontColor=#ffffff;fontSize=11;" value="&lt;b&gt;Mecânico&lt;/b&gt;&lt;br&gt;[Person]&lt;br&gt;&lt;br&gt;Mecânico ou atendente da oficina.&lt;br&gt;Gerencia clientes, veículos,&lt;br&gt;serviços, peças e ordens." vertex="1">
+          <mxGeometry height="180" width="180" x="190" y="305" as="geometry" />
+        </mxCell>
+        <mxCell id="c1_client" parent="1" style="shape=mxgraph.c4.person2;whiteSpace=wrap;html=1;fillColor=#08427b;strokeColor=#052E56;fontColor=#ffffff;fontSize=11;" value="&lt;b&gt;Solicitante&lt;/b&gt;&lt;br&gt;[Person]&lt;br&gt;&lt;br&gt;Dono do veículo. Consulta&lt;br&gt;ordens de serviço e aprova&lt;br&gt;ou rejeita orçamentos." vertex="1">
+          <mxGeometry height="180" width="180" x="1334" y="305" as="geometry" />
+        </mxCell>
+        <mxCell id="c1_system" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1168BD;strokeColor=#0B4884;fontColor=#ffffff;fontSize=12;arcSize=5;" value="&lt;b&gt;Workshop API&lt;/b&gt;&lt;br/&gt;[Software System]&lt;br/&gt;&lt;br/&gt;Sistema de gestão de ordens de&lt;br/&gt;serviço para oficina mecânica.&lt;br/&gt;Gerencia clientes, veículos,&lt;br/&gt;serviços, peças e OS." vertex="1">
+          <mxGeometry height="150" width="500" x="577" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="c1_postgres" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#999999;strokeColor=#6C6C6C;fontColor=#ffffff;fontSize=11;arcSize=5;" value="&lt;b&gt;PostgreSQL&lt;/b&gt;&lt;br/&gt;[External System]&lt;br/&gt;&lt;br/&gt;Banco de dados relacional.&lt;br/&gt;Armazena todos os dados&lt;br/&gt;do sistema." vertex="1">
+          <mxGeometry height="120" width="280" x="687" y="590" as="geometry" />
+        </mxCell>
+        <mxCell id="c1_pgadmin" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#999999;strokeColor=#6C6C6C;fontColor=#ffffff;fontSize=11;arcSize=5;" value="&lt;b&gt;PgAdmin 4&lt;/b&gt;&lt;br/&gt;[External System]&lt;br/&gt;&lt;br/&gt;Interface web de administração&lt;br/&gt;do banco de dados." vertex="1">
+          <mxGeometry height="120" width="240" x="1130" y="590" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_admin_sys" edge="1" parent="1" source="c1_admin" style="edgeStyle=orthogonalEdgeStyle;rounded=0;fontSize=10;" target="c1_system" value="Gerencia OS, clientes,&#xa;veículos e catálogo">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_client_sys" edge="1" parent="1" source="c1_client" style="edgeStyle=orthogonalEdgeStyle;rounded=0;fontSize=10;" target="c1_system" value="Consulta OS e aprova orçamentos">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_sys_db" edge="1" parent="1" source="c1_system" style="edgeStyle=orthogonalEdgeStyle;rounded=0;fontSize=10;" target="c1_postgres" value="Lê e grava dados">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_db_pgadmin" edge="1" parent="1" source="c1_postgres" style="edgeStyle=orthogonalEdgeStyle;rounded=0;fontSize=10;" target="c1_pgadmin" value="Administra banco ">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="page_c2" name="C2 - Container Diagram">
+    <mxGraphModel dx="2253" dy="1256" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1;" value="C2 — Container Diagram: Workshop API" vertex="1">
+          <mxGeometry height="40" width="800" x="427" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="boundary" parent="1" style="points=[[0,0],[0.25,0],[0.5,0],[0.75,0],[1,0],[1,0.25],[1,0.5],[1,0.75],[1,1],[0.75,1],[0.5,1],[0.25,1],[0,1],[0,0.75],[0,0.5],[0,0.25]];shape=mxgraph.c4.boundary;whiteSpace=wrap;html=1;fontSize=14;fontStyle=1;strokeColor=#444444;fillColor=none;verticalAlign=top;" value="Workshop API System" vertex="1">
+          <mxGeometry height="700" width="960" x="350" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="c2_admin" parent="1" style="shape=mxgraph.c4.person2;whiteSpace=wrap;html=1;fillColor=#08427b;strokeColor=#052E56;fontColor=#ffffff;fontSize=11;" value="&lt;b&gt;Mecânico&lt;/b&gt;&lt;br&gt;[Person]" vertex="1">
+          <mxGeometry height="140" width="140" x="120" y="210" as="geometry" />
+        </mxCell>
+        <mxCell id="c2_client" parent="1" style="shape=mxgraph.c4.person2;whiteSpace=wrap;html=1;fillColor=#08427b;strokeColor=#052E56;fontColor=#ffffff;fontSize=11;" value="&lt;b&gt;Solicitante&lt;/b&gt;&lt;br/&gt;[Person]" vertex="1">
+          <mxGeometry height="140" width="140" x="1370" y="210" as="geometry" />
+        </mxCell>
+        <mxCell id="c2_api" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1168BD;strokeColor=#0B4884;fontColor=#ffffff;fontSize=11;arcSize=5;" value="&lt;b&gt;Workshop API&lt;/b&gt;&lt;br/&gt;[Container: Go 1.25 / Gin]&lt;br/&gt;&lt;br/&gt;Aplicação REST principal.&lt;br/&gt;Arquitetura Hexagonal.&lt;br/&gt;Porta 8080." vertex="1">
+          <mxGeometry height="140" width="300" x="710" y="210" as="geometry" />
+        </mxCell>
+        <mxCell id="c2_db" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1168BD;strokeColor=#0B4884;fontColor=#ffffff;fontSize=11;arcSize=5;" value="&lt;b&gt;PostgreSQL 16&lt;/b&gt;&lt;br/&gt;[Container: Database]&lt;br/&gt;&lt;br/&gt;Armazena clientes, veículos,&lt;br/&gt;serviços, peças e OS.&lt;br/&gt;Porta 5432." vertex="1">
+          <mxGeometry height="140" width="300" x="710" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="c2_pgadmin" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1168BD;strokeColor=#0B4884;fontColor=#ffffff;fontSize=11;arcSize=5;" value="&lt;b&gt;PgAdmin 4&lt;/b&gt;&lt;br/&gt;[Container: Admin UI]&lt;br/&gt;&lt;br/&gt;Gerenciamento visual&lt;br/&gt;do banco de dados.&lt;br/&gt;Porta 8082." vertex="1">
+          <mxGeometry height="140" width="210" x="755" y="590" as="geometry" />
+        </mxCell>
+        <mxCell id="c2_docs" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1168BD;strokeColor=#0B4884;fontColor=#ffffff;fontSize=11;arcSize=5;" value="&lt;b&gt;Workshop Docs&lt;/b&gt;&lt;br/&gt;[Container: Nginx]&lt;br/&gt;&lt;br/&gt;Documentação estática&lt;br/&gt;(MkDocs site).&lt;br/&gt;Porta 8083." vertex="1">
+          <mxGeometry height="140" width="210" x="500" y="590" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_admin_api" edge="1" parent="1" source="c2_admin" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;" target="c2_api" value="REST/JSON ">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_client_api" edge="1" parent="1" source="c2_client" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;" target="c2_api" value="REST/JSON ">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_api_db" edge="1" parent="1" source="c2_api" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;" target="c2_db" value="Lê/grava dados">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_pgadmin_db" edge="1" parent="1" source="c2_pgadmin" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;" target="c2_db" value="Administra ">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_admin_docs" edge="1" parent="1" source="c2_admin" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="c2_docs" value="Lê documentação">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="page_c3" name="C3 - Component Diagram">
+    <mxGraphModel dx="2763" dy="1457" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1920" pageHeight="1080" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="C3 — Component Diagram: Workshop API" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="510" y="20" width="900" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="ch_auth" value="Auth" style="text;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;align=center;verticalAlign=middle;fontSize=11;fontStyle=1;rounded=1;" parent="1" vertex="1">
+          <mxGeometry x="395" y="110" width="190" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ch_req" value="Requester" style="text;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;align=center;verticalAlign=middle;fontSize=11;fontStyle=1;rounded=1;" parent="1" vertex="1">
+          <mxGeometry x="605" y="110" width="190" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ch_veh" value="Vehicle" style="text;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;align=center;verticalAlign=middle;fontSize=11;fontStyle=1;rounded=1;" parent="1" vertex="1">
+          <mxGeometry x="815" y="110" width="190" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ch_svc" value="Service" style="text;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;align=center;verticalAlign=middle;fontSize=11;fontStyle=1;rounded=1;" parent="1" vertex="1">
+          <mxGeometry x="1025" y="110" width="190" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ch_part" value="Part" style="text;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;align=center;verticalAlign=middle;fontSize=11;fontStyle=1;rounded=1;" parent="1" vertex="1">
+          <mxGeometry x="1235" y="110" width="190" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ch_so" value="ServiceOrder" style="text;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;align=center;verticalAlign=middle;fontSize=11;fontStyle=1;rounded=1;" parent="1" vertex="1">
+          <mxGeometry x="1445" y="110" width="190" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="lbl_inbound" value="Inbound&lt;br/&gt;Adapters&lt;br/&gt;(HTTP)" style="text;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;rounded=1;" parent="1" vertex="1">
+          <mxGeometry x="240" y="150" width="145" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="lbl_app" value="Application&lt;br/&gt;(Use Cases)" style="text;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;rounded=1;" parent="1" vertex="1">
+          <mxGeometry x="240" y="330" width="145" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="lbl_out" value="Outbound&lt;br/&gt;Adapters&lt;br/&gt;(Persistence)" style="text;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;rounded=1;" parent="1" vertex="1">
+          <mxGeometry x="240" y="490" width="145" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="lbl_domain" value="Domain&lt;br/&gt;(Entities)" style="text;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;rounded=1;" parent="1" vertex="1">
+          <mxGeometry x="230" y="940" width="145" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="middleware" value="&lt;b&gt;Middleware&lt;/b&gt; [Component: Go] — CORS · Auth JWT · RequireRole RBAC" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;arcSize=2;" parent="1" vertex="1">
+          <mxGeometry x="395" y="150" width="1240" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="auth_handler" value="&lt;b&gt;AuthHandler&lt;/b&gt;&lt;br/&gt;[Component: Go]&lt;br/&gt;&lt;br/&gt;POST /auth/register&lt;br/&gt;POST /auth/login&lt;br/&gt;POST /auth/refresh&lt;br/&gt;POST /auth/logout" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;arcSize=5;" parent="1" vertex="1">
+          <mxGeometry x="395" y="205" width="190" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="req_handler" value="&lt;b&gt;RequesterHandler&lt;/b&gt;&lt;br/&gt;[Component: Go]&lt;br/&gt;&lt;br/&gt;CRUD /customers&lt;br/&gt;GET /document/:doc&lt;br/&gt;GET /:id/vehicles" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;arcSize=5;" parent="1" vertex="1">
+          <mxGeometry x="605" y="205" width="190" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="veh_handler" value="&lt;b&gt;VehicleHandler&lt;/b&gt;&lt;br/&gt;[Component: Go]&lt;br/&gt;&lt;br/&gt;CRUD /vehicles" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;arcSize=5;" parent="1" vertex="1">
+          <mxGeometry x="815" y="205" width="190" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="svc_handler" value="&lt;b&gt;ServiceHandler&lt;/b&gt;&lt;br/&gt;[Component: Go]&lt;br/&gt;&lt;br/&gt;CRUD /services" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;arcSize=5;" parent="1" vertex="1">
+          <mxGeometry x="1025" y="205" width="190" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="part_handler" value="&lt;b&gt;PartHandler&lt;/b&gt;&lt;br/&gt;[Component: Go]&lt;br/&gt;&lt;br/&gt;CRUD /parts&lt;br/&gt;PATCH /parts/:id/stock" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;arcSize=5;" parent="1" vertex="1">
+          <mxGeometry x="1235" y="205" width="190" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="so_handler" value="&lt;b&gt;ServiceOrderHandler&lt;/b&gt;&lt;br/&gt;[Component: Go]&lt;br/&gt;&lt;br/&gt;Admin: CRUD /service-orders&lt;br/&gt;PUT /:id/status&lt;br/&gt;Client: GET /code/:code&lt;br/&gt;PUT /code/:code/status" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;arcSize=5;" parent="1" vertex="1">
+          <mxGeometry x="1445" y="205" width="190" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="auth_uc" value="&lt;b&gt;Auth Use Cases&lt;/b&gt;&lt;br/&gt;[Component: Go]&lt;br/&gt;&lt;br/&gt;Register, Login,&lt;br/&gt;Refresh, Logout" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;arcSize=5;" parent="1" vertex="1">
+          <mxGeometry x="395" y="340" width="190" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="req_uc" value="&lt;b&gt;Requester Use Cases&lt;/b&gt;&lt;br/&gt;[Component: Go]&lt;br/&gt;&lt;br/&gt;Create, Get, GetByDoc,&lt;br/&gt;List, Update, Delete" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;arcSize=5;" parent="1" vertex="1">
+          <mxGeometry x="605" y="340" width="190" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="veh_uc" value="&lt;b&gt;Vehicle Use Cases&lt;/b&gt;&lt;br/&gt;[Component: Go]&lt;br/&gt;&lt;br/&gt;Create, Get, List,&lt;br/&gt;ListByCustomer,&lt;br/&gt;Update, Delete" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;arcSize=5;" parent="1" vertex="1">
+          <mxGeometry x="815" y="340" width="190" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="svc_uc" value="&lt;b&gt;Service Use Cases&lt;/b&gt;&lt;br/&gt;[Component: Go]&lt;br/&gt;&lt;br/&gt;Create, Get, List,&lt;br/&gt;Update, Delete" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;arcSize=5;" parent="1" vertex="1">
+          <mxGeometry x="1025" y="340" width="190" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="part_uc" value="&lt;b&gt;Part Use Cases&lt;/b&gt;&lt;br/&gt;[Component: Go]&lt;br/&gt;&lt;br/&gt;Create, Get, List,&lt;br/&gt;Update, Delete,&lt;br/&gt;AdjustStock" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;arcSize=5;" parent="1" vertex="1">
+          <mxGeometry x="1235" y="340" width="190" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="so_uc" value="&lt;b&gt;ServiceOrder Use Cases&lt;/b&gt;&lt;br/&gt;[Component: Go]&lt;br/&gt;&lt;br/&gt;Create, Get, GetByCode,&lt;br/&gt;List, ListByCustomer,&lt;br/&gt;UpdateStatus, Update,&lt;br/&gt;Delete, AvgExecTime" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;arcSize=5;" parent="1" vertex="1">
+          <mxGeometry x="1445" y="340" width="190" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="_ZmhZxIXmEC0wmztNzej-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;curved=1;exitX=1;exitY=1;exitDx=0;exitDy=0;" parent="1" source="user_repo" target="db" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="640" y="635" />
+              <mxPoint x="640" y="795" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="user_repo" value="&lt;b&gt;UserRepository&lt;/b&gt;&lt;br/&gt;[Component: GORM]&lt;br/&gt;&lt;br/&gt;Create, FindByEmail,&lt;br/&gt;FindByID, Update" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;arcSize=5;" parent="1" vertex="1">
+          <mxGeometry x="395" y="495" width="190" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="_ZmhZxIXmEC0wmztNzej-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;curved=1;" parent="1" source="req_repo" target="db" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="req_repo" value="&lt;b&gt;RequesterRepository&lt;/b&gt;&lt;br/&gt;[Component: GORM]&lt;br/&gt;&lt;br/&gt;Create, FindByID,&lt;br/&gt;FindByDocument,&lt;br/&gt;FindAll, Update, Delete" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;arcSize=5;" parent="1" vertex="1">
+          <mxGeometry x="605" y="495" width="190" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="_ZmhZxIXmEC0wmztNzej-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;curved=1;" parent="1" source="veh_repo" target="db" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="veh_repo" value="&lt;b&gt;VehicleRepository&lt;/b&gt;&lt;br/&gt;[Component: GORM]&lt;br/&gt;&lt;br/&gt;Create, FindByID,&lt;br/&gt;FindByPlate,&lt;br/&gt;FindByCustomerID,&lt;br/&gt;FindAll, Update, Delete" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;arcSize=5;" parent="1" vertex="1">
+          <mxGeometry x="815" y="495" width="190" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="_ZmhZxIXmEC0wmztNzej-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;curved=1;" parent="1" source="svc_repo" target="db" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="svc_repo" value="&lt;b&gt;ServiceRepository&lt;/b&gt;&lt;br/&gt;[Component: GORM]&lt;br/&gt;&lt;br/&gt;Create, FindByID,&lt;br/&gt;FindByCodes, FindAll,&lt;br/&gt;Update, Delete" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;arcSize=5;" parent="1" vertex="1">
+          <mxGeometry x="1025" y="490" width="190" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="_ZmhZxIXmEC0wmztNzej-8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;curved=1;" parent="1" source="part_repo" target="db" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="part_repo" value="&lt;b&gt;PartRepository&lt;/b&gt;&lt;br/&gt;[Component: GORM]&lt;br/&gt;&lt;br/&gt;Create, FindByID,&lt;br/&gt;FindAll, Update,&lt;br/&gt;Delete, UpdateStock" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;arcSize=5;" parent="1" vertex="1">
+          <mxGeometry x="1235" y="490" width="190" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="_ZmhZxIXmEC0wmztNzej-9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;curved=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" parent="1" source="so_repo" target="db" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="so_repo" value="&lt;b&gt;ServiceOrderRepository&lt;/b&gt;&lt;br/&gt;[Component: GORM]&lt;br/&gt;&lt;br/&gt;Create, FindByID,&lt;br/&gt;FindByCode, FindAll,&lt;br/&gt;FindByCustomerID,&lt;br/&gt;UpdateStatus, Update,&lt;br/&gt;Delete, AvgExecTime" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;arcSize=5;" parent="1" vertex="1">
+          <mxGeometry x="1445" y="490" width="190" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="domain_sep" value="Domain Entities (Value Objects &amp; Aggregates)" style="text;html=1;strokeColor=#d6b656;fillColor=#fff2cc;align=center;verticalAlign=middle;fontSize=11;fontStyle=1;rounded=1;" parent="1" vertex="1">
+          <mxGeometry x="385" y="900" width="1240" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="user_entity" value="&lt;b&gt;User&lt;/b&gt;&lt;br/&gt;[Entity]&lt;br/&gt;&lt;br/&gt;Role (admin/client)&lt;br/&gt;Account lockout&lt;br/&gt;Bcrypt password" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;arcSize=5;" parent="1" vertex="1">
+          <mxGeometry x="385" y="940" width="190" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="req_entity" value="&lt;b&gt;Requester&lt;/b&gt;&lt;br/&gt;[Entity]&lt;br/&gt;&lt;br/&gt;Document VO&lt;br/&gt;(CPF/CNPJ)&lt;br/&gt;name, email, phone" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;arcSize=5;" parent="1" vertex="1">
+          <mxGeometry x="595" y="940" width="190" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="veh_entity" value="&lt;b&gt;Vehicle&lt;/b&gt;&lt;br/&gt;[Entity]&lt;br/&gt;&lt;br/&gt;Plate VO&lt;br/&gt;(old/Mercosul)&lt;br/&gt;brand, model, year" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;arcSize=5;" parent="1" vertex="1">
+          <mxGeometry x="805" y="940" width="190" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="svc_entity" value="&lt;b&gt;Service&lt;/b&gt;&lt;br/&gt;[Entity]&lt;br/&gt;&lt;br/&gt;code, name,&lt;br/&gt;price, durationMin" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;arcSize=5;" parent="1" vertex="1">
+          <mxGeometry x="1015" y="940" width="190" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="part_entity" value="&lt;b&gt;Part&lt;/b&gt;&lt;br/&gt;[Entity]&lt;br/&gt;&lt;br/&gt;manufacturerCode,&lt;br/&gt;name, unit,&lt;br/&gt;price, stock" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;arcSize=5;" parent="1" vertex="1">
+          <mxGeometry x="1225" y="940" width="190" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="so_entity" value="&lt;b&gt;ServiceOrder&lt;/b&gt;&lt;br/&gt;[Entity]&lt;br/&gt;&lt;br/&gt;received → in_diagnosis&lt;br/&gt;→ awaiting_approval&lt;br/&gt;→ in_execution&lt;br/&gt;→ finished → delivered" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;arcSize=5;" parent="1" vertex="1">
+          <mxGeometry x="1435" y="940" width="190" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="db" value="&lt;b&gt;PostgreSQL 16&lt;/b&gt;&lt;br/&gt;[Database]" style="shape=mxgraph.c4.database2;whiteSpace=wrap;html=1;fillColor=#999999;strokeColor=#6C6C6C;fontColor=#ffffff;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="935" y="730" width="160" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="jwt" value="&lt;b&gt;JWT Service&lt;/b&gt;&lt;br/&gt;[Component: Go]&lt;br/&gt;&lt;br/&gt;Gera e valida&lt;br/&gt;access + refresh tokens" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;arcSize=5;" parent="1" vertex="1">
+          <mxGeometry x="395" y="650" width="190" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;fontSize=9;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="auth_handler" target="auth_uc" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;fontSize=9;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="req_handler" target="req_uc" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;fontSize=9;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="veh_handler" target="veh_uc" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;fontSize=9;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="svc_handler" target="svc_uc" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;fontSize=9;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="part_handler" target="part_uc" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;fontSize=9;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="so_handler" target="so_uc" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;fontSize=9;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="auth_uc" target="user_repo" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" style="edgeStyle=orthogonalEdgeStyle;fontSize=9;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="req_uc" target="req_repo" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" style="edgeStyle=orthogonalEdgeStyle;fontSize=9;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="veh_uc" target="veh_repo" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" style="edgeStyle=orthogonalEdgeStyle;fontSize=9;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="svc_uc" target="svc_repo" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e11" style="edgeStyle=orthogonalEdgeStyle;fontSize=9;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="part_uc" target="part_repo" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e12" style="edgeStyle=orthogonalEdgeStyle;fontSize=9;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="so_uc" target="so_repo" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

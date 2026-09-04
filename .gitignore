@@ -1,4 +1,9 @@
-bin/
-tmp/
-.env
-coverage.out
+*.env
+*vendor
+
+#IA
+_bmad
+_bmad-output
+.claude
+.vscode
+coverage_filtered.out
