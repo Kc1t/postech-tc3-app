@@ -1,5 +1,8 @@
-// Modelo de dados - postech-tc1
+// Modelo de dados - postech-tc3-app
 // https://dbdiagram.io/d para visualizar
+//
+// Gerado a partir dos modelos GORM em internal/adapters/outbound/postgresql/model.
+// O schema e aplicado por AutoMigrate no bootstrap (cmd/api/bootstrap/container.go).
 
 Table users {
   id uuid [pk, default: `gen_random_uuid()`]
@@ -26,19 +29,20 @@ Table refresh_tokens {
   }
 }
 
-Table customers {
+Table requesters {
   id uuid [pk, default: `gen_random_uuid()`]
   name varchar [not null]
-  document varchar [not null, unique]
+  document varchar [not null, unique, note: 'CPF ou CNPJ, apenas digitos']
   email varchar [not null]
   phone varchar [not null]
+  status varchar [not null, default: 'active', note: 'active | inactive']
   created_at timestamp
   updated_at timestamp
 }
 
 Table vehicles {
   id uuid [pk, default: `gen_random_uuid()`]
-  customer_id uuid [not null, ref: > customers.id, note: 'ON DELETE RESTRICT']
+  requester_id uuid [not null, ref: > requesters.id, note: 'ON DELETE RESTRICT']
   plate varchar [not null, unique]
   brand varchar [not null]
   model varchar [not null]
@@ -47,7 +51,7 @@ Table vehicles {
   updated_at timestamp
 
   indexes {
-    customer_id
+    requester_id
   }
 }
 
@@ -74,17 +78,20 @@ Table services {
 
 Table service_orders {
   id uuid [pk, default: `gen_random_uuid()`]
-  customer_id uuid [not null, ref: > customers.id, note: 'ON DELETE RESTRICT']
+  code int [not null, unique, increment, note: 'codigo publico da OS']
+  requester_id uuid [not null, ref: > requesters.id, note: 'ON DELETE RESTRICT']
   vehicle_id uuid [not null, ref: > vehicles.id, note: 'ON DELETE RESTRICT']
-  status varchar [not null, note: 'received | in_diagnosis | awaiting_approval | in_progress | completed | delivered | cancelled']
+  status varchar [not null, note: 'received | in_diagnosis | awaiting_approval | in_execution | finished | delivered']
   services jsonb [note: 'snapshot: [{service_id, description, price}]']
   parts jsonb [note: 'snapshot: [{part_id, description, quantity, unit_price}]']
   total_amount numeric [not null]
   notes text
   created_at timestamp
   updated_at timestamp
+  started_at timestamp [null, note: 'gravado na entrada em in_execution']
+  finished_at timestamp [null, note: 'gravado na entrada em finished']
 
   indexes {
-    customer_id
+    requester_id
   }
 }

@@ -124,3 +124,80 @@ func TestRequester_SetPhone_TouchesUpdatedAt(t *testing.T) {
 		t.Error("expected UpdatedAt to be updated after SetPhone")
 	}
 }
+
+func TestNewRequester_StartsActive(t *testing.T) {
+	c, err := NewRequester("João", "52998224725", "j@j.com", "11999")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if c.Status() != RequesterStatusActive {
+		t.Errorf("expected status %q, got %q", RequesterStatusActive, c.Status())
+	}
+	if !c.IsActive() {
+		t.Error("expected new requester to be active")
+	}
+}
+
+func TestReconstituteRequester_StartsActive(t *testing.T) {
+	now := time.Now()
+	c := ReconstituteRequester("id-1", "Maria", "98765432100", "maria@email.com", "11888880000", now, now)
+
+	if !c.IsActive() {
+		t.Error("expected reconstituted requester to default to active")
+	}
+}
+
+func TestRequester_SetStatus(t *testing.T) {
+	cases := []struct {
+		name     string
+		status   RequesterStatus
+		expected RequesterStatus
+	}{
+		{"inativa", RequesterStatusInactive, RequesterStatusInactive},
+		{"reativa", RequesterStatusActive, RequesterStatusActive},
+		{"status desconhecido e ignorado", RequesterStatus("banido"), RequesterStatusActive},
+		{"status vazio e ignorado", RequesterStatus(""), RequesterStatusActive},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			c, err := NewRequester("João", "52998224725", "j@j.com", "11999")
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			c.SetStatus(tc.status)
+
+			if c.Status() != tc.expected {
+				t.Errorf("expected status %q, got %q", tc.expected, c.Status())
+			}
+		})
+	}
+}
+
+func TestRequester_SetStatus_DoesNotTouchUpdatedAt(t *testing.T) {
+	c, err := NewRequester("João", "52998224725", "j@j.com", "11999")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	before := c.UpdatedAt()
+	time.Sleep(time.Millisecond)
+	c.SetStatus(RequesterStatusInactive)
+
+	if !c.UpdatedAt().Equal(before) {
+		t.Error("expected SetStatus to preserve UpdatedAt during reconstitution")
+	}
+}
+
+func TestRequesterStatus_IsValid(t *testing.T) {
+	valid := []RequesterStatus{RequesterStatusActive, RequesterStatusInactive}
+	for _, s := range valid {
+		if !s.IsValid() {
+			t.Errorf("expected %q to be valid", s)
+		}
+	}
+
+	if RequesterStatus("qualquer").IsValid() {
+		t.Error("expected unknown status to be invalid")
+	}
+}

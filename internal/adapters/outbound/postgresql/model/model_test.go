@@ -28,6 +28,29 @@ func TestFromRequester_ToDomain_RoundTrip(t *testing.T) {
 	}
 }
 
+func TestRequester_StatusRoundTrip(t *testing.T) {
+	now := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+	c := entities.ReconstituteRequester("id-1", "João", "12345678901", "j@j.com", "11999", now, now)
+	c.SetStatus(entities.RequesterStatusInactive)
+
+	m := FromRequester(c)
+	if m.Status != string(entities.RequesterStatusInactive) {
+		t.Fatalf("expected persisted status %q, got %q", entities.RequesterStatusInactive, m.Status)
+	}
+
+	if back := m.ToDomain(); back.IsActive() {
+		t.Error("expected inactive requester after round trip")
+	}
+}
+
+func TestRequester_ToDomain_EmptyStatusStaysActive(t *testing.T) {
+	m := &Requester{ID: "id-1", Name: "João", Document: "12345678901", Email: "j@j.com", Phone: "11999"}
+
+	if !m.ToDomain().IsActive() {
+		t.Error("expected requester with empty status column to be active")
+	}
+}
+
 // --- Vehicle ---
 
 func TestFromVehicle_ToDomain_RoundTrip(t *testing.T) {

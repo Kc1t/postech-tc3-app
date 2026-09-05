@@ -7,11 +7,12 @@ import (
 )
 
 type Requester struct {
-	ID        string    `gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
-	Name      string    `gorm:"not null"`
-	Document  string    `gorm:"uniqueIndex;not null"`
-	Email     string    `gorm:"not null"`
-	Phone     string    `gorm:"not null"`
+	ID        string `gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
+	Name      string `gorm:"not null"`
+	Document  string `gorm:"uniqueIndex;not null"`
+	Email     string `gorm:"not null"`
+	Phone     string `gorm:"not null"`
+	Status    string `gorm:"not null;default:'active'"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
@@ -23,11 +24,14 @@ func FromRequester(c *entities.Requester) *Requester {
 		Document:  c.Document(),
 		Email:     c.Email(),
 		Phone:     c.Phone(),
+		Status:    string(c.Status()),
 		CreatedAt: c.CreatedAt(),
 		UpdatedAt: c.UpdatedAt(),
 	}
 }
 
 func (m *Requester) ToDomain() *entities.Requester {
-	return entities.ReconstituteRequester(m.ID, m.Name, m.Document, m.Email, m.Phone, m.CreatedAt, m.UpdatedAt)
+	requester := entities.ReconstituteRequester(m.ID, m.Name, m.Document, m.Email, m.Phone, m.CreatedAt, m.UpdatedAt)
+	requester.SetStatus(entities.RequesterStatus(m.Status))
+	return requester
 }
