@@ -43,6 +43,9 @@ O que mudou na aplicação nesta fase:
 | [`docs/MODELAGEM_DE_DADOS.md`](docs/MODELAGEM_DE_DADOS.md) | Justificativa do banco, relacionamentos e diagrama ER |
 | [`docs/rfc/README.md`](docs/rfc/README.md) | RFCs: nuvem, banco gerenciado, autenticação |
 | [`docs/adr/README.md`](docs/adr/README.md) | ADRs 0001–0010 |
+| [`docs/newrelic/README.md`](docs/newrelic/README.md) | Observabilidade: dashboards, alertas e origem de cada métrica |
+| [`docs/DOCUMENTO_ENTREGA_FASE3.md`](docs/DOCUMENTO_ENTREGA_FASE3.md) | Documento de entrega, base do PDF do portal |
+| [`docs/ROTEIRO_VIDEO.md`](docs/ROTEIRO_VIDEO.md) | Roteiro do vídeo de demonstração |
 
 ---
 
