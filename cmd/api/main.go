@@ -8,7 +8,9 @@ import (
 	"github.com/fiap/postech-tc1/cmd/api/routes"
 	"github.com/fiap/postech-tc1/config"
 	"github.com/fiap/postech-tc1/pkg/logger"
+	"github.com/fiap/postech-tc1/pkg/observability"
 	"github.com/gin-gonic/gin"
+	"github.com/newrelic/go-agent/v3/integrations/nrgin"
 )
 
 // @title           Workshop API
@@ -29,6 +31,18 @@ func main() {
 
 	router := gin.New()
 	router.Use(gin.Recovery())
+
+	nrApp, err := observability.NewRelic(container.Config.NewRelicAppName, container.Config.NewRelicLicenseKey)
+	switch {
+	case err != nil:
+		appLogger.Error("new relic desabilitado", "error", err)
+	case nrApp != nil:
+		router.Use(nrgin.Middleware(nrApp))
+		appLogger.Info("new relic habilitado", "app_name", container.Config.NewRelicAppName)
+	default:
+		appLogger.Info("new relic desabilitado: NEW_RELIC_LICENSE_KEY ausente")
+	}
+
 	router.Use(middleware.CorrelationID())
 	router.Use(middleware.RequestLogger(appLogger, "/health"))
 

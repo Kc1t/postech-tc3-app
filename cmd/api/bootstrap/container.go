@@ -9,8 +9,8 @@ import (
 	"github.com/fiap/postech-tc1/config"
 	"github.com/fiap/postech-tc1/internal/adapters/outbound/jwt"
 	"github.com/fiap/postech-tc1/internal/adapters/outbound/postgresql"
-	smtpadapter "github.com/fiap/postech-tc1/internal/adapters/outbound/smtp"
 	pgmodel "github.com/fiap/postech-tc1/internal/adapters/outbound/postgresql/model"
+	smtpadapter "github.com/fiap/postech-tc1/internal/adapters/outbound/smtp"
 	"github.com/fiap/postech-tc1/internal/domain/entities"
 	"github.com/fiap/postech-tc1/internal/ports"
 	"github.com/fiap/postech-tc1/pkg/hasher"
@@ -18,15 +18,15 @@ import (
 	"gorm.io/gorm"
 
 	authhandler "github.com/fiap/postech-tc1/internal/adapters/inbound/http/auth"
-	requesterhandler "github.com/fiap/postech-tc1/internal/adapters/inbound/http/requester"
 	parthandler "github.com/fiap/postech-tc1/internal/adapters/inbound/http/part"
+	requesterhandler "github.com/fiap/postech-tc1/internal/adapters/inbound/http/requester"
 	servicehandler "github.com/fiap/postech-tc1/internal/adapters/inbound/http/service"
 	serviceorderhandler "github.com/fiap/postech-tc1/internal/adapters/inbound/http/service_order"
 	vehiclehandler "github.com/fiap/postech-tc1/internal/adapters/inbound/http/vehicle"
 
 	authuc "github.com/fiap/postech-tc1/internal/application/usecase/auth"
-	requesteruc "github.com/fiap/postech-tc1/internal/application/usecase/requester"
 	partuc "github.com/fiap/postech-tc1/internal/application/usecase/part"
+	requesteruc "github.com/fiap/postech-tc1/internal/application/usecase/requester"
 	serviceuc "github.com/fiap/postech-tc1/internal/application/usecase/service"
 	serviceorderuc "github.com/fiap/postech-tc1/internal/application/usecase/service_order"
 	vehicleuc "github.com/fiap/postech-tc1/internal/application/usecase/vehicle"
@@ -42,7 +42,7 @@ type Container struct {
 	// Repositories
 	UserRepo         ports.UserRepository         `container:"repository"`
 	RefreshTokenRepo ports.RefreshTokenRepository `container:"repository"`
-	RequesterRepo     ports.RequesterRepository     `container:"repository"`
+	RequesterRepo    ports.RequesterRepository    `container:"repository"`
 	VehicleRepo      ports.VehicleRepository      `container:"repository"`
 	ServiceOrderRepo ports.ServiceOrderRepository `container:"repository"`
 	ServiceRepo      ports.ServiceRepository      `container:"repository"`
@@ -63,23 +63,23 @@ type Container struct {
 	DeleteRequester        ports.DeleteRequesterUseCase        `container:"usecase"`
 
 	// Use Cases — vehicle
-	CreateVehicle          ports.CreateVehicleUseCase          `container:"usecase"`
-	GetVehicle             ports.GetVehicleUseCase             `container:"usecase"`
-	ListVehicles           ports.ListVehiclesUseCase           `container:"usecase"`
+	CreateVehicle           ports.CreateVehicleUseCase           `container:"usecase"`
+	GetVehicle              ports.GetVehicleUseCase              `container:"usecase"`
+	ListVehicles            ports.ListVehiclesUseCase            `container:"usecase"`
 	ListVehiclesByRequester ports.ListVehiclesByRequesterUseCase `container:"usecase"`
-	UpdateVehicle          ports.UpdateVehicleUseCase          `container:"usecase"`
-	DeleteVehicle          ports.DeleteVehicleUseCase          `container:"usecase"`
+	UpdateVehicle           ports.UpdateVehicleUseCase           `container:"usecase"`
+	DeleteVehicle           ports.DeleteVehicleUseCase           `container:"usecase"`
 
 	// Use Cases — service order
-	CreateServiceOrder          ports.CreateServiceOrderUseCase          `container:"usecase"`
-	GetServiceOrder             ports.GetServiceOrderUseCase             `container:"usecase"`
-	GetServiceOrderByCode       ports.GetServiceOrderByCodeUseCase       `container:"usecase"`
-	ListServiceOrders           ports.ListServiceOrdersUseCase           `container:"usecase"`
-	ListServiceOrdersByRequester ports.ListServiceOrdersByRequesterUseCase `container:"usecase"`
-	ListServiceOrdersByDocument ports.ListServiceOrdersByDocumentUseCase `container:"usecase"`
-	UpdateServiceOrderStatus    ports.UpdateServiceOrderStatusUseCase    `container:"usecase"`
-	UpdateServiceOrder          ports.UpdateServiceOrderUseCase          `container:"usecase"`
-	DeleteServiceOrder          ports.DeleteServiceOrderUseCase          `container:"usecase"`
+	CreateServiceOrder             ports.CreateServiceOrderUseCase             `container:"usecase"`
+	GetServiceOrder                ports.GetServiceOrderUseCase                `container:"usecase"`
+	GetServiceOrderByCode          ports.GetServiceOrderByCodeUseCase          `container:"usecase"`
+	ListServiceOrders              ports.ListServiceOrdersUseCase              `container:"usecase"`
+	ListServiceOrdersByRequester   ports.ListServiceOrdersByRequesterUseCase   `container:"usecase"`
+	ListServiceOrdersByDocument    ports.ListServiceOrdersByDocumentUseCase    `container:"usecase"`
+	UpdateServiceOrderStatus       ports.UpdateServiceOrderStatusUseCase       `container:"usecase"`
+	UpdateServiceOrder             ports.UpdateServiceOrderUseCase             `container:"usecase"`
+	DeleteServiceOrder             ports.DeleteServiceOrderUseCase             `container:"usecase"`
 	UpdateServiceOrderStatusByCode ports.UpdateServiceOrderStatusByCodeUseCase `container:"usecase"`
 	GetAverageExecutionTime        ports.GetAverageExecutionTimeUseCase        `container:"usecase"`
 
@@ -100,7 +100,7 @@ type Container struct {
 
 	// Handlers
 	AuthHandler         *authhandler.AuthHandler                 `container:"handler"`
-	RequesterHandler     *requesterhandler.RequesterHandler         `container:"handler"`
+	RequesterHandler    *requesterhandler.RequesterHandler       `container:"handler"`
 	VehicleHandler      *vehiclehandler.VehicleHandler           `container:"handler"`
 	ServiceOrderHandler *serviceorderhandler.ServiceOrderHandler `container:"handler"`
 	ServiceHandler      *servicehandler.ServiceHandler           `container:"handler"`

@@ -148,11 +148,20 @@ jobs:
 
       - name: Criar/atualizar Secret no Kubernetes
         run: |
-          kubectl create secret generic workshop-api-secret             --namespace="$NAMESPACE"             --from-literal=JWT_SECRET="${{ secrets.JWT_SECRET }}"             --from-literal=POSTGRES_DSN="${{ secrets.POSTGRES_DSN }}"             --from-literal=SMTP_USERNAME="${{ secrets.SMTP_USERNAME }}"             --from-literal=SMTP_PASSWORD="${{ secrets.SMTP_PASSWORD }}"             --from-literal=ADMIN_PASSWORD="${{ secrets.ADMIN_PASSWORD }}"             --dry-run=client -o yaml | kubectl apply -f -
+          kubectl create secret generic workshop-api-secret \
+            --namespace="$NAMESPACE" \
+            --from-literal=JWT_SECRET="${{ secrets.JWT_SECRET }}" \
+            --from-literal=POSTGRES_DSN="${{ secrets.POSTGRES_DSN }}" \
+            --from-literal=SMTP_USERNAME="${{ secrets.SMTP_USERNAME }}" \
+            --from-literal=SMTP_PASSWORD="${{ secrets.SMTP_PASSWORD }}" \
+            --from-literal=ADMIN_PASSWORD="${{ secrets.ADMIN_PASSWORD }}" \
+            --from-literal=NEW_RELIC_LICENSE_KEY="${{ secrets.NEW_RELIC_LICENSE_KEY }}" \
+            --dry-run=client -o yaml | kubectl apply -f -
 
       - name: Substituir imagem no manifesto e aplicar
         run: |
           sed -i "s|IMAGE_PLACEHOLDER|$IMAGE|g" k8s/deployment.yaml
+          sed -i "s|NAMESPACE_PLACEHOLDER|$NAMESPACE|g" k8s/configmap.yaml
           kubectl apply -n "$NAMESPACE" -f k8s/configmap.yaml
           kubectl apply -n "$NAMESPACE" -f k8s/deployment.yaml
           kubectl apply -n "$NAMESPACE" -f k8s/service.yaml
