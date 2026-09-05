@@ -1,29 +1,324 @@
 {
   "info": {
-    "name": "Postech TC1 - Workshop API",
+    "name": "Postech TC3 - Workshop API",
     "description": "Sistema Integrado de Atendimento e Execucao de Servicos - Oficina Mecanica.\n\nVariaveis:\n- base_url: http://localhost:8080/api/v1\n- token: setado automaticamente pelo Login\n- refresh_token: setado automaticamente pelo Login\n\nFluxo sugerido: Auth > Login > demais endpoints.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    { "key": "base_url", "value": "http://localhost:8080/api/v1" },
-    { "key": "token", "value": "" },
-    { "key": "refresh_token", "value": "" }
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080/api/v1"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "refresh_token",
+      "value": ""
+    },
+    {
+      "key": "gateway_url",
+      "value": "https://SEU-API-ID.execute-api.us-east-1.amazonaws.com"
+    },
+    {
+      "key": "cpf",
+      "value": "52998224725"
+    }
   ],
   "auth": {
     "type": "bearer",
-    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
   },
   "item": [
+    {
+      "name": "Fase 3 - Autenticacao por CPF (API Gateway)",
+      "description": "Rotas expostas pelo API Gateway. `POST /auth` e aberta e emite o JWT a partir do CPF; as rotas sob `/api/v1` passam pelo authorizer Lambda. Preencha a variavel `gateway_url` com o endpoint do gateway.",
+      "item": [
+        {
+          "name": "Emitir token por CPF (sucesso)",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/auth",
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "auth"
+              ]
+            },
+            "description": "Cliente ativo. Devolve 200 e grava o token na variavel de colecao.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cpf\": \"{{cpf}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "if (pm.response.code === 200 && body.access_token) {",
+                  "  pm.collectionVariables.set('token', body.access_token);",
+                  "  pm.test('token emitido', () => pm.expect(body.token_type).to.eql('Bearer'));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "CPF invalido (400)",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/auth",
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "auth"
+              ]
+            },
+            "description": "Digito verificador invalido. A Lambda rejeita antes de consultar o banco.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cpf\": \"111.111.111-11\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Cliente inexistente (404)",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/auth",
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "auth"
+              ]
+            },
+            "description": "CPF valido, mas sem cadastro em `requesters`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cpf\": \"390.533.447-05\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Cliente inativo (403)",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/auth",
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "auth"
+              ]
+            },
+            "description": "CPF valido e cadastrado, mas com `status = inactive`. Troque pelo CPF do cliente desativado.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cpf\": \"SUBSTITUA_PELO_CPF_INATIVO\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Rota protegida SEM token (401 no gateway)",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/api/v1/service-orders/code/1",
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "service-orders",
+                "code",
+                "1"
+              ]
+            },
+            "description": "O authorizer barra antes de a requisicao chegar na aplicacao."
+          }
+        },
+        {
+          "name": "Rota protegida COM token (200)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/api/v1/service-orders/code/1",
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "service-orders",
+                "code",
+                "1"
+              ]
+            },
+            "description": "Usa o token emitido pelo CPF. O middleware da aplicacao valida o mesmo JWT."
+          }
+        },
+        {
+          "name": "Aprovar orcamento como cliente",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/api/v1/service-orders/code/1/status",
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "service-orders",
+                "code",
+                "1",
+                "status"
+              ]
+            },
+            "description": "Transicao permitida ao solicitante: `in_execution` aprova, `received` recusa.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"in_execution\",\n  \"requester_document\": \"{{cpf}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Healthcheck (rota aberta)",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{gateway_url}}/health",
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": "Usada pelas probes do Kubernetes e pelo monitoramento de uptime."
+          }
+        }
+      ]
+    },
     {
       "name": "Auth",
       "item": [
         {
           "name": "Register",
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{base_url}}/auth/register", "host": ["{{base_url}}"], "path": ["auth", "register"] },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Mecanico Admin\",\n  \"email\": \"admin@oficina.com\",\n  \"password\": \"senha12345\"\n}"
@@ -48,10 +343,26 @@
             }
           ],
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"admin@oficina.com\",\n  \"password\": \"senha12345\"\n}"
@@ -76,10 +387,26 @@
             }
           ],
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{base_url}}/auth/refresh", "host": ["{{base_url}}"], "path": ["auth", "refresh"] },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/refresh",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "refresh"
+              ]
+            },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"refresh_token\": \"{{refresh_token}}\"\n}"
@@ -90,7 +417,16 @@
           "name": "Logout",
           "request": {
             "method": "POST",
-            "url": { "raw": "{{base_url}}/auth/logout", "host": ["{{base_url}}"], "path": ["auth", "logout"] }
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ]
+            }
           }
         }
       ]
@@ -102,8 +438,21 @@
           "name": "Create Requester",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{base_url}}/requesters", "host": ["{{base_url}}"], "path": ["requesters"] },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/requesters",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "requesters"
+              ]
+            },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Joao Silva\",\n  \"document\": \"52998224725\",\n  \"email\": \"joao@email.com\",\n  \"phone\": \"11999990000\"\n}"
@@ -114,36 +463,111 @@
           "name": "List Requesters",
           "request": {
             "method": "GET",
-            "url": { "raw": "{{base_url}}/requesters", "host": ["{{base_url}}"], "path": ["requesters"] }
+            "url": {
+              "raw": "{{base_url}}/requesters",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "requesters"
+              ]
+            }
           }
         },
         {
           "name": "Get Requester by ID",
           "request": {
             "method": "GET",
-            "url": { "raw": "{{base_url}}/requesters/:id", "host": ["{{base_url}}"], "path": ["requesters", ":id"], "variable": [{ "key": "id", "value": "" }] }
+            "url": {
+              "raw": "{{base_url}}/requesters/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "requesters",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
           }
         },
         {
           "name": "Get Requester by Document",
           "request": {
             "method": "GET",
-            "url": { "raw": "{{base_url}}/requesters/document/:document", "host": ["{{base_url}}"], "path": ["requesters", "document", ":document"], "variable": [{ "key": "document", "value": "52998224725" }] }
+            "url": {
+              "raw": "{{base_url}}/requesters/document/:document",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "requesters",
+                "document",
+                ":document"
+              ],
+              "variable": [
+                {
+                  "key": "document",
+                  "value": "52998224725"
+                }
+              ]
+            }
           }
         },
         {
           "name": "List Vehicles by Requester",
           "request": {
             "method": "GET",
-            "url": { "raw": "{{base_url}}/requesters/:id/vehicles", "host": ["{{base_url}}"], "path": ["requesters", ":id", "vehicles"], "variable": [{ "key": "id", "value": "" }] }
+            "url": {
+              "raw": "{{base_url}}/requesters/:id/vehicles",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "requesters",
+                ":id",
+                "vehicles"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
           }
         },
         {
           "name": "Update Requester",
           "request": {
             "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{base_url}}/requesters/:id", "host": ["{{base_url}}"], "path": ["requesters", ":id"], "variable": [{ "key": "id", "value": "" }] },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/requesters/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "requesters",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Joao Silva Atualizado\",\n  \"email\": \"joao.novo@email.com\",\n  \"phone\": \"11888880000\"\n}"
@@ -154,7 +578,22 @@
           "name": "Delete Requester",
           "request": {
             "method": "DELETE",
-            "url": { "raw": "{{base_url}}/requesters/:id", "host": ["{{base_url}}"], "path": ["requesters", ":id"], "variable": [{ "key": "id", "value": "" }] }
+            "url": {
+              "raw": "{{base_url}}/requesters/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "requesters",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
           }
         }
       ]
@@ -166,8 +605,21 @@
           "name": "Create Vehicle",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{base_url}}/vehicles", "host": ["{{base_url}}"], "path": ["vehicles"] },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/vehicles",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vehicles"
+              ]
+            },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"requester_document\": \"52998224725\",\n  \"plate\": \"ABC1D23\",\n  \"brand\": \"Toyota\",\n  \"model\": \"Corolla\",\n  \"year\": 2022\n}"
@@ -178,22 +630,65 @@
           "name": "List Vehicles",
           "request": {
             "method": "GET",
-            "url": { "raw": "{{base_url}}/vehicles", "host": ["{{base_url}}"], "path": ["vehicles"] }
+            "url": {
+              "raw": "{{base_url}}/vehicles",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vehicles"
+              ]
+            }
           }
         },
         {
           "name": "Get Vehicle by ID",
           "request": {
             "method": "GET",
-            "url": { "raw": "{{base_url}}/vehicles/:id", "host": ["{{base_url}}"], "path": ["vehicles", ":id"], "variable": [{ "key": "id", "value": "" }] }
+            "url": {
+              "raw": "{{base_url}}/vehicles/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vehicles",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
           }
         },
         {
           "name": "Update Vehicle",
           "request": {
             "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{base_url}}/vehicles/:id", "host": ["{{base_url}}"], "path": ["vehicles", ":id"], "variable": [{ "key": "id", "value": "" }] },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/vehicles/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vehicles",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"plate\": \"XYZ9A87\",\n  \"brand\": \"Toyota\",\n  \"model\": \"Corolla Cross\",\n  \"year\": 2023\n}"
@@ -204,7 +699,22 @@
           "name": "Delete Vehicle",
           "request": {
             "method": "DELETE",
-            "url": { "raw": "{{base_url}}/vehicles/:id", "host": ["{{base_url}}"], "path": ["vehicles", ":id"], "variable": [{ "key": "id", "value": "" }] }
+            "url": {
+              "raw": "{{base_url}}/vehicles/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vehicles",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
           }
         }
       ]
@@ -216,8 +726,21 @@
           "name": "Create Service",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{base_url}}/services", "host": ["{{base_url}}"], "path": ["services"] },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/services",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "services"
+              ]
+            },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"code\": 1001,\n  \"name\": \"Troca de Oleo\",\n  \"description\": \"Troca de oleo e filtro\",\n  \"price\": 150.00,\n  \"duration_min\": 60\n}"
@@ -228,22 +751,65 @@
           "name": "List Services",
           "request": {
             "method": "GET",
-            "url": { "raw": "{{base_url}}/services", "host": ["{{base_url}}"], "path": ["services"] }
+            "url": {
+              "raw": "{{base_url}}/services",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "services"
+              ]
+            }
           }
         },
         {
           "name": "Get Service by ID",
           "request": {
             "method": "GET",
-            "url": { "raw": "{{base_url}}/services/:id", "host": ["{{base_url}}"], "path": ["services", ":id"], "variable": [{ "key": "id", "value": "" }] }
+            "url": {
+              "raw": "{{base_url}}/services/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "services",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
           }
         },
         {
           "name": "Update Service",
           "request": {
             "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{base_url}}/services/:id", "host": ["{{base_url}}"], "path": ["services", ":id"], "variable": [{ "key": "id", "value": "" }] },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/services/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "services",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Troca de Oleo Sintetico\",\n  \"price\": 200.00,\n  \"duration_min\": 45\n}"
@@ -254,7 +820,22 @@
           "name": "Delete Service",
           "request": {
             "method": "DELETE",
-            "url": { "raw": "{{base_url}}/services/:id", "host": ["{{base_url}}"], "path": ["services", ":id"], "variable": [{ "key": "id", "value": "" }] }
+            "url": {
+              "raw": "{{base_url}}/services/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "services",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
           }
         }
       ]
@@ -266,8 +847,21 @@
           "name": "Create Part",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{base_url}}/parts", "host": ["{{base_url}}"], "path": ["parts"] },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/parts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "parts"
+              ]
+            },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"manufacturer_code\": \"FLT-1001\",\n  \"name\": \"Filtro de Oleo\",\n  \"description\": \"Filtro de oleo motor\",\n  \"unit\": \"unidade\",\n  \"price\": 35.90,\n  \"stock\": 50\n}"
@@ -278,22 +872,65 @@
           "name": "List Parts",
           "request": {
             "method": "GET",
-            "url": { "raw": "{{base_url}}/parts", "host": ["{{base_url}}"], "path": ["parts"] }
+            "url": {
+              "raw": "{{base_url}}/parts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "parts"
+              ]
+            }
           }
         },
         {
           "name": "Get Part by ID",
           "request": {
             "method": "GET",
-            "url": { "raw": "{{base_url}}/parts/:id", "host": ["{{base_url}}"], "path": ["parts", ":id"], "variable": [{ "key": "id", "value": "" }] }
+            "url": {
+              "raw": "{{base_url}}/parts/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "parts",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
           }
         },
         {
           "name": "Update Part",
           "request": {
             "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{base_url}}/parts/:id", "host": ["{{base_url}}"], "path": ["parts", ":id"], "variable": [{ "key": "id", "value": "" }] },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/parts/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "parts",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Filtro de Oleo Premium\",\n  \"price\": 45.90\n}"
@@ -304,15 +941,51 @@
           "name": "Delete Part",
           "request": {
             "method": "DELETE",
-            "url": { "raw": "{{base_url}}/parts/:id", "host": ["{{base_url}}"], "path": ["parts", ":id"], "variable": [{ "key": "id", "value": "" }] }
+            "url": {
+              "raw": "{{base_url}}/parts/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "parts",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
           }
         },
         {
           "name": "Adjust Stock",
           "request": {
             "method": "PATCH",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{base_url}}/parts/:id/stock", "host": ["{{base_url}}"], "path": ["parts", ":id", "stock"], "variable": [{ "key": "id", "value": "" }] },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/parts/:id/stock",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "parts",
+                ":id",
+                "stock"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"delta\": 10\n}"
@@ -329,8 +1002,21 @@
           "name": "Create Service Order",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{base_url}}/service-orders", "host": ["{{base_url}}"], "path": ["service-orders"] },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/service-orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "service-orders"
+              ]
+            },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"requester_document\": \"52998224725\",\n  \"vehicle_plate\": \"ABC1D23\",\n  \"notes\": \"Cliente relatou barulho no motor\"\n}"
@@ -341,29 +1027,82 @@
           "name": "List Service Orders",
           "request": {
             "method": "GET",
-            "url": { "raw": "{{base_url}}/service-orders", "host": ["{{base_url}}"], "path": ["service-orders"] }
+            "url": {
+              "raw": "{{base_url}}/service-orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "service-orders"
+              ]
+            }
           }
         },
         {
           "name": "Get Service Order by ID",
           "request": {
             "method": "GET",
-            "url": { "raw": "{{base_url}}/service-orders/:id", "host": ["{{base_url}}"], "path": ["service-orders", ":id"], "variable": [{ "key": "id", "value": "" }] }
+            "url": {
+              "raw": "{{base_url}}/service-orders/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "service-orders",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
           }
         },
         {
           "name": "Average Execution Time (metrics)",
           "request": {
             "method": "GET",
-            "url": { "raw": "{{base_url}}/service-orders/metrics/execution-time", "host": ["{{base_url}}"], "path": ["service-orders", "metrics", "execution-time"] }
+            "url": {
+              "raw": "{{base_url}}/service-orders/metrics/execution-time",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "service-orders",
+                "metrics",
+                "execution-time"
+              ]
+            }
           }
         },
         {
           "name": "Update Service Order (notes)",
           "request": {
             "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{base_url}}/service-orders/:id", "host": ["{{base_url}}"], "path": ["service-orders", ":id"], "variable": [{ "key": "id", "value": "" }] },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/service-orders/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "service-orders",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"notes\": \"Atualizacao do diagnostico inicial\"\n}"
@@ -374,8 +1113,29 @@
           "name": "Update Status - in_diagnosis",
           "request": {
             "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{base_url}}/service-orders/:id/status", "host": ["{{base_url}}"], "path": ["service-orders", ":id", "status"], "variable": [{ "key": "id", "value": "" }] },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/service-orders/:id/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "service-orders",
+                ":id",
+                "status"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"status\": \"in_diagnosis\"\n}"
@@ -386,8 +1146,29 @@
           "name": "Update Status - awaiting_approval (services + parts)",
           "request": {
             "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{base_url}}/service-orders/:id/status", "host": ["{{base_url}}"], "path": ["service-orders", ":id", "status"], "variable": [{ "key": "id", "value": "" }] },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/service-orders/:id/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "service-orders",
+                ":id",
+                "status"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"status\": \"awaiting_approval\",\n  \"services\": [\n    { \"code\": 1001 }\n  ],\n  \"parts\": [\n    { \"manufacturer_code\": \"FLT-1001\", \"quantity\": 1 }\n  ]\n}"
@@ -398,8 +1179,29 @@
           "name": "Update Status - in_execution",
           "request": {
             "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{base_url}}/service-orders/:id/status", "host": ["{{base_url}}"], "path": ["service-orders", ":id", "status"], "variable": [{ "key": "id", "value": "" }] },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/service-orders/:id/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "service-orders",
+                ":id",
+                "status"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"status\": \"in_execution\"\n}"
@@ -410,8 +1212,29 @@
           "name": "Update Status - finished",
           "request": {
             "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{base_url}}/service-orders/:id/status", "host": ["{{base_url}}"], "path": ["service-orders", ":id", "status"], "variable": [{ "key": "id", "value": "" }] },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/service-orders/:id/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "service-orders",
+                ":id",
+                "status"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"status\": \"finished\"\n}"
@@ -422,8 +1245,29 @@
           "name": "Update Status - delivered",
           "request": {
             "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{base_url}}/service-orders/:id/status", "host": ["{{base_url}}"], "path": ["service-orders", ":id", "status"], "variable": [{ "key": "id", "value": "" }] },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/service-orders/:id/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "service-orders",
+                ":id",
+                "status"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"status\": \"delivered\"\n}"
@@ -434,7 +1278,22 @@
           "name": "Delete Service Order",
           "request": {
             "method": "DELETE",
-            "url": { "raw": "{{base_url}}/service-orders/:id", "host": ["{{base_url}}"], "path": ["service-orders", ":id"], "variable": [{ "key": "id", "value": "" }] }
+            "url": {
+              "raw": "{{base_url}}/service-orders/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "service-orders",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
           }
         }
       ]
@@ -446,41 +1305,90 @@
         {
           "name": "Get OS by Code (public)",
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "url": {
               "raw": "{{base_url}}/service-orders/code/:code?document=52998224725",
-              "host": ["{{base_url}}"],
-              "path": ["service-orders", "code", ":code"],
-              "query": [{ "key": "document", "value": "52998224725" }],
-              "variable": [{ "key": "code", "value": "1" }]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "service-orders",
+                "code",
+                ":code"
+              ],
+              "query": [
+                {
+                  "key": "document",
+                  "value": "52998224725"
+                }
+              ],
+              "variable": [
+                {
+                  "key": "code",
+                  "value": "1"
+                }
+              ]
             }
           }
         },
         {
           "name": "List OS by Requester Document (public)",
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "url": {
               "raw": "{{base_url}}/service-orders/requester?document=52998224725",
-              "host": ["{{base_url}}"],
-              "path": ["service-orders", "requester"],
-              "query": [{ "key": "document", "value": "52998224725" }]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "service-orders",
+                "requester"
+              ],
+              "query": [
+                {
+                  "key": "document",
+                  "value": "52998224725"
+                }
+              ]
             }
           }
         },
         {
           "name": "Approve / Reject OS by Code (public)",
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": {
               "raw": "{{base_url}}/service-orders/code/:code/status",
-              "host": ["{{base_url}}"],
-              "path": ["service-orders", "code", ":code", "status"],
-              "variable": [{ "key": "code", "value": "1" }]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "service-orders",
+                "code",
+                ":code",
+                "status"
+              ],
+              "variable": [
+                {
+                  "key": "code",
+                  "value": "1"
+                }
+              ]
             },
             "body": {
               "mode": "raw",
