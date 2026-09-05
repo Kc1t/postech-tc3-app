@@ -1,11 +1,13 @@
 package main
 
 import (
-	"log"
+	"os"
 
 	"github.com/fiap/postech-tc1/cmd/api/bootstrap"
+	"github.com/fiap/postech-tc1/cmd/api/middleware"
 	"github.com/fiap/postech-tc1/cmd/api/routes"
 	"github.com/fiap/postech-tc1/config"
+	"github.com/fiap/postech-tc1/pkg/logger"
 	"github.com/gin-gonic/gin"
 )
 
@@ -17,21 +19,26 @@ import (
 // @securityDefinitions.apikey BearerAuth
 // @in              header
 // @name            Authorization
-func main() {	
-	// Comentario de teste para validar o fluxo de deploy via CI/CD.
+func main() {
 	container := bootstrap.GetContainer()
+	appLogger := logger.New(container.Config.LogLevel)
 
 	if container.Config.AppEnv == config.EnvProduction {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
-	router := gin.Default()
+	router := gin.New()
+	router.Use(gin.Recovery())
+	router.Use(middleware.CorrelationID())
+	router.Use(middleware.RequestLogger(appLogger, "/health"))
+
 	routes.Setup(router, container)
 
 	addr := ":" + container.Config.AppPort
-	log.Printf("server listening on %s (env=%s)", addr, container.Config.AppEnv)
+	appLogger.Info("server listening", "addr", addr, "env", string(container.Config.AppEnv))
 
 	if err := router.Run(addr); err != nil {
-		log.Fatalf("server error: %v", err)
+		appLogger.Error("server error", "error", err)
+		os.Exit(1)
 	}
 }

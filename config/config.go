@@ -15,6 +15,7 @@ const (
 type Config struct {
 	AppPort             string
 	AppEnv              AppEnv
+	LogLevel            string
 	PostgresDSN         string
 	JWTSecret           string
 	JWTExpirationHours  int
@@ -36,6 +37,7 @@ func Load() *Config {
 	return &Config{
 		AppPort:             env.GetOrDefault("APP_PORT", "8080"),
 		AppEnv:              AppEnv(env.GetOrDefault("APP_ENV", string(EnvDevelopment))),
+		LogLevel:            env.GetOrDefault("LOG_LEVEL", "info"),
 		PostgresDSN:         env.GetOrDefault("POSTGRES_DSN", "postgres://postgres:postgres@localhost:5432/workshop?sslmode=disable"),
 		JWTSecret:           env.GetOrDefault("JWT_SECRET", "change-me-in-production"),
 		JWTExpirationHours:  env.GetIntOrDefault("JWT_EXPIRATION_HOURS", 24),
