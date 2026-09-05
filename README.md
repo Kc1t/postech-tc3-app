@@ -15,16 +15,47 @@ Sistema integrado de atendimento e execução de serviços para oficinas mecâni
 
 </div>
 
+## Fase 3 — segurança, escalabilidade e observabilidade
+
+A Fase 3 quebrou o projeto em **quatro repositórios**, cada um com CI/CD próprio. Este aqui é a aplicação; a infraestrutura mora nos outros três.
+
+| Repositório | Responsabilidade |
+|---|---|
+| **`postech-tc3-app`** (este) | Aplicação Go rodando no EKS |
+| [`postech-tc3-lambda-auth`](https://github.com/Kc1t/postech-tc3-lambda-auth) | Autenticação serverless por CPF e authorizer do gateway |
+| [`postech-tc3-infra-k8s`](https://github.com/Kc1t/postech-tc3-infra-k8s) | Cluster EKS, metrics-server, API Gateway e agente New Relic |
+| [`postech-tc3-infra-database`](https://github.com/Kc1t/postech-tc3-infra-database) | RDS PostgreSQL gerenciado |
+
+O que mudou na aplicação nesta fase:
+
+- **Autenticação por CPF.** As rotas de consulta e aprovação de OS, públicas na Fase 2, passaram a exigir o JWT emitido pela Lambda a partir do CPF. Ver [`docs/rfc/0003-autenticacao-por-cpf.md`](docs/rfc/0003-autenticacao-por-cpf.md).
+- **`requesters.status`.** Nova coluna que permite à Lambda consultar existência **e** status do cliente. Ver [`docs/MODELAGEM_DE_DADOS.md`](docs/MODELAGEM_DE_DADOS.md).
+- **Logs estruturados em JSON com correlação.** Todo request recebe um `X-Correlation-ID`, devolvido na resposta e presente em cada log.
+- **Deploy por branch em namespaces separados.** `homolog` entrega em `postech-homolog`, `main` em `postech`, no mesmo cluster. Ver [`docs/adr/0010-cluster-unico-dois-namespaces.md`](docs/adr/0010-cluster-unico-dois-namespaces.md).
+
+### Documentação da Fase 3
+
+| Documento | Conteúdo |
+|---|---|
+| [`docs/diagrams/componentes.md`](docs/diagrams/componentes.md) | Diagrama de componentes com visão de nuvem |
+| [`docs/diagrams/sequencia-autenticacao.md`](docs/diagrams/sequencia-autenticacao.md) | Sequência da autenticação por CPF |
+| [`docs/diagrams/sequencia-ordem-servico.md`](docs/diagrams/sequencia-ordem-servico.md) | Sequência da abertura de OS |
+| [`docs/MODELAGEM_DE_DADOS.md`](docs/MODELAGEM_DE_DADOS.md) | Justificativa do banco, relacionamentos e diagrama ER |
+| [`docs/rfc/README.md`](docs/rfc/README.md) | RFCs: nuvem, banco gerenciado, autenticação |
+| [`docs/adr/README.md`](docs/adr/README.md) | ADRs 0001–0010 |
+
+---
+
 ## Guia rápido para avaliação
 
-Este README funciona como o **hub técnico da entrega da Fase 2**. Ele resume a solução, aponta onde cada requisito pode ser verificado e indexa os demais documentos do repositório para facilitar uma avaliação completa e objetiva.
+Esta seção abaixo é o **hub técnico da entrega da Fase 2**, mantido como referência histórica.
 
 Para avaliar o projeto com mais contexto, recomenda-se seguir esta ordem:
 
 1. **Entendimento da entrega:** [`docs/DOCUMENTO_ENTREGA_FASE2.md`](docs/DOCUMENTO_ENTREGA_FASE2.md)
 2. **Visão da solução:** [Sobre o projeto](#sobre-o-projeto), [Objetivos da Fase 2](#objetivos-da-fase-2) e [Arquitetura](#arquitetura)
 3. **Fluxo de negócio da Fase 2:** [Ordem de Serviço](#ordem-de-serviço-fluxo-da-fase-2) e [`postman_collection.json`](postman_collection.json)
-4. **Infraestrutura e deploy:** [`infra/README.md`](infra/README.md), [`k8s/README.md`](k8s/README.md) e [CI/CD](#cicd)
+4. **Infraestrutura e deploy:** [`k8s/README.md`](k8s/README.md), [CI/CD](#cicd) e os repositórios de infraestrutura da Fase 3
 5. **Decisões técnicas:** [`docs/adr/README.md`](docs/adr/README.md)
 6. **Segurança e qualidade:** [`docs/security-reports/RELATORIO.md`](docs/security-reports/RELATORIO.md) e [Testes](#testes)
 7. **Demonstração em vídeo:** https://www.youtube.com/watch?v=PiraAX3RVzg
@@ -102,7 +133,7 @@ A Fase 2 evolui a aplicação da Fase 1 com práticas modernas de infraestrutura
 | Escalabilidade automática | [`k8s/hpa.yaml`](k8s/hpa.yaml), 2 a 10 réplicas por CPU/memória. |
 | Infraestrutura como Código | [`infra/`](infra/) provisionando EKS e RDS PostgreSQL via Terraform. |
 | CI/CD | [`.github/workflows/ci.yml`](.github/workflows/ci.yml) com lint, dependências, testes, build/push no ECR, deploy no EKS e aplicação dos manifestos YAML. |
-| Banco de dados em infraestrutura | RDS PostgreSQL 16 provisionado por Terraform em [`infra/rds.tf`](infra/rds.tf), com DSN consumido pelo Secret do Kubernetes. |
+| Banco de dados em infraestrutura | RDS PostgreSQL 16 provisionado por Terraform em [`postech-tc3-infra-database`](https://github.com/Kc1t/postech-tc3-infra-database), com DSN consumido pelo Secret do Kubernetes. |
 | APIs documentadas | Swagger UI, [`docs/swagger.yaml`](docs/swagger.yaml) e [`postman_collection.json`](postman_collection.json). |
 | Entrega formal da Fase 2 | [`docs/DOCUMENTO_ENTREGA_FASE2.md`](docs/DOCUMENTO_ENTREGA_FASE2.md), [Checklist da entrega](#checklist-da-entrega), vídeo e links oficiais em [Entregáveis](#entregáveis). |
 | Vídeo demonstrativo | Demonstra deploy, execução da pipeline, consumo das APIs e escalabilidade automática: https://www.youtube.com/watch?v=PiraAX3RVzg |
@@ -197,7 +228,7 @@ O ambiente de produção roda na **AWS**, provisionado por Terraform e orquestra
                           └──────────────────────────────────────────────────────────┘
 ```
 
-Recursos criados pelo Terraform (detalhes em [`infra/README.md`](infra/README.md)):
+Recursos criados pelo Terraform (agora em [`postech-tc3-infra-k8s`](https://github.com/Kc1t/postech-tc3-infra-k8s) e [`postech-tc3-infra-database`](https://github.com/Kc1t/postech-tc3-infra-database)):
 
 - **Cluster EKS** (`terraform-aws-modules/eks`) com managed node group.
 - **RDS PostgreSQL 16** com subnet group e security group dedicado.
@@ -287,7 +318,7 @@ O PostgreSQL foi escolhido por oferecer recursos importantes para o domínio da 
 |----------------------|------------|
 | [`docs/DOCUMENTO_ENTREGA_FASE2.md`](docs/DOCUMENTO_ENTREGA_FASE2.md) | Documento objetivo da entrega da Fase 2, com grupo, links, requisitos e roteiro do vídeo. |
 | [`docs/DOCUMENTO_ENTREGA.md`](docs/DOCUMENTO_ENTREGA.md) | Documento da Fase 1, útil para entender a origem do domínio e a evolução da solução. |
-| [`infra/README.md`](infra/README.md) | Explica os recursos Terraform, variáveis, pré-requisitos, aplicação e destruição da infraestrutura. |
+| [`postech-tc3-infra-k8s`](https://github.com/Kc1t/postech-tc3-infra-k8s) e [`postech-tc3-infra-database`](https://github.com/Kc1t/postech-tc3-infra-database) | Terraform da infraestrutura, movido para repositórios próprios na Fase 3. |
 | [`k8s/README.md`](k8s/README.md) | Detalha os manifestos Kubernetes, ordem de aplicação, HPA, metrics-server e Secret da pipeline. |
 | [`docs/adr/README.md`](docs/adr/README.md) | Índice das decisões arquiteturais registradas no projeto. |
 | [`docs/adr/0001-go-language.md`](docs/adr/0001-go-language.md) | Justificativa da escolha de Go. |
@@ -341,25 +372,31 @@ go run ./cmd/api
 
 Os manifestos estão em [`k8s/`](k8s/). Aplicação manual (ordem importa):
 
+Os manifestos não declaram namespace: ele é escolhido na aplicação, o que permite usar os mesmos arquivos nos dois ambientes.
+
 ```bash
+NAMESPACE=postech-homolog   # ou postech, para produção
+
 # 1. Namespace
-kubectl apply -f k8s/namespace.yaml
+kubectl create namespace "$NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
 
 # 2. Configuração e segredos
 #    Ajuste os valores do Secret antes (JWT_SECRET, POSTGRES_DSN, SMTP_*, ADMIN_PASSWORD)
-kubectl apply -f k8s/configmap.yaml
-kubectl apply -f k8s/secret.yaml
+kubectl apply -n "$NAMESPACE" -f k8s/configmap.yaml
+kubectl apply -n "$NAMESPACE" -f k8s/secret.yaml
 
 # 3. Deployment, Service e HPA
 #    Substitua IMAGE_PLACEHOLDER pela imagem publicada no ECR
-kubectl apply -f k8s/deployment.yaml
-kubectl apply -f k8s/service.yaml
-kubectl apply -f k8s/hpa.yaml
+kubectl apply -n "$NAMESPACE" -f k8s/deployment.yaml
+kubectl apply -n "$NAMESPACE" -f k8s/service.yaml
+kubectl apply -n "$NAMESPACE" -f k8s/hpa.yaml
 
 # 4. Acompanhar o rollout e a URL pública
-kubectl rollout status deployment/workshop-api -n postech
-kubectl get svc workshop-api -n postech
+kubectl rollout status deployment/workshop-api -n "$NAMESPACE"
+kubectl get svc workshop-api -n "$NAMESPACE"
 ```
+
+> O `JWT_SECRET` precisa ser **o mesmo** configurado nas Lambdas de autenticação, senão os tokens emitidos por CPF são rejeitados com 401.
 
 Verificar a escalabilidade automática:
 
@@ -384,7 +421,7 @@ terraform apply -var="db_password=<senha-forte>"
 aws eks update-kubeconfig --name workshop-api --region us-east-1
 ```
 
-O `terraform apply` cria o cluster EKS e o RDS PostgreSQL. Os outputs incluem o endpoint do cluster, o comando de kubeconfig e o `POSTGRES_DSN` (sensível) a ser usado no Secret do Kubernetes. **Documentação completa dos recursos e variáveis em [`infra/README.md`](infra/README.md).**
+O `terraform apply` cria o cluster EKS e o RDS PostgreSQL. Os outputs incluem o endpoint do cluster, o comando de kubeconfig e o `POSTGRES_DSN` (sensível) a ser usado no Secret do Kubernetes. **O Terraform foi movido para os repositórios de infraestrutura na Fase 3; consulte o README de cada um.**
 
 ## CI/CD
 
