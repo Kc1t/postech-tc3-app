@@ -8,7 +8,7 @@ import (
 )
 
 type CreateVehicle struct {
-	repo         ports.VehicleRepository
+	repo          ports.VehicleRepository
 	requesterRepo ports.RequesterRepository
 }
 

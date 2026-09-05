@@ -3,13 +3,13 @@ package serviceorderuc
 import (
 	"context"
 
-	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
 	"github.com/fiap/postech-tc1/internal/domain/entities"
+	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
 	"github.com/fiap/postech-tc1/internal/ports"
 )
 
 type GetServiceOrderByCode struct {
-	repo         ports.ServiceOrderRepository
+	repo          ports.ServiceOrderRepository
 	requesterRepo ports.RequesterRepository
 }
 

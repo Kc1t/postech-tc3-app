@@ -48,22 +48,22 @@ func ReconstitutePart(id, manufacturerCode, name, description, unit string, pric
 }
 
 func (p *Part) ID() string               { return p.id }
-func (p *Part) ManufacturerCode() string  { return p.manufacturerCode }
-func (p *Part) Name() string              { return p.name }
-func (p *Part) Description() string       { return p.description }
-func (p *Part) Unit() string              { return p.unit }
-func (p *Part) Price() float64            { return p.price }
-func (p *Part) Stock() int                { return p.stock }
-func (p *Part) CreatedAt() time.Time      { return p.createdAt }
-func (p *Part) UpdatedAt() time.Time      { return p.updatedAt }
+func (p *Part) ManufacturerCode() string { return p.manufacturerCode }
+func (p *Part) Name() string             { return p.name }
+func (p *Part) Description() string      { return p.description }
+func (p *Part) Unit() string             { return p.unit }
+func (p *Part) Price() float64           { return p.price }
+func (p *Part) Stock() int               { return p.stock }
+func (p *Part) CreatedAt() time.Time     { return p.createdAt }
+func (p *Part) UpdatedAt() time.Time     { return p.updatedAt }
 
-func (p *Part) SetID(id string)                  { p.id = id }
-func (p *Part) SetManufacturerCode(code string)  { p.manufacturerCode = code; p.touch() }
-func (p *Part) SetName(n string)                 { p.name = n; p.touch() }
-func (p *Part) SetDescription(d string)          { p.description = d; p.touch() }
-func (p *Part) SetUnit(u string)                 { p.unit = u; p.touch() }
-func (p *Part) SetPrice(pr float64)              { p.price = pr; p.touch() }
-func (p *Part) SetStock(s int)                   { p.stock = s; p.touch() }
+func (p *Part) SetID(id string)                 { p.id = id }
+func (p *Part) SetManufacturerCode(code string) { p.manufacturerCode = code; p.touch() }
+func (p *Part) SetName(n string)                { p.name = n; p.touch() }
+func (p *Part) SetDescription(d string)         { p.description = d; p.touch() }
+func (p *Part) SetUnit(u string)                { p.unit = u; p.touch() }
+func (p *Part) SetPrice(pr float64)             { p.price = pr; p.touch() }
+func (p *Part) SetStock(s int)                  { p.stock = s; p.touch() }
 
 // AdjustStock aplica um delta (positivo = entrada, negativo = saida)
 // e falha se o estoque resultante ficaria negativo.

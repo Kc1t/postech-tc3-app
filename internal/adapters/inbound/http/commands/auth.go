@@ -18,8 +18,8 @@ type RefreshRequest struct {
 type AuthResponse struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
-	ExpiresIn    int    `json:"expires_in"`  // segundos ate expirar
-	TokenType    string `json:"token_type"`  // "Bearer"
+	ExpiresIn    int    `json:"expires_in"` // segundos ate expirar
+	TokenType    string `json:"token_type"` // "Bearer"
 }
 
 type MessageResponse struct {

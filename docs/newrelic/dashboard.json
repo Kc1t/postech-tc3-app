@@ -1,0 +1,276 @@
+{
+  "name": "Workshop API — Tech Challenge Fase 3",
+  "description": "Volume de ordens de servico, tempo por status, erros de integracao, latencia das APIs e recursos do Kubernetes.",
+  "permissions": "PUBLIC_READ_WRITE",
+  "pages": [
+    {
+      "name": "Negocio",
+      "description": "Metricas de ordem de servico exigidas pelo enunciado.",
+      "widgets": [
+        {
+          "title": "Volume diario de ordens de servico",
+          "layout": { "column": 1, "row": 1, "width": 8, "height": 3 },
+          "visualization": { "id": "viz.line" },
+          "rawConfiguration": {
+            "nrqlQueries": [
+              {
+                "accountIds": [0],
+                "query": "SELECT count(*) AS 'OS abertas' FROM Log WHERE msg = 'service_order_created' SINCE 30 days ago TIMESERIES 1 day"
+              }
+            ],
+            "platformOptions": { "ignoreTimeRange": false }
+          }
+        },
+        {
+          "title": "OS abertas hoje",
+          "layout": { "column": 9, "row": 1, "width": 4, "height": 3 },
+          "visualization": { "id": "viz.billboard" },
+          "rawConfiguration": {
+            "nrqlQueries": [
+              {
+                "accountIds": [0],
+                "query": "SELECT count(*) AS 'Hoje' FROM Log WHERE msg = 'service_order_created' SINCE today"
+              }
+            ]
+          }
+        },
+        {
+          "title": "Tempo medio de execucao (aprovacao ate finalizacao)",
+          "layout": { "column": 1, "row": 4, "width": 6, "height": 3 },
+          "visualization": { "id": "viz.line" },
+          "rawConfiguration": {
+            "nrqlQueries": [
+              {
+                "accountIds": [0],
+                "query": "SELECT average(execution_seconds) / 3600 AS 'Horas' FROM Log WHERE msg = 'service_order_status_changed' AND execution_seconds IS NOT NULL SINCE 7 days ago TIMESERIES"
+              }
+            ],
+            "platformOptions": { "ignoreTimeRange": false }
+          }
+        },
+        {
+          "title": "Transicoes por status",
+          "layout": { "column": 7, "row": 4, "width": 6, "height": 3 },
+          "visualization": { "id": "viz.bar" },
+          "rawConfiguration": {
+            "nrqlQueries": [
+              {
+                "accountIds": [0],
+                "query": "SELECT count(*) FROM Log WHERE msg = 'service_order_status_changed' FACET status SINCE 7 days ago"
+              }
+            ]
+          }
+        },
+        {
+          "title": "Quem move a OS: cliente ou oficina",
+          "layout": { "column": 1, "row": 7, "width": 6, "height": 3 },
+          "visualization": { "id": "viz.pie" },
+          "rawConfiguration": {
+            "nrqlQueries": [
+              {
+                "accountIds": [0],
+                "query": "SELECT count(*) FROM Log WHERE msg = 'service_order_status_changed' FACET actor SINCE 7 days ago"
+              }
+            ]
+          }
+        },
+        {
+          "title": "Erros e falhas nas integracoes",
+          "layout": { "column": 7, "row": 7, "width": 6, "height": 3 },
+          "visualization": { "id": "viz.line" },
+          "rawConfiguration": {
+            "nrqlQueries": [
+              {
+                "accountIds": [0],
+                "query": "SELECT count(*) FROM Log WHERE msg = 'integration_failure' FACET integration, stage SINCE 24 hours ago TIMESERIES"
+              }
+            ],
+            "platformOptions": { "ignoreTimeRange": false }
+          }
+        }
+      ]
+    },
+    {
+      "name": "APIs",
+      "description": "Latencia, erros e autenticacao.",
+      "widgets": [
+        {
+          "title": "Latencia das APIs (p50, p95, p99)",
+          "layout": { "column": 1, "row": 1, "width": 8, "height": 3 },
+          "visualization": { "id": "viz.line" },
+          "rawConfiguration": {
+            "nrqlQueries": [
+              {
+                "accountIds": [0],
+                "query": "SELECT percentile(latency_ms, 50, 95, 99) FROM Log WHERE msg = 'request' SINCE 6 hours ago TIMESERIES"
+              }
+            ],
+            "platformOptions": { "ignoreTimeRange": false }
+          }
+        },
+        {
+          "title": "Taxa de sucesso",
+          "layout": { "column": 9, "row": 1, "width": 4, "height": 3 },
+          "visualization": { "id": "viz.billboard" },
+          "rawConfiguration": {
+            "nrqlQueries": [
+              {
+                "accountIds": [0],
+                "query": "SELECT percentage(count(*), WHERE status < 400) AS 'Sucesso %' FROM Log WHERE msg = 'request' SINCE 6 hours ago"
+              }
+            ],
+            "thresholds": [
+              { "alertSeverity": "WARNING", "value": 99 },
+              { "alertSeverity": "CRITICAL", "value": 95 }
+            ]
+          }
+        },
+        {
+          "title": "Rotas mais lentas",
+          "layout": { "column": 1, "row": 4, "width": 6, "height": 3 },
+          "visualization": { "id": "viz.table" },
+          "rawConfiguration": {
+            "nrqlQueries": [
+              {
+                "accountIds": [0],
+                "query": "SELECT average(latency_ms) AS 'Media', percentile(latency_ms, 95) AS 'p95', count(*) AS 'Chamadas' FROM Log WHERE msg = 'request' FACET method, path SINCE 6 hours ago LIMIT 20"
+              }
+            ]
+          }
+        },
+        {
+          "title": "Respostas por status HTTP",
+          "layout": { "column": 7, "row": 4, "width": 6, "height": 3 },
+          "visualization": { "id": "viz.area" },
+          "rawConfiguration": {
+            "nrqlQueries": [
+              {
+                "accountIds": [0],
+                "query": "SELECT count(*) FROM Log WHERE msg = 'request' FACET cases(WHERE status < 300 AS '2xx', WHERE status < 400 AS '3xx', WHERE status < 500 AS '4xx', WHERE status >= 500 AS '5xx') SINCE 6 hours ago TIMESERIES"
+              }
+            ],
+            "platformOptions": { "ignoreTimeRange": false }
+          }
+        },
+        {
+          "title": "Autenticacao por CPF — resultado",
+          "layout": { "column": 1, "row": 7, "width": 6, "height": 3 },
+          "visualization": { "id": "viz.bar" },
+          "rawConfiguration": {
+            "nrqlQueries": [
+              {
+                "accountIds": [0],
+                "query": "SELECT count(*) FROM Log WHERE msg IN ('token emitido', 'cpf invalido', 'cliente nao encontrado', 'cliente inativo', 'token rejeitado') FACET msg SINCE 24 hours ago"
+              }
+            ]
+          }
+        },
+        {
+          "title": "Rastrear uma requisicao pelo correlation id",
+          "layout": { "column": 7, "row": 7, "width": 6, "height": 3 },
+          "visualization": { "id": "viz.table" },
+          "rawConfiguration": {
+            "nrqlQueries": [
+              {
+                "accountIds": [0],
+                "query": "SELECT timestamp, level, msg, path, status, latency_ms FROM Log WHERE correlation_id IS NOT NULL SINCE 1 hour ago LIMIT 50"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Kubernetes",
+      "description": "Consumo de recursos, healthcheck e escalabilidade.",
+      "widgets": [
+        {
+          "title": "CPU por pod",
+          "layout": { "column": 1, "row": 1, "width": 6, "height": 3 },
+          "visualization": { "id": "viz.line" },
+          "rawConfiguration": {
+            "nrqlQueries": [
+              {
+                "accountIds": [0],
+                "query": "SELECT average(cpuUsedCores) FROM K8sContainerSample WHERE containerName = 'workshop-api' FACET podName SINCE 3 hours ago TIMESERIES"
+              }
+            ],
+            "platformOptions": { "ignoreTimeRange": false }
+          }
+        },
+        {
+          "title": "Memoria por pod",
+          "layout": { "column": 7, "row": 1, "width": 6, "height": 3 },
+          "visualization": { "id": "viz.line" },
+          "rawConfiguration": {
+            "nrqlQueries": [
+              {
+                "accountIds": [0],
+                "query": "SELECT average(memoryWorkingSetBytes) / 1024 / 1024 AS 'MiB' FROM K8sContainerSample WHERE containerName = 'workshop-api' FACET podName SINCE 3 hours ago TIMESERIES"
+              }
+            ],
+            "platformOptions": { "ignoreTimeRange": false }
+          }
+        },
+        {
+          "title": "Replicas — HPA em acao",
+          "layout": { "column": 1, "row": 4, "width": 6, "height": 3 },
+          "visualization": { "id": "viz.line" },
+          "rawConfiguration": {
+            "nrqlQueries": [
+              {
+                "accountIds": [0],
+                "query": "SELECT latest(podsDesired) AS 'Desejadas', latest(podsReady) AS 'Prontas' FROM K8sDeploymentSample WHERE deploymentName = 'workshop-api' SINCE 3 hours ago TIMESERIES"
+              }
+            ],
+            "platformOptions": { "ignoreTimeRange": false }
+          }
+        },
+        {
+          "title": "Pods indisponiveis",
+          "layout": { "column": 7, "row": 4, "width": 6, "height": 3 },
+          "visualization": { "id": "viz.billboard" },
+          "rawConfiguration": {
+            "nrqlQueries": [
+              {
+                "accountIds": [0],
+                "query": "SELECT latest(podsUnavailable) AS 'Indisponiveis' FROM K8sDeploymentSample WHERE deploymentName = 'workshop-api' SINCE 30 minutes ago"
+              }
+            ],
+            "thresholds": [
+              { "alertSeverity": "WARNING", "value": 1 },
+              { "alertSeverity": "CRITICAL", "value": 2 }
+            ]
+          }
+        },
+        {
+          "title": "Reinicios de container",
+          "layout": { "column": 1, "row": 7, "width": 6, "height": 3 },
+          "visualization": { "id": "viz.line" },
+          "rawConfiguration": {
+            "nrqlQueries": [
+              {
+                "accountIds": [0],
+                "query": "SELECT sum(restartCount) FROM K8sContainerSample WHERE containerName = 'workshop-api' FACET podName SINCE 6 hours ago TIMESERIES"
+              }
+            ],
+            "platformOptions": { "ignoreTimeRange": false }
+          }
+        },
+        {
+          "title": "Uptime pelo healthcheck",
+          "layout": { "column": 7, "row": 7, "width": 6, "height": 3 },
+          "visualization": { "id": "viz.billboard" },
+          "rawConfiguration": {
+            "nrqlQueries": [
+              {
+                "accountIds": [0],
+                "query": "SELECT percentage(count(*), WHERE podsReady >= 1) AS 'Uptime %' FROM K8sDeploymentSample WHERE deploymentName = 'workshop-api' SINCE 24 hours ago"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

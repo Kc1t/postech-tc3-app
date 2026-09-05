@@ -6,12 +6,13 @@ import (
 	"github.com/fiap/postech-tc1/internal/domain/entities"
 	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
 	"github.com/fiap/postech-tc1/internal/ports"
+	"github.com/fiap/postech-tc1/pkg/logger"
 )
 
 type CreateServiceOrder struct {
-	repo         ports.ServiceOrderRepository
+	repo          ports.ServiceOrderRepository
 	requesterRepo ports.RequesterRepository
-	vehicleRepo  ports.VehicleRepository
+	vehicleRepo   ports.VehicleRepository
 }
 
 func NewCreateServiceOrder(
@@ -20,9 +21,9 @@ func NewCreateServiceOrder(
 	vehicleRepo ports.VehicleRepository,
 ) *CreateServiceOrder {
 	return &CreateServiceOrder{
-		repo:         repo,
+		repo:          repo,
 		requesterRepo: requesterRepo,
-		vehicleRepo:  vehicleRepo,
+		vehicleRepo:   vehicleRepo,
 	}
 }
 
@@ -47,6 +48,11 @@ func (uc *CreateServiceOrder) Execute(ctx context.Context, input entities.Servic
 	if err := uc.repo.Create(ctx, so); err != nil {
 		return nil, err
 	}
+
+	logger.FromContext(ctx).Info("service_order_created",
+		"service_order_code", so.Code(),
+		"requester_id", requester.ID(),
+		"vehicle_id", vehicle.ID())
 
 	return so, nil
 }

@@ -33,8 +33,8 @@ func (h *ServiceOrderHandler) Create(c *gin.Context) {
 
 	input := entities.ServiceOrderInput{
 		RequesterDocument: doc.Value(),
-		VehiclePlate:     req.VehiclePlate,
-		Notes:            req.Notes,
+		VehiclePlate:      req.VehiclePlate,
+		Notes:             req.Notes,
 	}
 
 	so, err := h.create.Execute(c.Request.Context(), input)

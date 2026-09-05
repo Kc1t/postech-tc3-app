@@ -2,11 +2,11 @@ package serviceorderuc
 
 import (
 	"context"
-	"log"
 
 	"github.com/fiap/postech-tc1/internal/domain/entities"
 	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
 	"github.com/fiap/postech-tc1/internal/ports"
+	"github.com/fiap/postech-tc1/pkg/logger"
 )
 
 type UpdateServiceOrderStatusByCode struct {
@@ -52,9 +52,16 @@ func (uc *UpdateServiceOrderStatusByCode) Execute(ctx context.Context, code int,
 		}
 	}
 
+	logger.FromContext(ctx).Info("service_order_status_changed",
+		"service_order_code", so.Code(),
+		"status", string(so.Status()),
+		"actor", "requester")
+
 	if uc.notifier != nil {
 		if err := uc.notifier.NotifyStatusChange(ctx, requester.Email(), requester.Name(), so.Code(), so.Status()); err != nil {
-			log.Printf("email notify: send failed for OS %d to %s: %v", so.Code(), requester.Email(), err)
+			logger.FromContext(ctx).Error("integration_failure",
+				"integration", "smtp", "stage", "send",
+				"service_order_code", so.Code(), "error", err)
 		}
 	}
 

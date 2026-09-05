@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/fiap/postech-tc1/pkg/logger"
 	"github.com/gin-gonic/gin"
 )
 
@@ -45,6 +46,7 @@ func RequestLogger(base *slog.Logger, skipPaths ...string) gin.HandlerFunc {
 			slog.String("path", c.Request.URL.Path),
 		)
 		c.Set(loggerCtxKey, requestLogger)
+		c.Request = c.Request.WithContext(logger.ContextWith(c.Request.Context(), requestLogger))
 
 		start := time.Now()
 		c.Next()
@@ -83,13 +85,11 @@ func CorrelationIDFrom(c *gin.Context) string {
 }
 
 func LoggerFrom(c *gin.Context) *slog.Logger {
-	if value, ok := c.Get(loggerCtxKey); ok {
-		if l, ok := value.(*slog.Logger); ok {
-			return l
-		}
+	if c.Request == nil {
+		return slog.Default()
 	}
 
-	return slog.Default()
+	return logger.FromContext(c.Request.Context())
 }
 
 func newCorrelationID() string {

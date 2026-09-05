@@ -52,10 +52,10 @@ func ReconstituteDocument(value string) Document {
 	return Document{value: digits, docType: docType}
 }
 
-func (d Document) Value() string        { return d.value }
-func (d Document) Type() DocumentType   { return d.docType }
-func (d Document) String() string       { return d.Formatted() }
-func (d Document) IsZero() bool         { return d.value == "" }
+func (d Document) Value() string      { return d.value }
+func (d Document) Type() DocumentType { return d.docType }
+func (d Document) String() string     { return d.Formatted() }
+func (d Document) IsZero() bool       { return d.value == "" }
 
 // Formatted retorna o documento com mascara.
 func (d Document) Formatted() string {

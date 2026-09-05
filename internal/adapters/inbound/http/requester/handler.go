@@ -6,13 +6,13 @@ import (
 )
 
 type RequesterHandler struct {
-	create           ports.CreateRequesterUseCase
-	getByID          ports.GetRequesterUseCase
-	getByDocument    ports.GetRequesterByDocumentUseCase
-	listAll          ports.ListRequestersUseCase
-	update           ports.UpdateRequesterUseCase
-	delete           ports.DeleteRequesterUseCase
-	listVehicles     ports.ListVehiclesByRequesterUseCase
+	create        ports.CreateRequesterUseCase
+	getByID       ports.GetRequesterUseCase
+	getByDocument ports.GetRequesterByDocumentUseCase
+	listAll       ports.ListRequestersUseCase
+	update        ports.UpdateRequesterUseCase
+	delete        ports.DeleteRequesterUseCase
+	listVehicles  ports.ListVehiclesByRequesterUseCase
 }
 
 func NewRequesterHandler(

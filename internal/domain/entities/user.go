@@ -55,15 +55,15 @@ func ReconstituteUser(
 }
 
 // Getters
-func (u *User) ID() string             { return u.id }
-func (u *User) Name() string           { return u.name }
-func (u *User) Email() string          { return u.email }
-func (u *User) PasswordHash() string   { return u.passwordHash }
-func (u *User) Role() Role             { return u.role }
-func (u *User) FailedAttempts() int    { return u.failedAttempts }
+func (u *User) ID() string              { return u.id }
+func (u *User) Name() string            { return u.name }
+func (u *User) Email() string           { return u.email }
+func (u *User) PasswordHash() string    { return u.passwordHash }
+func (u *User) Role() Role              { return u.role }
+func (u *User) FailedAttempts() int     { return u.failedAttempts }
 func (u *User) LockedUntil() *time.Time { return u.lockedUntil }
-func (u *User) CreatedAt() time.Time   { return u.createdAt }
-func (u *User) UpdatedAt() time.Time   { return u.updatedAt }
+func (u *User) CreatedAt() time.Time    { return u.createdAt }
+func (u *User) UpdatedAt() time.Time    { return u.updatedAt }
 
 // Setters — apenas campos mutaveis apos criacao
 func (u *User) SetID(id string)     { u.id = id }

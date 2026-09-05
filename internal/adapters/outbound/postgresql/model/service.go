@@ -7,12 +7,12 @@ import (
 )
 
 type Service struct {
-	ID          string    `gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
-	Code        int       `gorm:"not null;uniqueIndex"`
-	Name        string    `gorm:"not null"`
+	ID          string `gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
+	Code        int    `gorm:"not null;uniqueIndex"`
+	Name        string `gorm:"not null"`
 	Description string
-	Price       float64   `gorm:"not null"`
-	DurationMin int       `gorm:"not null"`
+	Price       float64 `gorm:"not null"`
+	DurationMin int     `gorm:"not null"`
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 }

@@ -6,12 +6,12 @@ import (
 )
 
 type PartHandler struct {
-	create       ports.CreatePartUseCase
-	getByID      ports.GetPartUseCase
-	listAll      ports.ListPartsUseCase
-	update       ports.UpdatePartUseCase
-	delete       ports.DeletePartUseCase
-	adjustStock  ports.AdjustPartStockUseCase
+	create      ports.CreatePartUseCase
+	getByID     ports.GetPartUseCase
+	listAll     ports.ListPartsUseCase
+	update      ports.UpdatePartUseCase
+	delete      ports.DeletePartUseCase
+	adjustStock ports.AdjustPartStockUseCase
 }
 
 func NewPartHandler(

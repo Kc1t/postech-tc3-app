@@ -46,6 +46,5 @@ func (h *RequesterHandler) Update(c *gin.Context) {
 		return
 	}
 
-
 	c.JSON(http.StatusOK, commands.ToRequesterResponse(requester))
 }

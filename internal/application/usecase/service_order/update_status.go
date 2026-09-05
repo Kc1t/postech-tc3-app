@@ -2,11 +2,11 @@ package serviceorderuc
 
 import (
 	"context"
-	"log"
 
 	"github.com/fiap/postech-tc1/internal/domain/entities"
 	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
 	"github.com/fiap/postech-tc1/internal/ports"
+	"github.com/fiap/postech-tc1/pkg/logger"
 )
 
 type UpdateServiceOrderStatus struct {
@@ -71,8 +71,23 @@ func (uc *UpdateServiceOrderStatus) Execute(ctx context.Context, input entities.
 		}
 	}
 
+	uc.logStatusChange(ctx, so, "staff")
 	uc.notify(ctx, so)
 	return nil
+}
+
+func (uc *UpdateServiceOrderStatus) logStatusChange(ctx context.Context, so *entities.ServiceOrder, actor string) {
+	attrs := []any{
+		"service_order_code", so.Code(),
+		"status", string(so.Status()),
+		"actor", actor,
+	}
+
+	if so.StartedAt() != nil && so.FinishedAt() != nil {
+		attrs = append(attrs, "execution_seconds", so.FinishedAt().Sub(*so.StartedAt()).Seconds())
+	}
+
+	logger.FromContext(ctx).Info("service_order_status_changed", attrs...)
 }
 
 func (uc *UpdateServiceOrderStatus) notify(ctx context.Context, so *entities.ServiceOrder) {
@@ -81,11 +96,15 @@ func (uc *UpdateServiceOrderStatus) notify(ctx context.Context, so *entities.Ser
 	}
 	requester, err := uc.requesterRepo.FindByID(ctx, so.RequesterID())
 	if err != nil {
-		log.Printf("email notify: requester lookup failed for OS %d: %v", so.Code(), err)
+		logger.FromContext(ctx).Error("integration_failure",
+			"integration", "smtp", "stage", "requester_lookup",
+			"service_order_code", so.Code(), "error", err)
 		return
 	}
 	if err := uc.notifier.NotifyStatusChange(ctx, requester.Email(), requester.Name(), so.Code(), so.Status()); err != nil {
-		log.Printf("email notify: send failed for OS %d to %s: %v", so.Code(), requester.Email(), err)
+		logger.FromContext(ctx).Error("integration_failure",
+			"integration", "smtp", "stage", "send",
+			"service_order_code", so.Code(), "error", err)
 	}
 }
 

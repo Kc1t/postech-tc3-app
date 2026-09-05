@@ -7,13 +7,13 @@ import (
 )
 
 type Part struct {
-	ID               string    `gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
-	ManufacturerCode string    `gorm:"not null;uniqueIndex"`
-	Name             string    `gorm:"not null"`
+	ID               string `gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
+	ManufacturerCode string `gorm:"not null;uniqueIndex"`
+	Name             string `gorm:"not null"`
 	Description      string
-	Unit             string    `gorm:"not null"`
-	Price            float64   `gorm:"not null"`
-	Stock            int       `gorm:"not null;default:0"`
+	Unit             string  `gorm:"not null"`
+	Price            float64 `gorm:"not null"`
+	Stock            int     `gorm:"not null;default:0"`
 	CreatedAt        time.Time
 	UpdatedAt        time.Time
 }

@@ -55,7 +55,7 @@ func TestVehicleHandler_Create_Success(t *testing.T) {
 
 	body, _ := json.Marshal(map[string]any{
 		"requester_document": "52998224725",
-		"plate": "ABC1234", "brand": "Toyota", "model": "Corolla", "year": 2020,
+		"plate":              "ABC1234", "brand": "Toyota", "model": "Corolla", "year": 2020,
 	})
 	w := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodPost, "/vehicles", bytes.NewBuffer(body))
@@ -92,7 +92,7 @@ func TestVehicleHandler_Create_DocumentoInvalido(t *testing.T) {
 
 	body, _ := json.Marshal(map[string]any{
 		"requester_document": "11111111111",
-		"plate": "ABC1234", "brand": "Toyota", "model": "Corolla", "year": 2020,
+		"plate":              "ABC1234", "brand": "Toyota", "model": "Corolla", "year": 2020,
 	})
 	w := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodPost, "/vehicles", bytes.NewBuffer(body))
@@ -113,7 +113,7 @@ func TestVehicleHandler_Create_RequesterNotFound(t *testing.T) {
 
 	body, _ := json.Marshal(map[string]any{
 		"requester_document": "52998224725",
-		"plate": "ABC1234", "brand": "Toyota", "model": "Corolla", "year": 2020,
+		"plate":              "ABC1234", "brand": "Toyota", "model": "Corolla", "year": 2020,
 	})
 	w := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodPost, "/vehicles", bytes.NewBuffer(body))
@@ -134,7 +134,7 @@ func TestVehicleHandler_Create_AlreadyExists(t *testing.T) {
 
 	body, _ := json.Marshal(map[string]any{
 		"requester_document": "52998224725",
-		"plate": "ABC1234", "brand": "Toyota", "model": "Corolla", "year": 2020,
+		"plate":              "ABC1234", "brand": "Toyota", "model": "Corolla", "year": 2020,
 	})
 	w := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodPost, "/vehicles", bytes.NewBuffer(body))
@@ -155,7 +155,7 @@ func TestVehicleHandler_Create_InternalError(t *testing.T) {
 
 	body, _ := json.Marshal(map[string]any{
 		"requester_document": "52998224725",
-		"plate": "ABC1234", "brand": "Toyota", "model": "Corolla", "year": 2020,
+		"plate":              "ABC1234", "brand": "Toyota", "model": "Corolla", "year": 2020,
 	})
 	w := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodPost, "/vehicles", bytes.NewBuffer(body))

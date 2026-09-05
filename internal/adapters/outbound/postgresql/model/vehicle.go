@@ -7,27 +7,27 @@ import (
 )
 
 type Vehicle struct {
-	ID         string    `gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
+	ID          string    `gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
 	RequesterID string    `gorm:"type:uuid;not null;index;constraint:OnDelete:RESTRICT"`
-	Requester   Requester  `gorm:"foreignKey:RequesterID"`
-	Plate      string    `gorm:"uniqueIndex;not null"`
-	Brand      string    `gorm:"not null"`
-	Model      string    `gorm:"not null"`
-	Year       int       `gorm:"not null"`
-	CreatedAt  time.Time
-	UpdatedAt  time.Time
+	Requester   Requester `gorm:"foreignKey:RequesterID"`
+	Plate       string    `gorm:"uniqueIndex;not null"`
+	Brand       string    `gorm:"not null"`
+	Model       string    `gorm:"not null"`
+	Year        int       `gorm:"not null"`
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 func FromVehicle(v *entities.Vehicle) *Vehicle {
 	return &Vehicle{
-		ID:         v.ID(),
+		ID:          v.ID(),
 		RequesterID: v.RequesterID(),
-		Plate:      v.Plate(),
-		Brand:      v.Brand(),
-		Model:      v.Model(),
-		Year:       v.Year(),
-		CreatedAt:  v.CreatedAt(),
-		UpdatedAt:  v.UpdatedAt(),
+		Plate:       v.Plate(),
+		Brand:       v.Brand(),
+		Model:       v.Model(),
+		Year:        v.Year(),
+		CreatedAt:   v.CreatedAt(),
+		UpdatedAt:   v.UpdatedAt(),
 	}
 }
 

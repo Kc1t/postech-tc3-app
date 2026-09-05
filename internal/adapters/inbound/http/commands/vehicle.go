@@ -8,10 +8,10 @@ import (
 
 type CreateVehicleRequest struct {
 	RequesterDocument string `json:"requester_document" binding:"required"`
-	Plate            string `json:"plate"             binding:"required"`
-	Brand            string `json:"brand"             binding:"required"`
-	Model            string `json:"model"             binding:"required"`
-	Year             int    `json:"year"              binding:"required"`
+	Plate             string `json:"plate"             binding:"required"`
+	Brand             string `json:"brand"             binding:"required"`
+	Model             string `json:"model"             binding:"required"`
+	Year              int    `json:"year"              binding:"required"`
 }
 
 type UpdateVehicleRequest struct {
@@ -22,36 +22,36 @@ type UpdateVehicleRequest struct {
 }
 
 type VehicleResponse struct {
-	ID         string `json:"id"`
+	ID          string `json:"id"`
 	RequesterID string `json:"requester_id"`
-	Plate      string `json:"plate"`
-	Brand      string `json:"brand"`
-	Model      string `json:"model"`
-	Year       int    `json:"year"`
-	CreatedAt  string `json:"created_at"`
-	UpdatedAt  string `json:"updated_at"`
+	Plate       string `json:"plate"`
+	Brand       string `json:"brand"`
+	Model       string `json:"model"`
+	Year        int    `json:"year"`
+	CreatedAt   string `json:"created_at"`
+	UpdatedAt   string `json:"updated_at"`
 }
 
 func (r *CreateVehicleRequest) ToInput() entities.VehicleInput {
 	return entities.VehicleInput{
 		RequesterDocument: r.RequesterDocument,
-		Plate:            r.Plate,
-		Brand:            r.Brand,
-		Model:            r.Model,
-		Year:             r.Year,
+		Plate:             r.Plate,
+		Brand:             r.Brand,
+		Model:             r.Model,
+		Year:              r.Year,
 	}
 }
 
 func ToVehicleResponse(v *entities.Vehicle) VehicleResponse {
 	return VehicleResponse{
-		ID:         v.ID(),
+		ID:          v.ID(),
 		RequesterID: v.RequesterID(),
-		Plate:      v.Plate(),
-		Brand:      v.Brand(),
-		Model:      v.Model(),
-		Year:       v.Year(),
-		CreatedAt:  v.CreatedAt().Format(time.RFC3339),
-		UpdatedAt:  v.UpdatedAt().Format(time.RFC3339),
+		Plate:       v.Plate(),
+		Brand:       v.Brand(),
+		Model:       v.Model(),
+		Year:        v.Year(),
+		CreatedAt:   v.CreatedAt().Format(time.RFC3339),
+		UpdatedAt:   v.UpdatedAt().Format(time.RFC3339),
 	}
 }
 

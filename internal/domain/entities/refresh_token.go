@@ -48,6 +48,6 @@ func (rt *RefreshToken) CreatedAt() time.Time { return rt.createdAt }
 func (rt *RefreshToken) SetID(id string) { rt.id = id }
 
 // Comportamentos
-func (rt *RefreshToken) Revoke()      { rt.revoked = true }
+func (rt *RefreshToken) Revoke()         { rt.revoked = true }
 func (rt *RefreshToken) IsExpired() bool { return time.Now().After(rt.expiresAt) }
 func (rt *RefreshToken) IsValid() bool   { return !rt.revoked && !rt.IsExpired() }

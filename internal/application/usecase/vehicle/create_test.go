@@ -27,10 +27,10 @@ func TestCreateVehicle_Sucesso(t *testing.T) {
 	uc := NewCreateVehicle(vehicleRepo, requesterRepo)
 	input := entities.VehicleInput{
 		RequesterDocument: "52998224725",
-		Plate:            "ABC-1234",
-		Brand:            "Fiat",
-		Model:            "Uno",
-		Year:             2020,
+		Plate:             "ABC-1234",
+		Brand:             "Fiat",
+		Model:             "Uno",
+		Year:              2020,
 	}
 
 	vehicle, err := uc.Execute(context.Background(), input)
@@ -54,10 +54,10 @@ func TestCreateVehicle_ClienteNaoExiste(t *testing.T) {
 	uc := NewCreateVehicle(vehicleRepo, requesterRepo)
 	input := entities.VehicleInput{
 		RequesterDocument: "52998224725",
-		Plate:            "ABC-1234",
-		Brand:            "Fiat",
-		Model:            "Uno",
-		Year:             2020,
+		Plate:             "ABC-1234",
+		Brand:             "Fiat",
+		Model:             "Uno",
+		Year:              2020,
 	}
 
 	_, err := uc.Execute(context.Background(), input)
@@ -79,10 +79,10 @@ func TestCreateVehicle_ErroInfraNoFindByDocument(t *testing.T) {
 	uc := NewCreateVehicle(vehicleRepo, requesterRepo)
 	input := entities.VehicleInput{
 		RequesterDocument: "52998224725",
-		Plate:            "ABC-1234",
-		Brand:            "Fiat",
-		Model:            "Uno",
-		Year:             2020,
+		Plate:             "ABC-1234",
+		Brand:             "Fiat",
+		Model:             "Uno",
+		Year:              2020,
 	}
 
 	_, err := uc.Execute(context.Background(), input)
@@ -106,10 +106,10 @@ func TestCreateVehicle_PlacaInvalida(t *testing.T) {
 	uc := NewCreateVehicle(vehicleRepo, requesterRepo)
 	input := entities.VehicleInput{
 		RequesterDocument: "52998224725",
-		Plate:            "INVALID",
-		Brand:            "Fiat",
-		Model:            "Uno",
-		Year:             2020,
+		Plate:             "INVALID",
+		Brand:             "Fiat",
+		Model:             "Uno",
+		Year:              2020,
 	}
 
 	_, err := uc.Execute(context.Background(), input)

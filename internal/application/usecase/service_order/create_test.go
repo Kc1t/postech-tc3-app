@@ -32,8 +32,8 @@ func TestCreateServiceOrder_Sucesso(t *testing.T) {
 	uc := NewCreateServiceOrder(soRepo, custRepo, vehRepo)
 
 	input := entities.ServiceOrderInput{
-		RequesterDocument:  "52998224725",
-		VehiclePlate: "ABC1234",
+		RequesterDocument: "52998224725",
+		VehiclePlate:      "ABC1234",
 	}
 
 	so, err := uc.Execute(context.Background(), input)
@@ -62,8 +62,8 @@ func TestCreateServiceOrder_ErroInfraNoVeiculo(t *testing.T) {
 
 	uc := NewCreateServiceOrder(soRepo, custRepo, vehRepo)
 	input := entities.ServiceOrderInput{
-		RequesterDocument:  "52998224725",
-		VehiclePlate: "ABC1234",
+		RequesterDocument: "52998224725",
+		VehiclePlate:      "ABC1234",
 	}
 
 	_, err := uc.Execute(context.Background(), input)
@@ -87,8 +87,8 @@ func TestCreateServiceOrder_VeiculoNaoEncontrado(t *testing.T) {
 
 	uc := NewCreateServiceOrder(soRepo, custRepo, vehRepo)
 	input := entities.ServiceOrderInput{
-		RequesterDocument:  "52998224725",
-		VehiclePlate: "XXX0000",
+		RequesterDocument: "52998224725",
+		VehiclePlate:      "XXX0000",
 	}
 
 	_, err := uc.Execute(context.Background(), input)
@@ -115,8 +115,8 @@ func TestCreateServiceOrder_ErroNaPersistencia(t *testing.T) {
 
 	uc := NewCreateServiceOrder(soRepo, custRepo, vehRepo)
 	input := entities.ServiceOrderInput{
-		RequesterDocument:  "52998224725",
-		VehiclePlate: "ABC1234",
+		RequesterDocument: "52998224725",
+		VehiclePlate:      "ABC1234",
 	}
 
 	_, err := uc.Execute(context.Background(), input)
@@ -137,8 +137,8 @@ func TestCreateServiceOrder_ClienteNaoExiste(t *testing.T) {
 
 	uc := NewCreateServiceOrder(soRepo, custRepo, vehRepo)
 	input := entities.ServiceOrderInput{
-		RequesterDocument:  "00000000000",
-		VehiclePlate: "ABC1234",
+		RequesterDocument: "00000000000",
+		VehiclePlate:      "ABC1234",
 	}
 
 	_, err := uc.Execute(context.Background(), input)
@@ -163,8 +163,8 @@ func TestCreateServiceOrder_VeiculoNaoPertenceAoCliente(t *testing.T) {
 
 	uc := NewCreateServiceOrder(soRepo, custRepo, vehRepo)
 	input := entities.ServiceOrderInput{
-		RequesterDocument:  "52998224725",
-		VehiclePlate: "ABC1234",
+		RequesterDocument: "52998224725",
+		VehiclePlate:      "ABC1234",
 	}
 
 	_, err := uc.Execute(context.Background(), input)
@@ -187,8 +187,8 @@ func TestCreateServiceOrder_ErroInfraNoCliente(t *testing.T) {
 
 	uc := NewCreateServiceOrder(soRepo, custRepo, vehRepo)
 	input := entities.ServiceOrderInput{
-		RequesterDocument:  "52998224725",
-		VehiclePlate: "ABC1234",
+		RequesterDocument: "52998224725",
+		VehiclePlate:      "ABC1234",
 	}
 
 	_, err := uc.Execute(context.Background(), input)

@@ -8,7 +8,7 @@ import (
 )
 
 type ListServiceOrdersByDocument struct {
-	repo         ports.ServiceOrderRepository
+	repo          ports.ServiceOrderRepository
 	requesterRepo ports.RequesterRepository
 }
 

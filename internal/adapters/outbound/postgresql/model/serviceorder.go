@@ -20,16 +20,16 @@ type PartItem struct {
 }
 
 type ServiceOrder struct {
-	ID          string              `gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
-	Code        int                 `gorm:"not null;uniqueIndex;autoIncrement"`
-	RequesterID  string              `gorm:"type:uuid;not null;index;constraint:OnDelete:RESTRICT"`
-	Requester    Requester            `gorm:"foreignKey:RequesterID"`
-	VehicleID   string              `gorm:"type:uuid;not null;constraint:OnDelete:RESTRICT"`
-	Vehicle     Vehicle             `gorm:"foreignKey:VehicleID"`
+	ID          string               `gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
+	Code        int                  `gorm:"not null;uniqueIndex;autoIncrement"`
+	RequesterID string               `gorm:"type:uuid;not null;index;constraint:OnDelete:RESTRICT"`
+	Requester   Requester            `gorm:"foreignKey:RequesterID"`
+	VehicleID   string               `gorm:"type:uuid;not null;constraint:OnDelete:RESTRICT"`
+	Vehicle     Vehicle              `gorm:"foreignKey:VehicleID"`
 	Status      entities.OrderStatus `gorm:"not null"`
-	Services    []ServiceItem       `gorm:"serializer:json"`
-	Parts       []PartItem          `gorm:"serializer:json"`
-	TotalAmount float64             `gorm:"not null"`
+	Services    []ServiceItem        `gorm:"serializer:json"`
+	Parts       []PartItem           `gorm:"serializer:json"`
+	TotalAmount float64              `gorm:"not null"`
 	Notes       string
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
@@ -51,7 +51,7 @@ func FromServiceOrder(so *entities.ServiceOrder) *ServiceOrder {
 	return &ServiceOrder{
 		ID:          so.ID(),
 		Code:        so.Code(),
-		RequesterID:  so.RequesterID(),
+		RequesterID: so.RequesterID(),
 		VehicleID:   so.VehicleID(),
 		Status:      so.Status(),
 		Services:    services,

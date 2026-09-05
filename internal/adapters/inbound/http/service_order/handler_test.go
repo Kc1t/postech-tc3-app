@@ -74,9 +74,9 @@ func TestServiceOrderHandler_Create_Success(t *testing.T) {
 	m.create.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(so, nil)
 
 	body, _ := json.Marshal(map[string]any{
-		"requester_document":  "52998224725",
-		"vehicle_plate": "ABC1234",
-		"notes":         "trocar pastilhas",
+		"requester_document": "52998224725",
+		"vehicle_plate":      "ABC1234",
+		"notes":              "trocar pastilhas",
 	})
 	w := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodPost, "/service-orders", bytes.NewBuffer(body))
@@ -112,8 +112,8 @@ func TestServiceOrderHandler_Create_NotFound(t *testing.T) {
 	m.create.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(nil, domainerrors.ErrNotFound)
 
 	body, _ := json.Marshal(map[string]any{
-		"requester_document":  "52998224725",
-		"vehicle_plate": "ABC1234",
+		"requester_document": "52998224725",
+		"vehicle_plate":      "ABC1234",
 	})
 	w := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodPost, "/service-orders", bytes.NewBuffer(body))
@@ -133,8 +133,8 @@ func TestServiceOrderHandler_Create_VehicleNotFromRequester(t *testing.T) {
 	m.create.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(nil, domainerrors.ErrVehicleNotFromRequester)
 
 	body, _ := json.Marshal(map[string]any{
-		"requester_document":  "52998224725",
-		"vehicle_plate": "ABC1234",
+		"requester_document": "52998224725",
+		"vehicle_plate":      "ABC1234",
 	})
 	w := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodPost, "/service-orders", bytes.NewBuffer(body))
@@ -154,8 +154,8 @@ func TestServiceOrderHandler_Create_InternalError(t *testing.T) {
 	m.create.EXPECT().Execute(gomock.Any(), gomock.Any()).Return(nil, errors.New("db error"))
 
 	body, _ := json.Marshal(map[string]any{
-		"requester_document":  "52998224725",
-		"vehicle_plate": "ABC1234",
+		"requester_document": "52998224725",
+		"vehicle_plate":      "ABC1234",
 	})
 	w := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodPost, "/service-orders", bytes.NewBuffer(body))
