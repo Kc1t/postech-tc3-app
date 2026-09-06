@@ -25,13 +25,24 @@ O pipeline resolve o namespace a partir de `github.ref_name` e aplica os manifes
 
 O RDS segue a mesma lógica de economia: uma instância com dois databases lógicos.
 
+Como os dois ambientes dividem os mesmos nós, cada namespace recebe **teto de recursos e política de rede próprios**, aplicados pelo pipeline antes do Deployment:
+
+- `ResourceQuota` + `LimitRange` (`k8s/quota.yaml`) — teto dimensionado a partir do `maxReplicas: 10` do HPA mais um pod de surge: 2 CPU / 2Gi de requests e 6 CPU / 6Gi de limits. O `LimitRange` garante que nenhum container entre no namespace sem requests declarados, o que furaria o teto por omissão.
+- `NetworkPolicy` (`k8s/networkpolicy.yaml`) — entrada liberada apenas para pods do mesmo namespace e para a porta `8080` (NLB e probes do kubelet, que chegam com IP de nó, não de pod). Todo o resto é negado.
+
+A cota fica **acima** do pior caso de propósito. Uma cota abaixo do `maxReplicas` do HPA é pior que nenhuma: o autoscaler segue tentando escalar, o ReplicaSet acumula `FailedCreate`, e o sintoma se disfarça de "o HPA não funciona".
+
+No EKS a `NetworkPolicy` exige o addon `vpc-cni` com `enableNetworkPolicy = "true"` — sem ele o objeto é aceito e silenciosamente ignorado. O addon está declarado em `postech-tc3-infra-k8s/addons.tf`, pela mesma razão que o `metrics-server` está: no EKS, o recurso que parece existir só funciona se o addon correspondente estiver ligado.
+
+O detalhamento do dimensionamento está em [`k8s/README.md`](../../k8s/README.md).
+
 ## Alternativas consideradas
 
 1. **Dois clusters completos.** Isolamento real de plano de controle e de rede, e é o desenho correto para produção de verdade. Descartado pelo custo: dobra a conta e não acrescenta nada demonstrável na avaliação.
 
 2. **Um cluster, um namespace só, diferenciando por tag de imagem.** Mais barato ainda, mas eliminaria a noção de ambiente — não haveria onde validar antes de produção, e o requisito de "deploy automático das branches de homologação e produção" ficaria descumprido de fato, não só na forma.
 
-3. **Namespaces mais isolamento por NetworkPolicy e ResourceQuota.** É a evolução natural desta decisão e teria sido incluída se houvesse tempo. Registrada como dívida.
+3. **Namespaces sem nenhum isolamento adicional.** Era o desenho inicial. Descartado depois de dimensionar o risco: o `t3.medium` tem 2 vCPU, o node group parte de 2 nós, e o HPA de homologação sozinho pode pedir 11 pods. Sem teto, a demonstração de escalabilidade em homologação derruba produção. O isolamento por `ResourceQuota` e `NetworkPolicy` deixou de ser evolução futura e entrou no escopo.
 
 4. **`kind` ou `k3s` para homologação, EKS só para produção.** Eliminaria o custo de staging, mas homologar em um Kubernetes diferente do de produção invalida boa parte do valor de homologar.
 
@@ -47,8 +58,8 @@ O RDS segue a mesma lógica de economia: uma instância com dois databases lógi
 ### Negativas
 
 - **Não há isolamento de plano de controle.** Um erro de configuração com escopo de cluster — RBAC, CRD, webhook — afeta os dois ambientes.
-- **Não há isolamento de recursos.** Sem `ResourceQuota`, um teste de carga em homologação pode consumir capacidade de nó e provocar `Pending` em produção. É a consequência mais séria desta decisão.
-- Namespaces não isolam rede por padrão: os pods de `postech-homolog` alcançam os de `postech` sem `NetworkPolicy`.
+- **O teto de recursos é por namespace, não por nó.** A `ResourceQuota` impede que um namespace peça mais do que lhe cabe, mas os dois somados ainda podem exceder a capacidade instalada: 2 × 2 CPU de requests contra 4 vCPU de dois `t3.medium`. Quem resolve é o autoscaling do node group (até 5 nós); se ele não subir a tempo, produção espera. O risco caiu de "homologação derruba produção" para "produção pode demorar a escalar".
+- A `NetworkPolicy` mantém a porta `8080` aberta a origens de fora do namespace, porque é por onde chegam o NLB e as probes. O isolamento de rede é do restante do tráfego, não da API em si.
 - Um RDS compartilhado significa que uma migration destrutiva em homologação atinge a mesma instância que serve produção. Databases lógicos separados limitam o dano, mas não isolam recursos de I/O.
 
 Nenhuma dessas consequências é aceitável em produção real. São aceitáveis aqui porque o sistema é acadêmico, tem prazo fixo e orçamento fechado — e a decisão está registrada para que quem herdar o projeto saiba que é dívida deliberada, não descuido.
@@ -56,4 +67,6 @@ Nenhuma dessas consequências é aceitável em produção real. São aceitáveis
 ## Referências
 
 - Amazon EKS — [Pricing](https://aws.amazon.com/eks/pricing/)
-- Implementação: [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml), job `deploy`
+- Kubernetes — [Resource Quotas](https://kubernetes.io/docs/concepts/policy/resource-quotas/)
+- AWS — [Amazon VPC CNI network policies](https://docs.aws.amazon.com/eks/latest/userguide/cni-network-policy.html)
+- Implementação: [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) job `deploy`, [`k8s/quota.yaml`](../../k8s/quota.yaml), [`k8s/networkpolicy.yaml`](../../k8s/networkpolicy.yaml)

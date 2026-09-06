@@ -59,6 +59,8 @@ flowchart TD
     style gate fill:#fff4e0,stroke:#d90
 ```
 
+A cota entra **antes** do Deployment: o `LimitRange` só vale para pods criados depois dele, e aplicá-lo na ordem inversa deixaria o primeiro rollout fora do teto.
+
 O gate de cobertura filtra mocks, `cmd/api`, `docs`, `scripts`, `pkg/env` e `pkg/ioc` antes de calcular — código gerado e ponto de entrada não inflam o número. A cobertura efetiva hoje é **82,4%**.
 
 ---

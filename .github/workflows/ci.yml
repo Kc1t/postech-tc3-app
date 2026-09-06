@@ -146,6 +146,11 @@ jobs:
       - name: Criar namespace
         run: kubectl create namespace "$NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
 
+      - name: Aplicar cota de recursos e politica de rede
+        run: |
+          kubectl apply -n "$NAMESPACE" -f k8s/quota.yaml
+          kubectl apply -n "$NAMESPACE" -f k8s/networkpolicy.yaml
+
       - name: Criar/atualizar Secret no Kubernetes
         run: |
           kubectl create secret generic workshop-api-secret \
