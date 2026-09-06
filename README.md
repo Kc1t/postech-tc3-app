@@ -26,12 +26,51 @@ A Fase 3 quebrou o projeto em **quatro repositórios**, cada um com CI/CD própr
 | [`postech-tc3-infra-k8s`](https://github.com/Kc1t/postech-tc3-infra-k8s) | Cluster EKS, metrics-server, API Gateway e agente New Relic |
 | [`postech-tc3-infra-database`](https://github.com/Kc1t/postech-tc3-infra-database) | RDS PostgreSQL gerenciado |
 
+```mermaid
+flowchart TB
+    cli(["Cliente<br/>dono do veículo"]) -->|CPF| gw["API Gateway"]
+    op(["Operação<br/>atendente · mecânico · admin"]) -->|e-mail e senha| gw
+
+    gw -.->|autoriza| az["Lambda authorizer"]
+    gw -->|"POST /auth"| iss["Lambda issuer"]
+    gw -->|"HTTP_PROXY"| nlb["NLB"]
+
+    nlb --> app["<b>workshop-api</b><br/>este repositório<br/>2 a 10 pods no EKS"]
+
+    iss --> db[("RDS PostgreSQL")]
+    app --> db
+    app -->|"JSON + correlation id"| nr["New Relic<br/>APM · logs · dashboards"]
+
+    style app fill:#e6f4ea,stroke:#4a7
+    style az fill:#fff4e0,stroke:#d90
+```
+
 O que mudou na aplicação nesta fase:
 
 - **Autenticação por CPF.** As rotas de consulta e aprovação de OS, públicas na Fase 2, passaram a exigir o JWT emitido pela Lambda a partir do CPF. Ver [`docs/rfc/0003-autenticacao-por-cpf.md`](docs/rfc/0003-autenticacao-por-cpf.md).
 - **`requesters.status`.** Nova coluna que permite à Lambda consultar existência **e** status do cliente. Ver [`docs/MODELAGEM_DE_DADOS.md`](docs/MODELAGEM_DE_DADOS.md).
 - **Logs estruturados em JSON com correlação.** Todo request recebe um `X-Correlation-ID`, devolvido na resposta e presente em cada log.
 - **Deploy por branch em namespaces separados.** `homolog` entrega em `postech-homolog`, `main` em `postech`, no mesmo cluster. Ver [`docs/adr/0010-cluster-unico-dois-namespaces.md`](docs/adr/0010-cluster-unico-dois-namespaces.md).
+- **Posse do documento.** Não basta ter um token válido: o documento consultado precisa ser o do próprio token, senão a resposta é 403. Sem isso, qualquer cliente autenticado leria as OS de outro conhecendo apenas o CPF.
+
+### Camadas de proteção
+
+```mermaid
+flowchart LR
+    r(["Requisição"]) --> l1{{"1 · Gateway<br/>authorizer Lambda"}}
+    l1 -->|nega| e1(["401"])
+    l1 --> l2{{"2 · Middleware Auth<br/>valida o mesmo JWT"}}
+    l2 -->|nega| e2(["401"])
+    l2 --> l3{{"3 · Papel ou posse<br/>RequireRole · authorizeDocument"}}
+    l3 -->|nega| e3(["403"])
+    l3 --> h(["handler"])
+
+    style e1 fill:#ffe4e1,stroke:#c66
+    style e2 fill:#ffe4e1,stroke:#c66
+    style e3 fill:#ffe0b2,stroke:#e80
+```
+
+As três camadas são independentes. Alcançar o NLB direto, contornando o gateway, ainda esbarra na segunda e na terceira. O grafo completo das 37 rotas está em [`docs/diagrams/roteamento.md`](docs/diagrams/roteamento.md).
 
 ### Documentação da Fase 3
 
