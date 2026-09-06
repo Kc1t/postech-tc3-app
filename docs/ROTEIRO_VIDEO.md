@@ -146,11 +146,19 @@ Abrir o dashboard e passar pelas três páginas.
 kubectl get hpa -n postech -w
 
 # terminal 2
-kubectl run carga --rm -it --image=williamyeh/hey --restart=Never -- \
-  -z 120s -c 50 "$GATEWAY/health"
+kubectl get pods -n postech -w
+
+# terminal 3 — o alvo é o NLB, não o gateway
+NLB=$(kubectl get svc workshop-api -n postech -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+kubectl run carga -n postech --rm -it --image=williamyeh/hey --restart=Never -- \
+  -z 180s -c 50 "http://$NLB/health"
 ```
 
-Narrar: CPU sobe, o HPA aumenta as réplicas, a latência estabiliza. Voltar ao dashboard e mostrar o mesmo movimento no gráfico de réplicas.
+**A carga vai no NLB de propósito.** O API Gateway está com `throttling_rate_limit` de 100 req/s e burst de 200; com `-c 50` a carga passa disso em segundos e o gateway devolve 429 antes de a requisição chegar no pod. O resultado na gravação seria o pior possível: erro na tela, CPU parada e o HPA imóvel, parecendo que a escalabilidade não funciona quando o que funcionou foi o rate limit. O NLB não tem esse teto e é o caminho que exercita o pod de verdade.
+
+Narrar: CPU sobe, o HPA aumenta as réplicas, novos pods aparecem em `Pending` e depois `Running`, a latência estabiliza. Voltar ao dashboard e mostrar o mesmo movimento no gráfico de réplicas.
+
+Se quiser mostrar o rate limit também, vale como cena curta e separada — aí sim contra o gateway, com o 429 como comportamento esperado, não como acidente.
 
 **Alertas:** abrir a condição "Falha no processamento de ordens de serviço" e explicar o gatilho.
 
@@ -179,6 +187,7 @@ Sem folga. Se estourar, cortar do bloco 1 — é o único que não é exigido no
 
 - **Credencial do Learner Lab expira em 4 h.** Gravar no começo da sessão.
 - **O `terraform apply` do EKS leva ~15 min.** Subir a infraestrutura antes, nunca durante.
-- **O HPA demora para reagir.** Gerar carga por pelo menos 2 minutos antes de esperar movimento.
+- **O HPA demora para reagir.** O `metrics-server` publica métricas a cada ~15 s e o HPA reavalia na mesma cadência. Gerar carga por pelo menos 2 minutos antes de esperar movimento.
+- **A `ResourceQuota` do namespace tem teto de 14 pods** e o pod `carga` conta nele. Com o HPA em 10 réplicas ainda sobra folga, mas conferir `kubectl get pods -n postech` antes de começar, para não entrar na gravação com pods de teste pendurados.
 - **Cold start da Lambda em VPC.** A primeira chamada ao `/auth` pode levar alguns segundos; fazer uma chamada de aquecimento antes de gravar.
 - **Não mostrar a tela de credenciais da AWS nem o `JWT_SECRET`** em nenhum momento.
