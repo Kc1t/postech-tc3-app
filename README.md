@@ -38,6 +38,8 @@ O que mudou na aplicação nesta fase:
 | Documento | Conteúdo |
 |---|---|
 | [`docs/diagrams/componentes.md`](docs/diagrams/componentes.md) | Diagrama de componentes com visão de nuvem |
+| [`docs/diagrams/roteamento.md`](docs/diagrams/roteamento.md) | Grafos de roteamento: gateway, aplicação, inventário das 37 rotas e mapa de códigos de erro |
+| [`docs/diagrams/pipelines.md`](docs/diagrams/pipelines.md) | Grafos dos quatro pipelines e matriz de secrets por repositório |
 | [`docs/diagrams/sequencia-autenticacao.md`](docs/diagrams/sequencia-autenticacao.md) | Sequência da autenticação por CPF |
 | [`docs/diagrams/sequencia-ordem-servico.md`](docs/diagrams/sequencia-ordem-servico.md) | Sequência da abertura de OS |
 | [`docs/MODELAGEM_DE_DADOS.md`](docs/MODELAGEM_DE_DADOS.md) | Justificativa do banco, relacionamentos e diagrama ER |

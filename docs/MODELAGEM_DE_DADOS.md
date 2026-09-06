@@ -4,7 +4,122 @@ Tech Challenge Fase 3 — FIAP Pós Tech SOAT · Grupo 112
 
 Documento exigido pelo enunciado: justificativa formal da escolha do banco, ajustes no modelo relacional e explicação dos relacionamentos.
 
-O diagrama ER em formato DBML está em [`database-model.dbml`](./database-model.dbml) e pode ser renderizado em <https://dbdiagram.io/d>.
+O diagrama ER está desenhado abaixo em Mermaid, renderizado direto no GitHub. A mesma modelagem em DBML está em [`database-model.dbml`](./database-model.dbml), para abrir em <https://dbdiagram.io/d>.
+
+---
+
+## Diagrama ER
+
+```mermaid
+erDiagram
+    USERS ||--o{ REFRESH_TOKENS : "emite"
+    REQUESTERS ||--o{ VEHICLES : "possui"
+    REQUESTERS ||--o{ SERVICE_ORDERS : "solicita"
+    VEHICLES ||--o{ SERVICE_ORDERS : "e objeto de"
+
+    USERS {
+        uuid id PK
+        varchar name
+        varchar email UK
+        varchar password_hash
+        varchar role "admin | client"
+        int failed_attempts
+        timestamp locked_until "nulo ate o bloqueio"
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    REFRESH_TOKENS {
+        uuid id PK
+        uuid user_id FK
+        varchar token_hash UK
+        timestamp expires_at
+        boolean revoked "revogacao logica"
+        timestamp created_at
+    }
+
+    REQUESTERS {
+        uuid id PK
+        varchar name
+        varchar document UK "CPF ou CNPJ, so digitos"
+        varchar email
+        varchar phone
+        varchar status "active | inactive - novo na fase 3"
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    VEHICLES {
+        uuid id PK
+        uuid requester_id FK "ON DELETE RESTRICT"
+        varchar plate UK
+        varchar brand
+        varchar model
+        int year
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    SERVICE_ORDERS {
+        uuid id PK
+        int code UK "sequencial, identificador publico"
+        uuid requester_id FK "ON DELETE RESTRICT"
+        uuid vehicle_id FK "ON DELETE RESTRICT"
+        varchar status "maquina de estados"
+        jsonb services "snapshot imutavel"
+        jsonb parts "snapshot imutavel"
+        numeric total_amount
+        text notes
+        timestamp started_at "entrada em in_execution"
+        timestamp finished_at "entrada em finished"
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    SERVICES {
+        uuid id PK
+        varchar name
+        text description
+        numeric price
+        int duration_min
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    PARTS {
+        uuid id PK
+        varchar name
+        text description
+        varchar unit
+        numeric price
+        int stock
+        timestamp created_at
+        timestamp updated_at
+    }
+```
+
+`SERVICES` e `PARTS` aparecem sem linha de relacionamento **de propósito**: elas são catálogos, e a OS guarda uma *cópia* dos itens em `jsonb`, não uma chave estrangeira. O porquê está na seção 4.
+
+### Onde cada tabela é tocada
+
+```mermaid
+flowchart LR
+    lambda["Lambda issuer"] -->|"SELECT document, status"| req[("requesters")]
+    login["POST /auth/login"] --> users[("users")]
+    login --> rt[("refresh_tokens")]
+    cli["Rotas do cliente"] --> so[("service_orders")]
+    cli --> req
+    adm["Rotas administrativas"] --> req
+    adm --> veh[("vehicles")]
+    adm --> so
+    adm --> srv[("services")]
+    adm --> prt[("parts")]
+
+    style req fill:#e8f0fe,stroke:#4a7
+    style so fill:#e8f0fe,stroke:#4a7
+```
+
+A Lambda de autenticação toca **uma única tabela** e apenas para leitura. É a menor superfície possível para a função mais exposta do sistema.
 
 ---
 
