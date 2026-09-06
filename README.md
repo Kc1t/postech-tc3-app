@@ -219,29 +219,57 @@ A aplicação segue **Arquitetura Hexagonal (Ports & Adapters)** em um monolito 
 
 ### Componentes da aplicação
 
-```text
-                 Inbound Adapters                 Application            Domain
-              (handlers HTTP - Gin)               (use cases)      (entidades + VOs)
-        ┌──────────────────────────────┐     ┌────────────────┐   ┌──────────────────┐
-HTTP →  │ Auth / Requester / Vehicle /  │ →   │  Execute()     │ → │ ServiceOrder,    │
-        │ Service / Part / ServiceOrder │     │  (1 por caso)  │   │ User, Vehicle,   │
-        └──────────────────────────────┘     └───────┬────────┘   │ Part, Service... │
-                                                      │            │ regras + máquina │
-                                                      │            │ de estados da OS │
-                                              ports (interfaces)   └──────────────────┘
-                                                      │
-        ┌─────────────────────────────────────────────┴───────────────────────────┐
-        │                         Outbound Adapters                                 │
-        │  PostgreSQL (GORM)   ·   JWT (token service)   ·   SMTP (email notifier)  │
-        └───────────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart LR
+    http(["HTTP"]) --> inb
 
-cmd/api/            # entrypoint, bootstrap (DI), rotas e middleware
-internal/domain/    # entidades, value objects e erros de domínio
-internal/ports/     # contratos (repositories, use cases, token, hasher, notifier)
-internal/application/usecase/   # casos de uso (1 arquivo por operação)
-internal/adapters/inbound/http/ # handlers HTTP (Gin)
-internal/adapters/outbound/     # postgresql (GORM), jwt, smtp
-pkg/                # código genérico e reutilizável (env, hasher, ioc)
+    subgraph inb["Inbound Adapters · Gin"]
+        h["Auth · Requester · Vehicle<br/>Service · Part · ServiceOrder"]
+        mw["middlewares<br/>CorrelationID · RequestLogger<br/>Auth · RequireRole"]
+    end
+
+    subgraph appl["Application"]
+        uc["use cases<br/>um Execute por operação"]
+    end
+
+    subgraph dom["Domain"]
+        ent["entidades e value objects<br/>ServiceOrder · Requester · Vehicle<br/>Document · Plate"]
+        st["máquina de estados da OS"]
+        err["erros sentinela<br/>domainerrors"]
+    end
+
+    subgraph ports["Ports · interfaces"]
+        pr["repositories"]
+        ps["TokenService · PasswordHasher · EmailNotifier"]
+    end
+
+    subgraph outb["Outbound Adapters"]
+        pg["PostgreSQL · GORM"]
+        jwt["JWT"]
+        smtp["SMTP"]
+    end
+
+    mw --> h
+    h --> uc
+    uc --> ent
+    uc --> ports
+    ports -.->|implementado por| outb
+    pg --> db[("RDS")]
+
+    style dom fill:#e6f4ea,stroke:#4a7
+    style ports fill:#fff4e0,stroke:#d90
+```
+
+A seta pontilhada é a inversão de dependência: a camada de aplicação conhece apenas as **interfaces** em `internal/ports`, nunca o GORM, o `golang-jwt` ou o SMTP. Trocar o banco significa escrever outro adapter outbound, sem tocar em domínio nem em caso de uso.
+
+```
+cmd/api/                        entrypoint, bootstrap (DI), rotas e middleware
+internal/domain/                entidades, value objects e erros de domínio
+internal/ports/                 contratos (repositories, use cases, token, hasher, notifier)
+internal/application/usecase/   casos de uso (1 arquivo por operação)
+internal/adapters/inbound/http/ handlers HTTP (Gin)
+internal/adapters/outbound/     postgresql (GORM), jwt, smtp
+pkg/                            código genérico (env, hasher, ioc, logger, observability)
 ```
 
 **Regra central:** um use case nunca importa GORM, JWT ou bcrypt — apenas interfaces de `ports/`. As implementações concretas vivem em `internal/adapters/outbound/<tech>/` ou em `pkg/` quando são genéricas.
@@ -250,26 +278,26 @@ pkg/                # código genérico e reutilizável (env, hasher, ioc)
 
 O ambiente de produção roda na **AWS**, provisionado por Terraform e orquestrado por Kubernetes (EKS). O tráfego externo entra por um Network Load Balancer, e o HPA escala os pods conforme a carga.
 
-```text
-                          ┌────────────────────────── AWS ──────────────────────────┐
-                          │                                                          │
-   Internet  ───────────► │  NLB (Service LoadBalancer)                              │
-                          │        │                                                 │
-                          │        ▼                                                 │
-                          │  ┌──────────────── EKS Cluster (namespace: postech) ───┐ │
-                          │  │                                                      │ │
-                          │  │   Deployment: workshop-api (2..10 réplicas)          │ │
-                          │  │     ├─ ConfigMap  (config não sensível)              │ │
-                          │  │     ├─ Secret     (JWT, DSN, SMTP, admin)            │ │
-                          │  │     └─ HPA        (CPU 70% / Mem 80% → 2..10 pods)   │ │
-                          │  │            │ readiness/liveness em /health           │ │
-                          │  └────────────┼─────────────────────────────────────────┘ │
-                          │               │                                          │
-                          │               ▼                                          │
-                          │        RDS PostgreSQL 16 (db.t3.micro)                   │
-                          │                                                          │
-                          │        ECR (imagens Docker: workshop-api)               │
-                          └──────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    net(["Internet"]) --> gw["API Gateway v2"]
+    gw --> nlb["NLB · Service LoadBalancer"]
+
+    subgraph aws["AWS"]
+        subgraph eks["EKS · namespace postech ou postech-homolog"]
+            nlb --> dep["Deployment workshop-api<br/>2 a 10 réplicas"]
+            cm["ConfigMap<br/>config não sensível"] -.->|envFrom| dep
+            sec["Secret<br/>JWT · DSN · SMTP · admin"] -.->|envFrom| dep
+            hpa["HPA<br/>CPU 70% · Mem 80%"] -->|escala| dep
+            ms["metrics-server"] --> hpa
+            probe["readiness e liveness<br/>em /health"] -.-> dep
+        end
+        dep --> rds[("RDS PostgreSQL 16<br/>db.t3.micro")]
+        ecr["ECR<br/>imagem versionada por SHA"] -.->|pull| dep
+    end
+
+    style dep fill:#e6f4ea,stroke:#4a7
+    style hpa fill:#fff4e0,stroke:#d90
 ```
 
 Recursos criados pelo Terraform (agora em [`postech-tc3-infra-k8s`](https://github.com/Kc1t/postech-tc3-infra-k8s) e [`postech-tc3-infra-database`](https://github.com/Kc1t/postech-tc3-infra-database)):
@@ -280,28 +308,41 @@ Recursos criados pelo Terraform (agora em [`postech-tc3-infra-k8s`](https://gith
 
 Recursos Kubernetes (detalhes em [`k8s/README.md`](k8s/README.md)):
 
-- **Namespace** `postech`, **Deployment**, **Service** (LoadBalancer/NLB).
+- **Namespace** definido pela branch (`postech` ou `postech-homolog`), **Deployment**, **Service** (LoadBalancer/NLB).
 - **ConfigMap** (variáveis não sensíveis) e **Secret** (JWT, DSN, SMTP, admin).
 - **HorizontalPodAutoscaler** (2 a 10 réplicas, CPU 70% / memória 80%).
 
 ### Fluxo de deploy (CI/CD)
 
-```text
-  git push (main)
-       │
-       ▼
-  GitHub Actions ── lint (golangci-lint)
-       ├──────────── dependencies (go mod tidy + govulncheck)
-       ├──────────── tests & coverage (Postgres service, gate ≥ 80%)
-       │
-       └── deploy (apenas em push na main, após os jobs acima passarem)
-              1. Configure AWS credentials
-              2. Login no ECR
-              3. docker build → push (tag = git SHA + latest)
-              4. aws eks update-kubeconfig
-              5. kubectl apply: namespace → secret → configmap → deployment → service → hpa
-              6. kubectl rollout status (aguarda o rollout, timeout 300s)
+```mermaid
+flowchart TD
+    push(["git push em homolog ou main"]) --> ci{{"GitHub Actions"}}
+
+    ci --> lint["lint<br/>golangci-lint"]
+    ci --> deps["dependencies<br/>go mod tidy · govulncheck"]
+    ci --> test["tests<br/>Postgres como service<br/>gate de cobertura ≥ 80%"]
+
+    lint --> gate{{"os três passaram?"}}
+    deps --> gate
+    test --> gate
+
+    gate -->|não| stop(["deploy não roda"])
+    gate -->|sim| dep["deploy"]
+
+    dep --> s1["1 · credenciais de sessão AWS"]
+    s1 --> s2["2 · login no ECR"]
+    s2 --> s3["3 · build e push<br/>tag = SHA + nome da branch"]
+    s3 --> s4["4 · aws eks update-kubeconfig"]
+    s4 --> s5["5 · cria namespace e Secret"]
+    s5 --> s6["6 · substitui os placeholders<br/>de imagem e namespace"]
+    s6 --> s7["7 · kubectl apply<br/>configmap · deployment · service · hpa"]
+    s7 --> s8["8 · rollout status · timeout 300s"]
+
+    style stop fill:#ffe4e1,stroke:#c66
+    style gate fill:#fff4e0,stroke:#d90
 ```
+
+O detalhamento dos quatro pipelines está em [`docs/diagrams/pipelines.md`](docs/diagrams/pipelines.md).
 
 ## Ordem de Serviço (fluxo da Fase 2)
 
