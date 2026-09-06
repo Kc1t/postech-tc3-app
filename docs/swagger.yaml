@@ -907,7 +907,9 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/commands.ServiceOrderResponse'
-      summary: Consultar OS pelo codigo (endpoint publico do cliente)
+      security:
+      - BearerAuth: []
+      summary: Consultar OS pelo codigo (cliente autenticado por CPF)
       tags:
       - service-orders-requester
   /service-orders/code/{code}/status:
@@ -931,7 +933,9 @@ paths:
       responses:
         "204":
           description: No Content
-      summary: Alterar status da OS pelo codigo (endpoint publico do cliente)
+      security:
+      - BearerAuth: []
+      summary: Alterar status da OS pelo codigo (cliente autenticado por CPF)
       tags:
       - service-orders-requester
   /service-orders/metrics/execution-time:
@@ -971,7 +975,9 @@ paths:
             items:
               $ref: '#/definitions/commands.ServiceOrderResponse'
             type: array
-      summary: Listar OS do cliente por CPF/CNPJ (endpoint publico do cliente)
+      security:
+      - BearerAuth: []
+      summary: Listar OS do cliente por CPF/CNPJ (cliente autenticado por CPF)
       tags:
       - service-orders-requester
   /services:

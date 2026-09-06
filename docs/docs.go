@@ -642,13 +642,18 @@ const docTemplate = `{
         },
         "/service-orders/code/{code}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "service-orders-requester"
                 ],
-                "summary": "Consultar OS pelo codigo (endpoint publico do cliente)",
+                "summary": "Consultar OS pelo codigo (cliente autenticado por CPF)",
                 "parameters": [
                     {
                         "type": "integer",
@@ -677,6 +682,11 @@ const docTemplate = `{
         },
         "/service-orders/code/{code}/status": {
             "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -686,7 +696,7 @@ const docTemplate = `{
                 "tags": [
                     "service-orders-requester"
                 ],
-                "summary": "Alterar status da OS pelo codigo (endpoint publico do cliente)",
+                "summary": "Alterar status da OS pelo codigo (cliente autenticado por CPF)",
                 "parameters": [
                     {
                         "type": "integer",
@@ -745,13 +755,18 @@ const docTemplate = `{
         },
         "/service-orders/requester": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "service-orders-requester"
                 ],
-                "summary": "Listar OS do cliente por CPF/CNPJ (endpoint publico do cliente)",
+                "summary": "Listar OS do cliente por CPF/CNPJ (cliente autenticado por CPF)",
                 "parameters": [
                     {
                         "type": "string",
