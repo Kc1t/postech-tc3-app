@@ -22,7 +22,7 @@ func init() {
 func newTestRouter(h *ServiceOrderHandler) *gin.Engine {
 	r := gin.New()
 	h.SetupRoutes(r.Group(""))
-	h.SetupPublicRoutes(r.Group(""))
+	h.SetupRequesterRoutes(r.Group(""))
 	return r
 }
 

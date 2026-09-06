@@ -28,12 +28,14 @@ func Setup(router *gin.Engine, c *bootstrap.Container) {
 	auth.POST("/login", c.AuthHandler.Login)
 	auth.POST("/refresh", c.AuthHandler.Refresh)
 
-	c.ServiceOrderHandler.SetupPublicRoutes(prefix)
-
 	// Rotas autenticadas (qualquer role)
 	protected := prefix.Group("/")
 	protected.Use(middleware.Auth(c.Config.JWTSecret))
 	protected.POST("/auth/logout", c.AuthHandler.Logout)
+
+	// Rotas do cliente: exigem o JWT emitido a partir do CPF pela lambda de
+	// autenticacao, e so respondem para o documento dono do token.
+	c.ServiceOrderHandler.SetupRequesterRoutes(protected)
 
 	// Rotas protegidas (JWT obrigatorio) e ADMIN
 	admin := prefix.Group("/")

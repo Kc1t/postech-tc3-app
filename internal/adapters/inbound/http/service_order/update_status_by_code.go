@@ -11,13 +11,14 @@ import (
 )
 
 // UpdateStatusByCode godoc
-// @Summary     Alterar status da OS pelo codigo (endpoint publico do cliente)
+// @Summary     Alterar status da OS pelo codigo (cliente autenticado por CPF)
 // @Tags        service-orders-requester
 // @Accept      json
 // @Produce     json
 // @Param       code path int true "Codigo da OS"
 // @Param       body body commands.UpdateStatusByCodeRequest true "Novo status e documento do cliente"
 // @Success     204
+// @Security    BearerAuth
 // @Router      /service-orders/code/{code}/status [put]
 func (h *ServiceOrderHandler) UpdateStatusByCode(c *gin.Context) {
 	code, err := strconv.Atoi(c.Param("code"))
@@ -35,6 +36,10 @@ func (h *ServiceOrderHandler) UpdateStatusByCode(c *gin.Context) {
 	doc, err := entities.NewDocument(req.RequesterDocument)
 	if err != nil {
 		httputil.HandleBadRequest(c, err)
+		return
+	}
+
+	if !authorizeDocument(c, doc.Value()) {
 		return
 	}
 

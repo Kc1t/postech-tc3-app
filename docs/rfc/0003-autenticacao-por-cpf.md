@@ -50,6 +50,8 @@ Ambos produzem um JWT HS256 assinado com o **mesmo** `JWT_SECRET`, e ambos são 
 
 `role` é obrigatório: o middleware `Auth` da aplicação rejeita com 401 qualquer token sem `sub` e `role` preenchidos. Omiti-lo faria todo token emitido pela Lambda ser recusado pela aplicação.
 
+**Escopo do token:** não basta apresentar um JWT válido — o documento consultado precisa ser o do próprio token. `GET /service-orders/requester?document=X` com um token emitido para o CPF Y responde 403. Sem essa checagem, qualquer cliente autenticado leria as ordens de serviço de qualquer outro.
+
 **Validade:** 15 minutos, sem refresh token. O fluxo do cliente é curto — consultar a OS, aprovar ou recusar o orçamento. Reautenticar com o CPF é barato e evita gerenciar revogação para esse público.
 
 ## Alternativa principal: Amazon Cognito

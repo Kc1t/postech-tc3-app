@@ -12,12 +12,13 @@ import (
 )
 
 // FindByCode godoc
-// @Summary     Consultar OS pelo codigo (endpoint publico do cliente)
+// @Summary     Consultar OS pelo codigo (cliente autenticado por CPF)
 // @Tags        service-orders-requester
 // @Produce     json
 // @Param       code path int true "Codigo da OS"
 // @Param       document query string true "CPF ou CNPJ do cliente"
 // @Success     200 {object} commands.ServiceOrderResponse
+// @Security    BearerAuth
 // @Router      /service-orders/code/{code} [get]
 func (h *ServiceOrderHandler) FindByCode(c *gin.Context) {
 	code, err := strconv.Atoi(c.Param("code"))
@@ -35,6 +36,10 @@ func (h *ServiceOrderHandler) FindByCode(c *gin.Context) {
 	doc, err := entities.NewDocument(raw)
 	if err != nil {
 		httputil.HandleBadRequest(c, err)
+		return
+	}
+
+	if !authorizeDocument(c, doc.Value()) {
 		return
 	}
 

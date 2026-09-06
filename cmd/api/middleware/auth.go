@@ -52,6 +52,9 @@ func Auth(jwtSecret string) gin.HandlerFunc {
 		if email, ok := claims["email"].(string); ok {
 			c.Set("user_email", email)
 		}
+		if document, ok := claims["document"].(string); ok {
+			c.Set("user_document", document)
+		}
 
 		c.Next()
 	}

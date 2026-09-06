@@ -10,6 +10,7 @@ var (
 	ErrInvalidStatus                = errors.New("invalid status transition")
 	ErrInvalidStatusValue           = errors.New("unknown order status")
 	ErrStatusNotAllowedForRequester = errors.New("status transition not allowed for requester")
+	ErrDocumentMismatch             = errors.New("document does not match the authenticated requester")
 	ErrInsufficientStock            = errors.New("insufficient stock")
 	ErrOrderNotCancellable          = errors.New("order cannot be cancelled at current status")
 	ErrVehicleNotFromRequester      = errors.New("vehicle does not belong to the specified requester")

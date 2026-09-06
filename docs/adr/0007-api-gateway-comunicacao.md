@@ -37,7 +37,7 @@ O authorizer roda com `authorizer_result_ttl_in_seconds = 0`. O cache padrão de
 
 ### Positivas
 
-- Defesa em profundidade: comprometer o gateway não basta para chamar a aplicação, e alcançar o NLB diretamente não basta para passar do middleware.
+- Defesa em profundidade: comprometer o gateway não basta para chamar a aplicação, e alcançar o NLB diretamente não basta para passar do middleware. Isso exigiu mover as rotas do cliente — públicas na Fase 2 — para trás do middleware `Auth`; enquanto estavam fora dele, a segunda camada não existia de fato para elas.
 - Zero infraestrutura adicional para operar — o gateway é totalmente gerenciado.
 - O authorizer devolve `subject`, `role` e `document` no contexto da autorização, disponíveis para log e auditoria no gateway.
 - As variáveis de integração são opcionais no Terraform, o que permite subir o gateway antes da Lambda e da aplicação existirem.

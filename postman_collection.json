@@ -1299,8 +1299,8 @@
       ]
     },
     {
-      "name": "Service Orders (Public - Cliente)",
-      "description": "Endpoints publicos (sem JWT) usados pelo cliente para consultar/aprovar a OS.",
+      "name": "Service Orders (Cliente autenticado por CPF)",
+      "description": "Exigem o JWT emitido pela lambda a partir do CPF. O documento consultado precisa ser o dono do token, senao a resposta e 403.",
       "item": [
         {
           "name": "Get OS by Code (public)",

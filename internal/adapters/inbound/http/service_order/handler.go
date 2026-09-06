@@ -56,8 +56,8 @@ func (h *ServiceOrderHandler) SetupRoutes(rg *gin.RouterGroup) {
 	g.DELETE("/:id", h.Delete)
 }
 
-// SetupPublicRoutes registra as rotas publicas do cliente (sem JWT).
-func (h *ServiceOrderHandler) SetupPublicRoutes(rg *gin.RouterGroup) {
+// SetupRequesterRoutes registra as rotas do cliente, autenticado pelo CPF.
+func (h *ServiceOrderHandler) SetupRequesterRoutes(rg *gin.RouterGroup) {
 	g := rg.Group("/service-orders")
 	g.GET("/code/:code", h.FindByCode)
 	g.GET("/requester", h.FindByDocument)
