@@ -79,7 +79,8 @@ Histórico das Fases 1 e 2 preservado: [postech-tc1](https://github.com/Kc1t/pos
 | API Gateway | Amazon API Gateway v2 (HTTP API) |
 | Function serverless | AWS Lambda `provided.al2023`, arm64, duas funções |
 | Banco de dados gerenciado | Amazon RDS PostgreSQL 16 |
-| Cluster Kubernetes com escalabilidade | Amazon EKS 1.35, node group 2–5 nós, HPA 2–10 pods |
+| Cluster Kubernetes com escalabilidade | Amazon EKS 1.35, node group 2–5 nós, HPA 2–10 pods por CPU (70%) e memória (80%), com o addon `metrics-server` que o HPA exige |
+| Isolamento entre ambientes | `ResourceQuota` + `LimitRange` + `NetworkPolicy` por namespace ([`k8s/quota.yaml`](../k8s/quota.yaml), [`k8s/networkpolicy.yaml`](../k8s/networkpolicy.yaml)), com o addon `vpc-cni` que a política de rede exige no EKS |
 | Terraform | Nos três repositórios de infraestrutura, state em S3 |
 
 ### 4.4 Monitoramento e observabilidade
