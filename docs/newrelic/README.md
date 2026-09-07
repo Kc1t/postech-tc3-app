@@ -60,7 +60,17 @@ O `execution_seconds` é calculado no momento da transição, a partir de `start
 
 ## Alertas
 
-Criar em **Alerts → Alert conditions → NRQL**. Todos usam janela de 5 minutos.
+As seis condições estão definidas em [`alerts.json`](./alerts.json) e são criadas de uma vez por [`scripts/create-newrelic-alerts.sh`](../../scripts/create-newrelic-alerts.sh):
+
+```bash
+export NEW_RELIC_API_KEY=NRAK-...      # chave de usuário, não a license key
+export NEW_RELIC_ACCOUNT_ID=1234567
+./scripts/create-newrelic-alerts.sh
+```
+
+Se uma execução parar no meio, a política já terá sido criada — repita passando `NEW_RELIC_POLICY_ID` com o id dela, senão o script cria uma política duplicada.
+
+O que segue descreve cada condição e é o que o script aplica. Para criar à mão, o caminho é **Alerts → Alert conditions → NRQL**; todas usam janela de 5 minutos.
 
 ### 1. Falha no processamento de ordens de serviço
 
