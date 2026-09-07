@@ -114,11 +114,12 @@ Histórico das Fases 1 e 2 preservado: [postech-tc1](https://github.com/Kc1t/pos
 
 | Métrica | Valor |
 |---|---|
-| Cobertura de testes da aplicação | **82,5%**, com gate de 80% travando a pipeline |
+| Cobertura de testes da aplicação | **82,4%**, com gate de 80% travando a pipeline |
 | Cobertura da Lambda | `requester` 100%, `cpf` 94%, `token` 82% |
 | Lint | `golangci-lint` na pipeline |
-| Vulnerabilidades | `govulncheck` na pipeline |
-| Terraform | `fmt -check`, `validate` e `tfsec` na pipeline |
+| Vulnerabilidades | `govulncheck` na pipeline dos **dois** repositórios Go, sem achados alcançáveis |
+| Terraform | `fmt -check`, `validate` e `tfsec` na pipeline, **zero achados** nos dois repositórios de infra |
+| Alertas | definidos como código em [`newrelic/alerts.json`](./newrelic/alerts.json), aplicados por script |
 
 ---
 
