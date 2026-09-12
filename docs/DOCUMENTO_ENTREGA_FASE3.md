@@ -37,8 +37,8 @@ Histórico das Fases 1 e 2 preservado: [postech-tc1](https://github.com/Kc1t/pos
 | Entregável | Link |
 |---|---|
 | 🎬 Vídeo demonstrativo (até 15 min) | `PREENCHER` |
-| 🌐 API Gateway (endpoint público) | `PREENCHER` |
-| 📊 Dashboard New Relic | `PREENCHER` |
+| 🌐 API Gateway (endpoint público) | https://tkh5cum8g8.execute-api.us-east-1.amazonaws.com — Swagger em `/swagger/index.html` |
+| 📊 Dashboard New Relic (snapshots, válidos por 30 dias) | [Negócio](https://web-snapshots.newrelic.com/snapshot/1789177336_1791769336_894d3355-b437-4cc0-ab1b-9dadf67d483a.pdf?token=70a5d90cd8f031d9b0968fb33995088e50a7e9ac94500e38d5c6af7ec21e9456) · [APIs](https://web-snapshots.newrelic.com/snapshot/1789177340_1791769340_7463b348-e349-4420-b056-1578aa47a2a7.pdf?token=f9c373e10a688bd424a354488057a241fb9cfc29a7977729b4e65c0464666ace) · [Kubernetes](https://web-snapshots.newrelic.com/snapshot/1789177344_1791769344_31fc75d4-6e34-415e-9ed6-6db4fffa6bba.pdf?token=c6c8db3cca86059c97904bfcbd7f25603d325b7fe7fbf4b92f79885af8a689bb) — o painel ao vivo aparece no vídeo |
 | 📖 Documentação arquitetural | [`docs/`](.) deste repositório |
 | 🔧 Collection Postman | [`postman_collection.json`](../postman_collection.json) |
 | 📄 Swagger | [`docs/swagger.yaml`](./swagger.yaml) |
@@ -81,7 +81,7 @@ Histórico das Fases 1 e 2 preservado: [postech-tc1](https://github.com/Kc1t/pos
 | Banco de dados gerenciado | Amazon RDS PostgreSQL 16 |
 | Cluster Kubernetes com escalabilidade | Amazon EKS 1.35, node group 2–5 nós, HPA 2–10 pods por CPU (70%) e memória (80%), com o addon `metrics-server` que o HPA exige |
 | Isolamento entre ambientes | `ResourceQuota` + `LimitRange` + `NetworkPolicy` por namespace ([`k8s/quota.yaml`](../k8s/quota.yaml), [`k8s/networkpolicy.yaml`](../k8s/networkpolicy.yaml)), com o addon `vpc-cni` que a política de rede exige no EKS |
-| Terraform | Nos três repositórios de infraestrutura, state em S3 |
+| Terraform | Nos três repositórios de infraestrutura, state em S3 versionado; os recursos de produção estão no state e o pipeline aplica no push da `main` |
 
 ### 4.4 Monitoramento e observabilidade
 
@@ -94,7 +94,7 @@ Histórico das Fases 1 e 2 preservado: [postech-tc1](https://github.com/Kc1t/pos
 | Alertas para falha no processamento de OS | Alerta 1 em [`docs/newrelic/README.md`](./newrelic/README.md) |
 | Logs estruturados em JSON com correlação | `X-Correlation-ID` em toda requisição e em todo log |
 | Dashboard: volume diário de OS | Evento `service_order_created` |
-| Dashboard: tempo médio por status | Evento `service_order_status_changed` com `execution_seconds` |
+| Dashboard: tempo médio por status | Evento `service_order_status_changed` com `from_status` e `seconds_in_status` (Diagnóstico, Execução, Finalização) |
 | Dashboard: erros nas integrações | Evento `integration_failure` |
 
 ### 4.5 Documentação da arquitetura

@@ -2,6 +2,7 @@ package serviceorderuc
 
 import (
 	"context"
+	"time"
 
 	"github.com/fiap/postech-tc1/internal/domain/entities"
 	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
@@ -38,6 +39,7 @@ func (uc *UpdateServiceOrderStatusByCode) Execute(ctx context.Context, code int,
 		return domainerrors.ErrNotFound
 	}
 
+	transition := captureTransition(so)
 	if err := so.AuthorizeRequesterTransition(newStatus); err != nil {
 		return err
 	}
@@ -52,10 +54,13 @@ func (uc *UpdateServiceOrderStatusByCode) Execute(ctx context.Context, code int,
 		}
 	}
 
-	logger.FromContext(ctx).Info("service_order_status_changed",
+	attrs := []any{
 		"service_order_code", so.Code(),
 		"status", string(so.Status()),
-		"actor", "requester")
+		"actor", "requester",
+	}
+	attrs = append(attrs, transition.logAttrs(time.Now())...)
+	logger.FromContext(ctx).Info("service_order_status_changed", attrs...)
 
 	if uc.notifier != nil {
 		if err := uc.notifier.NotifyStatusChange(ctx, requester.Email(), requester.Name(), so.Code(), so.Status()); err != nil {

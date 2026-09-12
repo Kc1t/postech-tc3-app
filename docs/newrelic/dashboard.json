@@ -87,6 +87,20 @@
             ],
             "platformOptions": { "ignoreTimeRange": false }
           }
+        },
+        {
+          "title": "Tempo medio por status (minutos)",
+          "layout": { "column": 1, "row": 10, "width": 12, "height": 3 },
+          "visualization": { "id": "viz.bar" },
+          "rawConfiguration": {
+            "nrqlQueries": [
+              {
+                "accountIds": [0],
+                "query": "SELECT average(seconds_in_status) / 60 AS 'Minutos' FROM Log WHERE message = 'service_order_status_changed' AND seconds_in_status IS NOT NULL FACET cases(WHERE from_status = 'received' AS 'Recebida', WHERE from_status = 'in_diagnosis' AS 'Diagnostico', WHERE from_status = 'awaiting_approval' AS 'Aguardando aprovacao', WHERE from_status = 'in_execution' AS 'Execucao', WHERE from_status = 'finished' AS 'Finalizada') SINCE 7 days ago"
+              }
+            ],
+            "platformOptions": { "ignoreTimeRange": false }
+          }
         }
       ]
     },
