@@ -26,6 +26,19 @@ A Fase 3 quebrou o projeto em **quatro repositórios**, cada um com CI/CD própr
 | [`postech-tc3-infra-k8s`](https://github.com/Kc1t/postech-tc3-infra-k8s) | Cluster EKS, metrics-server, API Gateway e agente New Relic |
 | [`postech-tc3-infra-database`](https://github.com/Kc1t/postech-tc3-infra-database) | RDS PostgreSQL gerenciado |
 
+### Deploy ativo
+
+| O quê | Link |
+|---|---|
+| API Gateway (entrada pública) | https://tkh5cum8g8.execute-api.us-east-1.amazonaws.com |
+| Swagger UI, pelo gateway | https://tkh5cum8g8.execute-api.us-east-1.amazonaws.com/swagger/index.html |
+| Health check | https://tkh5cum8g8.execute-api.us-east-1.amazonaws.com/health |
+| Autenticação por CPF | `POST https://tkh5cum8g8.execute-api.us-east-1.amazonaws.com/auth` com `{"cpf": "..."}` |
+| Collection Postman | [`postman_collection.json`](postman_collection.json) |
+| Dashboard New Relic (snapshots) | [Negócio](https://web-snapshots.newrelic.com/snapshot/1789177336_1791769336_894d3355-b437-4cc0-ab1b-9dadf67d483a.pdf?token=70a5d90cd8f031d9b0968fb33995088e50a7e9ac94500e38d5c6af7ec21e9456) · [APIs](https://web-snapshots.newrelic.com/snapshot/1789177340_1791769340_7463b348-e349-4420-b056-1578aa47a2a7.pdf?token=f9c373e10a688bd424a354488057a241fb9cfc29a7977729b4e65c0464666ace) · [Kubernetes](https://web-snapshots.newrelic.com/snapshot/1789177344_1791769344_31fc75d4-6e34-415e-9ed6-6db4fffa6bba.pdf?token=c6c8db3cca86059c97904bfcbd7f25603d325b7fe7fbf4b92f79885af8a689bb) |
+
+> O ambiente roda no AWS Academy Learner Lab: os endereços valem enquanto a infraestrutura estiver de pé. Os links do dashboard são snapshots em PDF, válidos por 30 dias — o plano gratuito do New Relic não permite link público do painel ao vivo, que aparece no vídeo.
+
 ```mermaid
 flowchart TB
     cli(["Cliente<br/>dono do veículo"]) -->|CPF| gw["API Gateway"]

@@ -53,10 +53,11 @@ O dashboard tem três páginas:
 | Alertas de falha no processamento de OS | logs `request` com status 5xx em `/api/v1/service-orders` | ver alerta 1 abaixo |
 | Logs estruturados com correlação | `correlation_id` presente em toda linha | `SELECT * FROM Log WHERE correlation_id = '...'` |
 | Volume diário de OS | evento `service_order_created` | `SELECT count(*) FROM Log WHERE message = 'service_order_created' TIMESERIES 1 day` |
-| Tempo médio por status | evento `service_order_status_changed` com `execution_seconds` | `SELECT average(execution_seconds) FROM Log WHERE execution_seconds IS NOT NULL` |
+| Tempo médio por status | evento `service_order_status_changed` com `from_status` e `seconds_in_status` | `SELECT average(seconds_in_status) FROM Log WHERE message = 'service_order_status_changed' FACET from_status` |
+| Tempo total de execução | evento `service_order_status_changed` com `execution_seconds` | `SELECT average(execution_seconds) FROM Log WHERE execution_seconds IS NOT NULL` |
 | Erros e falhas nas integrações | evento `integration_failure` | `SELECT count(*) FROM Log WHERE message = 'integration_failure' FACET integration, stage` |
 
-O `execution_seconds` é calculado no momento da transição, a partir de `started_at` e `finished_at` da própria OS — as mesmas colunas que existem no banco. A métrica é auditável contra o `SELECT`.
+Toda transição registra de qual status a OS saiu (`from_status`) e quanto tempo ficou nele (`seconds_in_status`), medido desde a última alteração da OS — no fluxo normal, a entrada naquele status. O `execution_seconds` é calculado no momento da transição, a partir de `started_at` e `finished_at` da própria OS — as mesmas colunas que existem no banco. A métrica é auditável contra o `SELECT`.
 
 ## Alertas
 

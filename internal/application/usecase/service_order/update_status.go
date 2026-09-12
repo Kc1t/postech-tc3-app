@@ -2,6 +2,7 @@ package serviceorderuc
 
 import (
 	"context"
+	"time"
 
 	"github.com/fiap/postech-tc1/internal/domain/entities"
 	domainerrors "github.com/fiap/postech-tc1/internal/domain/errors"
@@ -39,6 +40,7 @@ func (uc *UpdateServiceOrderStatus) Execute(ctx context.Context, input entities.
 		return err
 	}
 
+	transition := captureTransition(so)
 	if err := so.UpdateStatus(input.Status); err != nil {
 		return err
 	}
@@ -71,17 +73,18 @@ func (uc *UpdateServiceOrderStatus) Execute(ctx context.Context, input entities.
 		}
 	}
 
-	uc.logStatusChange(ctx, so, "staff")
+	uc.logStatusChange(ctx, so, "staff", transition)
 	uc.notify(ctx, so)
 	return nil
 }
 
-func (uc *UpdateServiceOrderStatus) logStatusChange(ctx context.Context, so *entities.ServiceOrder, actor string) {
+func (uc *UpdateServiceOrderStatus) logStatusChange(ctx context.Context, so *entities.ServiceOrder, actor string, transition statusTransition) {
 	attrs := []any{
 		"service_order_code", so.Code(),
 		"status", string(so.Status()),
 		"actor", actor,
 	}
+	attrs = append(attrs, transition.logAttrs(time.Now())...)
 
 	if so.StartedAt() != nil && so.FinishedAt() != nil {
 		attrs = append(attrs, "execution_seconds", so.FinishedAt().Sub(*so.StartedAt()).Seconds())
