@@ -18,7 +18,7 @@ Com orçamento fechado e prazo de 11 dias, só o New Relic fecha sem custo.
 
 | Sinal | Caminho |
 |---|---|
-| **Logs** | A aplicação escreve JSON em `stdout`; o `newrelic-logging` do `nri-bundle` coleta o stdout dos pods e envia. Os campos do JSON viram atributos consultáveis. |
+| **Logs** | A aplicação escreve JSON em `stdout`; o `newrelic-logging` do `nri-bundle` coleta o stdout dos pods e envia. Os campos do JSON viram atributos consultáveis, com uma exceção de nome: o `msg` do log vira o atributo padrão `message` do New Relic, e é por ele que as consultas filtram. |
 | **APM e traces** | Agente Go (`newrelic/go-agent`) com `nrgin`, ativado apenas quando `NEW_RELIC_LICENSE_KEY` está presente. |
 | **Infra e Kubernetes** | `newrelic-infrastructure`, `kube-state-metrics` e `nri-kube-events`, instalados pelo pipeline do `postech-tc3-infra-k8s`. |
 | **Lambdas** | CloudWatch Logs. |
@@ -47,14 +47,14 @@ O dashboard tem três páginas:
 
 | Requisito do enunciado | Fonte | Query |
 |---|---|---|
-| Latência das APIs | campo `latency_ms` do `RequestLogger` | `SELECT percentile(latency_ms, 50, 95, 99) FROM Log WHERE msg = 'request'` |
+| Latência das APIs | campo `latency_ms` do `RequestLogger` | `SELECT percentile(latency_ms, 50, 95, 99) FROM Log WHERE message = 'request'` |
 | Consumo de CPU e memória | `K8sContainerSample` | `SELECT average(cpuUsedCores) FROM K8sContainerSample WHERE containerName = 'workshop-api'` |
 | Healthchecks e uptime | `K8sDeploymentSample` | `SELECT percentage(count(*), WHERE podsReady >= 1) FROM K8sDeploymentSample` |
 | Alertas de falha no processamento de OS | logs `request` com status 5xx em `/api/v1/service-orders` | ver alerta 1 abaixo |
 | Logs estruturados com correlação | `correlation_id` presente em toda linha | `SELECT * FROM Log WHERE correlation_id = '...'` |
-| Volume diário de OS | evento `service_order_created` | `SELECT count(*) FROM Log WHERE msg = 'service_order_created' TIMESERIES 1 day` |
+| Volume diário de OS | evento `service_order_created` | `SELECT count(*) FROM Log WHERE message = 'service_order_created' TIMESERIES 1 day` |
 | Tempo médio por status | evento `service_order_status_changed` com `execution_seconds` | `SELECT average(execution_seconds) FROM Log WHERE execution_seconds IS NOT NULL` |
-| Erros e falhas nas integrações | evento `integration_failure` | `SELECT count(*) FROM Log WHERE msg = 'integration_failure' FACET integration, stage` |
+| Erros e falhas nas integrações | evento `integration_failure` | `SELECT count(*) FROM Log WHERE message = 'integration_failure' FACET integration, stage` |
 
 O `execution_seconds` é calculado no momento da transição, a partir de `started_at` e `finished_at` da própria OS — as mesmas colunas que existem no banco. A métrica é auditável contra o `SELECT`.
 
@@ -78,7 +78,7 @@ Exigido nominalmente pelo enunciado.
 
 ```sql
 SELECT count(*) FROM Log
-WHERE msg = 'request' AND path LIKE '/api/v1/service-orders%' AND status >= 500
+WHERE message = 'request' AND path LIKE '/api/v1/service-orders%' AND status >= 500
 ```
 
 - Crítico: acima de 0 por 5 minutos.
@@ -86,7 +86,7 @@ WHERE msg = 'request' AND path LIKE '/api/v1/service-orders%' AND status >= 500
 ### 2. Falha de integração
 
 ```sql
-SELECT count(*) FROM Log WHERE msg = 'integration_failure'
+SELECT count(*) FROM Log WHERE message = 'integration_failure'
 ```
 
 - Aviso: acima de 3 em 5 minutos.
@@ -104,7 +104,7 @@ SELECT latest(podsReady) FROM K8sDeploymentSample WHERE deploymentName = 'worksh
 ### 4. Latência degradada
 
 ```sql
-SELECT percentile(latency_ms, 95) FROM Log WHERE msg = 'request' AND path NOT LIKE '/health%'
+SELECT percentile(latency_ms, 95) FROM Log WHERE message = 'request' AND path NOT LIKE '/health%'
 ```
 
 - Aviso: acima de 1000 ms por 5 minutos.
@@ -124,7 +124,7 @@ FROM K8sContainerSample WHERE containerName = 'workshop-api'
 Não é exigido, mas o CPF é um dado público — vale monitorar.
 
 ```sql
-SELECT count(*) FROM Log WHERE msg IN ('cliente nao encontrado', 'cpf invalido')
+SELECT count(*) FROM Log WHERE message IN ('cliente nao encontrado', 'cpf invalido')
 ```
 
 - Aviso: acima de 50 em 5 minutos, o que sugere enumeração de CPFs.
@@ -134,7 +134,7 @@ SELECT count(*) FROM Log WHERE msg IN ('cliente nao encontrado', 'cpf invalido')
 Toda resposta traz o header `X-Correlation-ID`. Com ele:
 
 ```sql
-SELECT timestamp, level, msg, path, status, latency_ms
+SELECT timestamp, level, message, path, status, latency_ms
 FROM Log WHERE correlation_id = '<id da resposta>'
 ORDER BY timestamp
 ```

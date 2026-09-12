@@ -7,13 +7,13 @@
     {
       "name": "Falha no processamento de ordens de servico",
       "description": "Exigido nominalmente pelo enunciado: 5xx em qualquer rota de ordem de servico.",
-      "nrql": "SELECT count(*) FROM Log WHERE msg = 'request' AND path LIKE '/api/v1/service-orders%' AND status >= 500",
+      "nrql": "SELECT count(*) FROM Log WHERE message = 'request' AND path LIKE '/api/v1/service-orders%' AND status >= 500",
       "critical": { "threshold": 0, "thresholdDuration": 300, "operator": "ABOVE" }
     },
     {
       "name": "Falha de integracao",
       "description": "Evento integration_failure emitido pelos adapters externos.",
-      "nrql": "SELECT count(*) FROM Log WHERE msg = 'integration_failure'",
+      "nrql": "SELECT count(*) FROM Log WHERE message = 'integration_failure'",
       "warning":  { "threshold": 3,  "thresholdDuration": 300, "operator": "ABOVE" },
       "critical": { "threshold": 10, "thresholdDuration": 300, "operator": "ABOVE" }
     },
@@ -27,7 +27,7 @@
     {
       "name": "Latencia degradada",
       "description": "p95 das rotas de negocio, excluindo healthcheck.",
-      "nrql": "SELECT percentile(latency_ms, 95) FROM Log WHERE msg = 'request' AND path NOT LIKE '/health%'",
+      "nrql": "SELECT percentile(latency_ms, 95) FROM Log WHERE message = 'request' AND path NOT LIKE '/health%'",
       "warning":  { "threshold": 1000, "thresholdDuration": 300, "operator": "ABOVE" },
       "critical": { "threshold": 3000, "thresholdDuration": 300, "operator": "ABOVE" }
     },
@@ -40,7 +40,7 @@
     {
       "name": "Autenticacao sob ataque",
       "description": "Volume anormal de CPF invalido ou inexistente sugere enumeracao.",
-      "nrql": "SELECT count(*) FROM Log WHERE msg IN ('cliente nao encontrado', 'cpf invalido')",
+      "nrql": "SELECT count(*) FROM Log WHERE message IN ('cliente nao encontrado', 'cpf invalido')",
       "warning": { "threshold": 50, "thresholdDuration": 300, "operator": "ABOVE" }
     }
   ]

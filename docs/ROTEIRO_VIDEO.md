@@ -119,7 +119,7 @@ Falar: na Fase 2 essas rotas eram públicas. Agora exigem o JWT emitido a partir
 Pegar o `X-Correlation-ID` do header da resposta anterior. No New Relic:
 
 ```sql
-SELECT timestamp, level, msg, path, status, latency_ms
+SELECT timestamp, level, message, path, status, latency_ms
 FROM Log WHERE correlation_id = '<id>' ORDER BY timestamp
 ```
 
