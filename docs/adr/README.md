@@ -27,3 +27,4 @@ ADRs (formato proposto por [Michael Nygard](https://cognitect.com/blog/2011/11/1
 | [0008](./0008-hpa.md)                    | Escalabilidade de pods via HPA                   | Accepted |
 | [0009](./0009-lambda-terraform-em-vez-de-sam.md) | Deploy da Lambda por Terraform, não por SAM | Accepted |
 | [0010](./0010-cluster-unico-dois-namespaces.md) | Um cluster com dois namespaces           | Accepted |
+| [0011](./0011-notificacoes-smtp-no-pod.md) | Notificações por SMTP no pod, com caminho para serverless | Accepted |

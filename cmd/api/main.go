@@ -16,7 +16,6 @@ import (
 // @title           Workshop API
 // @version         1.0
 // @description     Sistema Integrado de Atendimento e Execucao de Servicos — Oficina Mecanica
-// @host            localhost:8080
 // @BasePath        /api/v1
 // @securityDefinitions.apikey BearerAuth
 // @in              header

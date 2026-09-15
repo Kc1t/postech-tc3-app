@@ -31,10 +31,10 @@ erDiagram
 
     REFRESH_TOKENS {
         uuid id PK
-        uuid user_id FK
+        uuid user_id FK "FK logica, sem constraint"
         varchar token_hash UK
         timestamp expires_at
-        boolean revoked "revogacao logica"
+        boolean revoked "revogacao logica, default false"
         timestamp created_at
     }
 
@@ -78,6 +78,7 @@ erDiagram
 
     SERVICES {
         uuid id PK
+        int code UK "codigo do catalogo"
         varchar name
         text description
         numeric price
@@ -88,6 +89,7 @@ erDiagram
 
     PARTS {
         uuid id PK
+        varchar manufacturer_code UK "codigo do fabricante"
         varchar name
         text description
         varchar unit
@@ -191,6 +193,7 @@ O `database-model.dbml` estava defasado em relação ao código e foi regravado 
 | `service_orders.customer_id` | `service_orders.requester_id` |
 | status `in_progress`, `completed`, `cancelled` | `in_execution`, `finished`, e não existe `cancelled` |
 | — | faltavam `service_orders.code`, `started_at` e `finished_at` |
+| — | faltavam os únicos `services.code` e `parts.manufacturer_code` |
 
 Isso não é cosmético: `started_at` e `finished_at` são a base do dashboard de **tempo médio de execução por status** exigido na fase. Documentá-las é o que torna aquela métrica auditável.
 
@@ -208,10 +211,12 @@ vehicles   1 ──< N service_orders
 
 | Relação | Cardinalidade | Regra |
 |---|---|---|
-| `users` → `refresh_tokens` | 1:N | Cada login emite um refresh token com hash único. Revogação é lógica, via flag `revoked`, para preservar a trilha de auditoria. |
+| `users` → `refresh_tokens` | 1:N | Cada login emite um refresh token com hash único. Revogação é lógica, via flag `revoked`, para preservar a trilha de auditoria. A chave é **lógica**: o model não declara associação, então o `AutoMigrate` cria só o índice em `user_id`, sem constraint física — a integridade fica com o use case de login. |
 | `requesters` → `vehicles` | 1:N | `ON DELETE RESTRICT`. Um solicitante com veículo cadastrado não pode ser apagado — apagar deixaria OS órfãs e destruiria o histórico da oficina. |
 | `requesters` → `service_orders` | 1:N | `ON DELETE RESTRICT`, pelo mesmo motivo. A OS é registro histórico e financeiro. |
 | `vehicles` → `service_orders` | 1:N | `ON DELETE RESTRICT`. O veículo é o objeto do serviço; sem ele a OS perde sentido. |
+
+**Nota de implementação:** o tag `constraint:OnDelete:RESTRICT` está no campo de ID (`model/vehicle.go`, `model/serviceorder.go`), mas o GORM lê restrições no campo da associação. A FK pode, então, ter nascido com o padrão do PostgreSQL, `NO ACTION`, que também recusa o `DELETE` de um registro com filhos — a diferença para `RESTRICT` é só o momento da checagem. Mover o tag para a associação não alteraria um schema já migrado, porque o `AutoMigrate` não mexe em constraints existentes.
 
 **Por que `RESTRICT` e não `CASCADE`:** em oficina, ordem de serviço é documento fiscal e histórico de manutenção do veículo. Cascatear a exclusão apagaria silenciosamente esse histórico a partir de um `DELETE /requesters/:id`. A exclusão de solicitante com vínculo deve falhar de forma explícita e ser tratada como desativação — que é justamente o papel do `status` introduzido em 2.1.
 
@@ -225,6 +230,9 @@ vehicles   1 ──< N service_orders
 | `service_orders.code` (único, sequencial) | Código público da OS, usado nas rotas de consulta e aprovação sem expor UUID. |
 | `service_orders.requester_id` | Suporta a listagem de OS por solicitante. |
 | `refresh_tokens.token_hash` (único) | Lookup na renovação de sessão. |
+| `refresh_tokens.user_id` | Revogação de todas as sessões de um usuário. |
+| `services.code` (único) | Código do serviço no catálogo da oficina. |
+| `parts.manufacturer_code` (único) | Código do fabricante; impede a mesma peça cadastrada duas vezes. |
 
 ---
 

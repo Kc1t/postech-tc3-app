@@ -68,11 +68,12 @@ sequenceDiagram
     GW->>AZ: autoriza
     AZ-->>GW: isAuthorized = true
     GW->>API: HTTP_PROXY
+    API->>API: CPF do token = requester_document?<br/>senão 403
     API->>API: AuthorizeRequesterTransition
     note right of API: cliente só pode ir para<br/>in_execution (aprova) ou<br/>received (recusa)
     API->>DB: UPDATE status, started_at = now()
-    API-->>C: 200
-    API->>NR: log + métrica de tempo por status
+    API-->>C: 204
+    API->>NR: log service_order_status_changed<br/>from_status · seconds_in_status
     end
 ```
 
@@ -96,9 +97,9 @@ Transição fora deste grafo retorna `ErrInvalidStatus`. O cliente autenticado p
 
 | Dashboard exigido | Fonte |
 |---|---|
-| Volume diário de ordens de serviço | `created_at` de `service_orders` |
-| Tempo médio por status | `started_at` (entrada em `in_execution`) e `finished_at` (entrada em `finished`) |
-| Erros e falhas nas integrações | Logs de nível `error` com `correlation_id`, incluindo falhas do notificador SMTP |
-| Latência das APIs | `latency_ms` do `RequestLogger` e o access log do gateway |
+| Volume diário de ordens de serviço | Evento de log `service_order_created` |
+| Tempo médio por status | Evento `service_order_status_changed`, com `from_status` e `seconds_in_status` (tempo que a OS passou no status anterior) |
+| Erros e falhas nas integrações | Evento `integration_failure`, com `integration` e `stage` — hoje, falhas do notificador SMTP |
+| Latência das APIs | Transações do APM (`nrgin`) e `latency_ms` do `RequestLogger` |
 
-As colunas `started_at` e `finished_at` são gravadas por `UpdateStatus` no momento exato da transição — é o que torna a métrica de tempo médio auditável contra o banco.
+Os eventos são logs JSON com `correlation_id`, coletados pelo `nri-bundle` e consultados por NRQL ([`docs/newrelic/`](../newrelic/)). As colunas `started_at` e `finished_at`, gravadas por `UpdateStatus` no momento exato da transição, permitem auditar o tempo de execução contra o banco.

@@ -19,7 +19,7 @@
     },
     {
       "key": "gateway_url",
-      "value": "https://SEU-API-ID.execute-api.us-east-1.amazonaws.com"
+      "value": "https://tkh5cum8g8.execute-api.us-east-1.amazonaws.com"
     },
     {
       "key": "cpf",
@@ -39,7 +39,7 @@
   "item": [
     {
       "name": "Fase 3 - Autenticacao por CPF (API Gateway)",
-      "description": "Rotas expostas pelo API Gateway. `POST /auth` e aberta e emite o JWT a partir do CPF; as rotas sob `/api/v1` passam pelo authorizer Lambda. Preencha a variavel `gateway_url` com o endpoint do gateway.",
+      "description": "Rotas expostas pelo API Gateway. `POST /auth` e aberta e emite o JWT a partir do CPF; as rotas sob `/api/v1` passam pelo authorizer Lambda. A variavel `gateway_url` ja aponta para o gateway de producao.",
       "item": [
         {
           "name": "Emitir token por CPF (sucesso)",
