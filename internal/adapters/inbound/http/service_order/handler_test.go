@@ -19,8 +19,14 @@ func init() {
 	gin.SetMode(gin.TestMode)
 }
 
+// Simula o middleware Auth com um token de admin: as regras de posse do cliente
+// ficam cobertas em ownership_test.go.
 func newTestRouter(h *ServiceOrderHandler) *gin.Engine {
 	r := gin.New()
+	r.Use(func(c *gin.Context) {
+		c.Set("user_role", string(entities.RoleAdmin))
+		c.Next()
+	})
 	h.SetupRoutes(r.Group(""))
 	h.SetupRequesterRoutes(r.Group(""))
 	return r

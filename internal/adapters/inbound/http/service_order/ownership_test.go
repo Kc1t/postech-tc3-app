@@ -12,13 +12,17 @@ func TestAuthorizeDocument(t *testing.T) {
 	cases := []struct {
 		name             string
 		tokenDocument    string
+		tokenRole        string
 		requestedDoc     string
 		expectedAuthized bool
 		expectedStatus   int
 	}{
-		{"sem documento no token libera", "", "52998224725", true, http.StatusOK},
-		{"documento igual libera", "52998224725", "52998224725", true, http.StatusOK},
-		{"documento diferente bloqueia", "52998224725", "39053344705", false, http.StatusForbidden},
+		{"admin sem documento no token libera", "", "admin", "52998224725", true, http.StatusOK},
+		{"cliente sem documento no token bloqueia", "", "client", "52998224725", false, http.StatusForbidden},
+		{"token sem role nem documento bloqueia", "", "", "52998224725", false, http.StatusForbidden},
+		{"documento igual libera", "52998224725", "client", "52998224725", true, http.StatusOK},
+		{"documento diferente bloqueia", "52998224725", "client", "39053344705", false, http.StatusForbidden},
+		{"documento pedido vazio bloqueia", "52998224725", "client", "", false, http.StatusForbidden},
 	}
 
 	gin.SetMode(gin.TestMode)
@@ -29,6 +33,9 @@ func TestAuthorizeDocument(t *testing.T) {
 			c, _ := gin.CreateTestContext(rec)
 			if tc.tokenDocument != "" {
 				c.Set("user_document", tc.tokenDocument)
+			}
+			if tc.tokenRole != "" {
+				c.Set("user_role", tc.tokenRole)
 			}
 
 			if got := authorizeDocument(c, tc.requestedDoc); got != tc.expectedAuthized {

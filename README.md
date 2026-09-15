@@ -35,6 +35,7 @@ A Fase 3 quebrou o projeto em **quatro repositórios**, cada um com CI/CD própr
 | Health check | https://tkh5cum8g8.execute-api.us-east-1.amazonaws.com/health |
 | Autenticação por CPF | `POST https://tkh5cum8g8.execute-api.us-east-1.amazonaws.com/auth` com `{"cpf": "..."}` |
 | Collection Postman | [`postman_collection.json`](postman_collection.json) |
+| Vídeo de demonstração | https://youtu.be/pxW0rp4isL0 |
 | Dashboard New Relic (snapshots) | [Negócio](https://web-snapshots.newrelic.com/snapshot/1789177336_1791769336_894d3355-b437-4cc0-ab1b-9dadf67d483a.pdf?token=70a5d90cd8f031d9b0968fb33995088e50a7e9ac94500e38d5c6af7ec21e9456) · [APIs](https://web-snapshots.newrelic.com/snapshot/1789177340_1791769340_7463b348-e349-4420-b056-1578aa47a2a7.pdf?token=f9c373e10a688bd424a354488057a241fb9cfc29a7977729b4e65c0464666ace) · [Kubernetes](https://web-snapshots.newrelic.com/snapshot/1789177344_1791769344_31fc75d4-6e34-415e-9ed6-6db4fffa6bba.pdf?token=c6c8db3cca86059c97904bfcbd7f25603d325b7fe7fbf4b92f79885af8a689bb) |
 
 > O ambiente roda no AWS Academy Learner Lab: os endereços valem enquanto a infraestrutura estiver de pé. Os links do dashboard são snapshots em PDF, válidos por 30 dias — o plano gratuito do New Relic não permite link público do painel ao vivo, que aparece no vídeo.
@@ -96,7 +97,7 @@ As três camadas são independentes. Alcançar o NLB direto, contornando o gatew
 | [`docs/diagrams/sequencia-ordem-servico.md`](docs/diagrams/sequencia-ordem-servico.md) | Sequência da abertura de OS |
 | [`docs/MODELAGEM_DE_DADOS.md`](docs/MODELAGEM_DE_DADOS.md) | Justificativa do banco, relacionamentos e diagrama ER |
 | [`docs/rfc/README.md`](docs/rfc/README.md) | RFCs: nuvem, banco gerenciado, autenticação |
-| [`docs/adr/README.md`](docs/adr/README.md) | ADRs 0001–0010 |
+| [`docs/adr/README.md`](docs/adr/README.md) | ADRs 0001–0011 |
 | [`docs/newrelic/README.md`](docs/newrelic/README.md) | Observabilidade: dashboards, alertas e origem de cada métrica |
 | [`docs/DOCUMENTO_ENTREGA_FASE3.md`](docs/DOCUMENTO_ENTREGA_FASE3.md) | Documento de entrega, base do PDF do portal |
 | [`docs/ROTEIRO_VIDEO.md`](docs/ROTEIRO_VIDEO.md) | Roteiro do vídeo de demonstração |
@@ -182,13 +183,13 @@ A Fase 2 evolui a aplicação da Fase 1 com práticas modernas de infraestrutura
 | Testes automatizados e cobertura | Arquivos `_test.go` por domínio/use case/adapter; pipeline com gate de cobertura mínima de 80%. |
 | Abertura de Ordem de Serviço | `POST /api/v1/service-orders`, use case `internal/application/usecase/service_order/create.go` e handler HTTP correspondente. |
 | Consulta de status da OS | `GET /api/v1/service-orders/code/:code?document=<cpf/cnpj>` e `GET /api/v1/service-orders/:id`. |
-| Aprovação/recusa de orçamento | `PUT /api/v1/service-orders/code/:code/status`, endpoint público com validação do documento do solicitante. |
+| Aprovação/recusa de orçamento | `PUT /api/v1/service-orders/code/:code/status`, rota do cliente protegida pelo JWT emitido por CPF; o app confere que o CPF do token é o dono da OS. |
 | Listagem ordenada de OS | `GET /api/v1/service-orders`, ordenação por prioridade de status e data de criação, excluindo finalizadas/entregues da visão operacional. |
-| Notificação por e-mail | Adapter SMTP em `internal/adapters/outbound/smtp/email_notifier.go`. |
+| Notificação por e-mail | Adapter SMTP em `internal/adapters/outbound/smtp/email_notifier.go`; a migração para serverless está no [ADR-0011](docs/adr/0011-notificacoes-smtp-no-pod.md). |
 | Docker e execução local | [`Dockerfile`](Dockerfile), [`docker-compose.yml`](docker-compose.yml), [Execução local com Docker](#execução-local-com-docker). |
-| Kubernetes | Manifestos em [`k8s/`](k8s/) com Namespace, Deployment, Service, ConfigMap, Secret e HPA. |
+| Kubernetes | Manifestos em [`k8s/`](k8s/) com Deployment, Service, ConfigMap, HPA, ResourceQuota/LimitRange e NetworkPolicy; o namespace e o Secret são criados pelo pipeline. |
 | Escalabilidade automática | [`k8s/hpa.yaml`](k8s/hpa.yaml), 2 a 10 réplicas por CPU/memória. |
-| Infraestrutura como Código | [`infra/`](infra/) provisionando EKS e RDS PostgreSQL via Terraform. |
+| Infraestrutura como Código | Terraform nos repositórios [`postech-tc3-infra-k8s`](https://github.com/Kc1t/postech-tc3-infra-k8s) (EKS e API Gateway), [`postech-tc3-infra-database`](https://github.com/Kc1t/postech-tc3-infra-database) (RDS) e [`postech-tc3-lambda-auth`](https://github.com/Kc1t/postech-tc3-lambda-auth) (Lambdas). |
 | CI/CD | [`.github/workflows/ci.yml`](.github/workflows/ci.yml) com lint, dependências, testes, build/push no ECR, deploy no EKS e aplicação dos manifestos YAML. |
 | Banco de dados em infraestrutura | RDS PostgreSQL 16 provisionado por Terraform em [`postech-tc3-infra-database`](https://github.com/Kc1t/postech-tc3-infra-database), com DSN consumido pelo Secret do Kubernetes. |
 | APIs documentadas | Swagger UI, [`docs/swagger.yaml`](docs/swagger.yaml) e [`postman_collection.json`](postman_collection.json). |
@@ -202,7 +203,7 @@ A Fase 2 evolui a aplicação da Fase 1 com práticas modernas de infraestrutura
 - Cadastro e manutenção de solicitantes, veículos, serviços e peças.
 - **Abertura de Ordem de Serviço** com cliente, veículo, serviços e peças, retornando o identificador único da OS.
 - **Consulta do status da OS** (Recebida, Diagnóstico, Aguardando Aprovação, Execução, Finalizada, Entregue).
-- **Aprovação/recusa de orçamento** por endpoint público (recebe notificações externas do cliente).
+- **Aprovação/recusa de orçamento** pelo próprio cliente, autenticado pelo JWT emitido a partir do CPF.
 - **Listagem de OS ordenada** por prioridade de status e mais antigas primeiro, excluindo (logicamente) as finalizadas e entregues.
 - **Notificação por e-mail** a cada mudança de status relevante (SMTP).
 - Ajuste de estoque de peças e insumos.
@@ -225,6 +226,8 @@ A Fase 2 evolui a aplicação da Fase 1 com práticas modernas de infraestrutura
 | IaC | Terraform | Provisionamento do cluster EKS e do RDS |
 | Registry | AWS ECR | Registro das imagens Docker |
 | CI/CD | GitHub Actions | Lint, testes, build, push e deploy automatizados |
+| Autenticação | AWS Lambda + API Gateway v2 | Token por CPF e authorizer ([`postech-tc3-lambda-auth`](https://github.com/Kc1t/postech-tc3-lambda-auth)) |
+| Observabilidade | New Relic | APM Go (`nrgin`), logs JSON com `X-Correlation-ID`, dashboard e alertas ([`docs/newrelic/`](docs/newrelic/)) |
 
 ## Arquitetura
 
@@ -371,27 +374,31 @@ A OS possui uma **máquina de estados** validada no domínio (`internal/domain/e
 | Entregue | `delivered` | — |
 
 - **Abertura da OS:** `POST /api/v1/service-orders` recebe cliente, veículo, serviços e peças e retorna o identificador único.
-- **Consulta de status:** `GET /api/v1/service-orders/code/:code` (público) e `GET /api/v1/service-orders/:id` (admin).
-- **Aprovação/recusa de orçamento:** `PUT /api/v1/service-orders/code/:code/status` (público) — o cliente aprova (→ Execução) ou recusa (→ Recebida) o orçamento. As demais transições são restritas ao fluxo operacional da oficina.
+- **Consulta de status:** `GET /api/v1/service-orders/code/:code` (cliente, JWT do CPF) e `GET /api/v1/service-orders/:id` (admin).
+- **Aprovação/recusa de orçamento:** `PUT /api/v1/service-orders/code/:code/status` (cliente, JWT do CPF) — o cliente aprova (→ Execução) ou recusa (→ Recebida) o orçamento. As demais transições são restritas ao fluxo operacional da oficina.
 - **Listagem:** `GET /api/v1/service-orders` ordena por **Execução > Aguardando Aprovação > Diagnóstico > Recebida**, mais antigas primeiro (`created_at ASC`), e **exclui logicamente** as OS *finalizadas* e *entregues* (elas não somem do banco, apenas da listagem).
 - **Atualização de status via e-mail:** a cada mudança relevante (Aguardando Aprovação, Execução, Finalizada, Entregue), o cliente é notificado por e-mail via SMTP (adapter `internal/adapters/outbound/smtp`).
 
 ### Exemplos de request
 
-> Endpoints públicos do cliente identificam o dono da OS pelo **documento** (CPF/CNPJ). Nos GETs ele vai na query string; na aprovação, no corpo. Documento que não bate com a OS retorna `404` (não vaza a existência da ordem).
+> As rotas do cliente exigem o JWT emitido por `POST /auth` no gateway, a partir do CPF. O documento (CPF/CNPJ) vai na query string nos GETs e no corpo na aprovação. CPF do token diferente do documento pedido, ou token de cliente sem CPF, retorna `403`; documento que não bate com a OS retorna `404` (não vaza a existência da ordem).
 
 ```bash
+# 0. Token do cliente, emitido pela Lambda a partir do CPF
+TOKEN_CPF=$(curl -s -X POST "$GATEWAY/auth" -d '{"cpf":"50891498877"}' | jq -r .access_token)
+
 # 1. Abrir OS (admin) — retorna a OS com o código único
 curl -X POST "$BASE/api/v1/service-orders" \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{"requester_document":"50891498877","vehicle_plate":"ABC1234","notes":"Barulho no motor"}'
 
-# 2. Consultar status (público) — exige o document do dono
-curl "$BASE/api/v1/service-orders/code/1?document=50891498877"
+# 2. Consultar status (cliente) — o document precisa ser o CPF do token
+curl "$BASE/api/v1/service-orders/code/1?document=50891498877" \
+  -H "Authorization: Bearer $TOKEN_CPF"
 
-# 3. Aprovar orçamento (público) — status "in_execution" aprova, "received" recusa
+# 3. Aprovar orçamento (cliente) — status "in_execution" aprova, "received" recusa
 curl -X PUT "$BASE/api/v1/service-orders/code/1/status" \
-  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN_CPF" -H "Content-Type: application/json" \
   -d '{"requester_document":"50891498877","status":"in_execution"}'
 
 # 4. Avançar status pelo fluxo da oficina (admin) — services/parts são opcionais
@@ -507,19 +514,19 @@ kubectl get pods -n postech -w   # observar as réplicas subindo sob carga
 
 ### Provisionamento da infraestrutura com Terraform
 
-Os scripts estão em [`infra/`](infra/). Resumo:
+Na Fase 3 o Terraform saiu deste repositório e foi para três repositórios próprios, cada um com seu pipeline:
+
+| Repositório | Provisiona |
+|---|---|
+| [`postech-tc3-infra-database`](https://github.com/Kc1t/postech-tc3-infra-database) | RDS PostgreSQL 16 e credenciais no Secrets Manager |
+| [`postech-tc3-infra-k8s`](https://github.com/Kc1t/postech-tc3-infra-k8s) | EKS, metrics-server, vpc-cni, API Gateway e agente do New Relic |
+| [`postech-tc3-lambda-auth`](https://github.com/Kc1t/postech-tc3-lambda-auth) | Lambdas de emissão de token por CPF e authorizer |
+
+A ordem de aplicação entre eles está no [README do `postech-tc3-infra-k8s`](https://github.com/Kc1t/postech-tc3-infra-k8s#ordem-de-aplicação-entre-repositórios). Depois do apply, configurar o kubectl:
 
 ```bash
-cd infra
-terraform init
-terraform plan  -var="db_password=<senha-forte>"
-terraform apply -var="db_password=<senha-forte>"
-
-# Após o apply, configurar o kubectl para o cluster criado:
-aws eks update-kubeconfig --name workshop-api --region us-east-1
+aws eks update-kubeconfig --name postech-tc3-prod --region us-east-1
 ```
-
-O `terraform apply` cria o cluster EKS e o RDS PostgreSQL. Os outputs incluem o endpoint do cluster, o comando de kubeconfig e o `POSTGRES_DSN` (sensível) a ser usado no Secret do Kubernetes. **O Terraform foi movido para os repositórios de infraestrutura na Fase 3; consulte o README de cada um.**
 
 ## CI/CD
 
@@ -530,9 +537,9 @@ A pipeline está em [`.github/workflows/ci.yml`](.github/workflows/ci.yml) (GitH
 | **lint** | PR e push | `golangci-lint` |
 | **dependencies** | PR e push | Verifica `go mod tidy` e roda `govulncheck` |
 | **tests** | PR e push | Sobe Postgres, roda os testes com cobertura e falha se `< 80%` |
-| **deploy** | push na `main` | Build/push da imagem no ECR e deploy no EKS (aplica os manifestos + rollout) |
+| **deploy** | push na `homolog` e na `main` | Build/push da imagem no ECR e deploy no EKS (aplica os manifestos + rollout): `homolog` → namespace `postech-homolog`, `main` → `postech` |
 
-Secrets necessários no GitHub (Settings → Secrets and variables → Actions): `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN`, `AWS_REGION`, `EKS_CLUSTER_NAME`, `JWT_SECRET`, `POSTGRES_DSN`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `ADMIN_PASSWORD`.
+Secrets necessários no GitHub (Settings → Secrets and variables → Actions): `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN`, `AWS_REGION`, `EKS_CLUSTER_NAME`, `JWT_SECRET`, `POSTGRES_DSN`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `ADMIN_PASSWORD`, `NEW_RELIC_LICENSE_KEY`.
 
 ## Variáveis de ambiente
 
@@ -599,14 +606,14 @@ As rotas de cadastro, login e refresh são públicas. As demais rotas sob `/api/
 | GET | `/api/v1/service-orders` | admin | **Lista OS** ordenada por status e mais antigas primeiro (exclui finalizadas/entregues) |
 | GET | `/api/v1/service-orders/:id` | admin | Busca OS por ID |
 | GET | `/api/v1/service-orders/metrics/execution-time` | admin | Tempo médio de execução das ordens |
-| GET | `/api/v1/service-orders/code/:code?document=<cpf/cnpj>` | público | **Consulta status** da OS por código (exige o `document` do dono; documento errado → 404) |
-| GET | `/api/v1/service-orders/requester?document=<cpf/cnpj>` | público | Lista ordens do solicitante (exige o query param `document`) |
-| PUT | `/api/v1/service-orders/code/:code/status` | público | **Aprova/recusa orçamento** — body com `requester_document` + `status` |
+| GET | `/api/v1/service-orders/code/:code?document=<cpf/cnpj>` | cliente (JWT do CPF) | **Consulta status** da OS por código (o `document` precisa ser o CPF do token → senão 403; documento que não é o dono da OS → 404) |
+| GET | `/api/v1/service-orders/requester?document=<cpf/cnpj>` | cliente (JWT do CPF) | Lista ordens do solicitante (o `document` precisa ser o CPF do token) |
+| PUT | `/api/v1/service-orders/code/:code/status` | cliente (JWT do CPF) | **Aprova/recusa orçamento** — body com `requester_document` + `status` |
 | PUT | `/api/v1/service-orders/:id/status` | admin | Atualiza status da OS (fluxo operacional) |
 | PUT | `/api/v1/service-orders/:id` | admin | Atualiza OS |
 | DELETE | `/api/v1/service-orders/:id` | admin | Remove OS |
 
-Collection completa das APIs: [`postman_collection.json`](postman_collection.json) · Swagger estático: [`docs/swagger.yaml`](docs/swagger.yaml).
+Collection completa das APIs: [`postman_collection.json`](postman_collection.json) · Swagger ao vivo: https://tkh5cum8g8.execute-api.us-east-1.amazonaws.com/swagger/index.html · Swagger estático: [`docs/swagger.yaml`](docs/swagger.yaml).
 
 ## Testes
 

@@ -33,6 +33,7 @@ flowchart TB
 
     nr["New Relic<br/>APM · logs · dashboards · alertas"]
     gha["GitHub Actions<br/>CI/CD dos 4 repositórios"]
+    ghs["GitHub Secrets<br/>POSTGRES_DSN · JWT_SECRET"]
 
     cliente -->|"POST /auth<br/>{cpf}"| gw
     cliente -->|"Bearer JWT"| gw
@@ -45,8 +46,9 @@ flowchart TB
 
     issuer -->|"SELECT document, status"| rds
     api --> rds
-    secrets -.->|"DSN"| api
-    secrets -.->|"DSN"| issuer
+    rds -.->|"credenciais geradas"| secrets
+    ghs -.->|"Secret do k8s"| api
+    ghs -.->|"env da Lambda"| issuer
 
     ms --> hpa
     hpa -->|"escala"| api
